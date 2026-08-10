@@ -3,13 +3,7 @@
 import { useState } from "react";
 import type { PolicyDecision } from "@/lib/telemetry";
 
-export default function AdminActions({
-  isMaster,
-  pending,
-}: {
-  isMaster: boolean;
-  pending: PolicyDecision[];
-}) {
+export default function AdminActions({ pending }: { pending: PolicyDecision[] }) {
   const [lockdown, setLockdown] = useState<boolean | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [resolved, setResolved] = useState<Set<string>>(new Set());
@@ -70,19 +64,15 @@ export default function AdminActions({
             {lockdown === null ? "Blocks every new policy decision fleet-wide until lifted." : lockdown ? "Lockdown is ACTIVE — new actions are being denied." : "Lockdown is off."}
           </p>
         </div>
-        {isMaster ? (
-          <button
-            onClick={() => toggleLockdown(!lockdown)}
-            disabled={busy === "lockdown"}
-            className={`shrink-0 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 ${
-              lockdown ? "bg-crimson/20 text-crimson border border-crimson/40 hover:bg-crimson/30" : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
-            }`}
-          >
-            {busy === "lockdown" ? "…" : lockdown ? "Lift lockdown" : "Trigger lockdown"}
-          </button>
-        ) : (
-          <span className="text-[11px] text-mutedDark">Master required</span>
-        )}
+        <button
+          onClick={() => toggleLockdown(!lockdown)}
+          disabled={busy === "lockdown"}
+          className={`shrink-0 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 ${
+            lockdown ? "bg-crimson/20 text-crimson border border-crimson/40 hover:bg-crimson/30" : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
+          }`}
+        >
+          {busy === "lockdown" ? "…" : lockdown ? "Lift lockdown" : "Trigger lockdown"}
+        </button>
       </div>
 
       <div className="glass rounded-2xl p-5">
@@ -105,17 +95,13 @@ export default function AdminActions({
                     {d.decision_id} · risk: {d.risk_level}
                   </p>
                 </div>
-                {isMaster ? (
-                  <button
-                    onClick={() => approve(d.decision_id)}
-                    disabled={busy === d.decision_id}
-                    className="shrink-0 bg-emerald/15 text-emerald border border-emerald/30 hover:bg-emerald/25 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {busy === d.decision_id ? "…" : "Approve"}
-                  </button>
-                ) : (
-                  <span className="shrink-0 text-[11px] text-mutedDark">view only</span>
-                )}
+                <button
+                  onClick={() => approve(d.decision_id)}
+                  disabled={busy === d.decision_id}
+                  className="shrink-0 bg-emerald/15 text-emerald border border-emerald/30 hover:bg-emerald/25 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {busy === d.decision_id ? "…" : "Approve"}
+                </button>
               </div>
             ))}
           </div>

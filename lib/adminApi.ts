@@ -6,29 +6,23 @@ export type AdminSessionCheck =
   | { ok: true; isMaster: boolean }
   | { ok: false; status: number; error: string };
 
-// Master can trigger backend actions; Admin can view the dashboard but
-// every mutation route calls this and rejects non-master callers, so a
-// read-only admin can never reach the parts of the API that actually
-// change state, no matter what the client sends.
+// Master (MASTER_EMAIL) and Admin (ADMIN_EMAIL) are equal 50/50 co-owners of
+// the admin dashboard: same view, same mutation actions, no read-only tier.
+// requireMaster() is the mutation gate every admin API route calls; the name
+// is legacy, the check itself no longer favors one over the other.
 export async function requireMaster(): Promise<AdminSessionCheck> {
   const session = await getServerSession(authOptions);
   const isMaster = session?.user?.isMaster ?? false;
   const isAdmin = session?.user?.isAdmin ?? false;
   if (!session?.user) return { ok: false, status: 401, error: "Not signed in" };
   if (!isMaster && !isAdmin) return { ok: false, status: 403, error: "Not authorized" };
-  if (!isMaster) return { ok: false, status: 403, error: "Admin view is read-only — master required" };
-  return { ok: true, isMaster: true };
+  return { ok: true, isMaster };
 }
 
-// View-only check: both master and admin pass, guests/regular users don't.
-// Use this for GET routes; mutation routes still call requireMaster().
+// Same check, kept as a separate name for GET/view routes that never
+// mutated in the first place.
 export async function requireAdminOrMaster(): Promise<AdminSessionCheck> {
-  const session = await getServerSession(authOptions);
-  const isMaster = session?.user?.isMaster ?? false;
-  const isAdmin = session?.user?.isAdmin ?? false;
-  if (!session?.user) return { ok: false, status: 401, error: "Not signed in" };
-  if (!isMaster && !isAdmin) return { ok: false, status: 403, error: "Not authorized" };
-  return { ok: true, isMaster };
+  return requireMaster();
 }
 
 export async function callBackendAdmin(path: string, init: RequestInit = {}): Promise<Response> {

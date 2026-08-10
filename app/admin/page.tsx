@@ -55,9 +55,7 @@ export default async function AdminPage() {
           <span className="hidden sm:inline text-xs text-mutedDark tracking-wide">ADMIN</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-xs text-muted">
-            {isMaster ? "Full master access" : "Read-only admin view"} · {session.user.email}
-          </span>
+          <span className="text-xs text-muted">Admin access · {session.user.email}</span>
           <Link
             href="/admin/integrations"
             className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
@@ -93,7 +91,7 @@ export default async function AdminPage() {
           <MiniStat label="Fleet Nodes" value={fleet ? fleet.peers.length + 1 : undefined} />
         </div>
 
-        <AdminActions isMaster={isMaster} pending={pending ?? []} />
+        <AdminActions pending={pending ?? []} />
 
         <div className="glass rounded-2xl p-5">
           <h2 className="text-sm font-semibold text-white mb-4">Policy Rules</h2>

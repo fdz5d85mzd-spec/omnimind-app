@@ -11,8 +11,9 @@ export default async function PricingPage() {
   const session = await getServerSession(authOptions);
   const isMaster = session?.user?.isMaster ?? false;
   const isAdmin = session?.user?.isAdmin ?? false;
+  const isPrivileged = isMaster || isAdmin;
 
-  if (!session?.user || (!isMaster && !isAdmin)) {
+  if (!isPrivileged) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="glass rounded-2xl p-8 text-center max-w-sm">
@@ -63,7 +64,7 @@ export default async function PricingPage() {
             marginPct: settings?.marginPct ?? 40,
             subscribers: settings?.subscribers ?? 1,
           }}
-          readOnly={!isMaster}
+          readOnly={false}
         />
       </main>
     </div>
