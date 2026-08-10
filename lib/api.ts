@@ -42,6 +42,25 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
 // window instead of failing on the first attempt.
 const WAKE_RETRY_DELAYS_MS = [3000, 5000, 8000, 12000, 15000, 15000];
 
+// Bounds only the wait for response *headers* on a single attempt — once
+// fetch() resolves, the timeout is cleared so a long-but-healthy stream
+// keeps flowing untouched. Without this, an attempt that hangs instead of
+// throwing (no response at all) would never retry and never give up.
+const HEADERS_TIMEOUT_MS = 20000;
+
+function fetchWithHeadersTimeout(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const outerSignal = init.signal;
+  const onOuterAbort = () => controller.abort();
+  outerSignal?.addEventListener("abort", onOuterAbort);
+  const t = setTimeout(() => controller.abort(), HEADERS_TIMEOUT_MS);
+
+  return fetch(url, { ...init, signal: controller.signal }).finally(() => {
+    clearTimeout(t);
+    outerSignal?.removeEventListener("abort", onOuterAbort);
+  });
+}
+
 async function fetchWithWakeRetry(
   url: string,
   init: RequestInit,
@@ -50,9 +69,9 @@ async function fetchWithWakeRetry(
 ): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await fetch(url, init);
+      return await fetchWithHeadersTimeout(url, init);
     } catch (err) {
-      if ((err as Error)?.name === "AbortError" || attempt >= WAKE_RETRY_DELAYS_MS.length) throw err;
+      if (signal?.aborted || attempt >= WAKE_RETRY_DELAYS_MS.length) throw err;
       onWaking?.();
       await sleep(WAKE_RETRY_DELAYS_MS[attempt], signal);
     }
@@ -90,8 +109,11 @@ export async function streamAgent(
       signal,
       handlers.onWaking
     );
-  } catch (err) {
-    if ((err as Error)?.name === "AbortError") return;
+  } catch {
+    // signal?.aborted means the caller (user hit stop) cancelled us — any
+    // other failure here, including our own internal per-attempt timeout
+    // exhausting all retries, is a real backend-unreachable case to report.
+    if (signal?.aborted) return;
     handlers.onError("Can't reach the OmniMind backend. It may be waking up — try again in a moment.");
     return;
   }
