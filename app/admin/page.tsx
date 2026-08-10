@@ -57,6 +57,12 @@ export default async function AdminPage() {
         <div className="flex items-center gap-4">
           <span className="text-xs text-muted">Admin access · {session.user.email}</span>
           <Link
+            href="/admin/revenue"
+            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
+          >
+            Revenue
+          </Link>
+          <Link
             href="/admin/integrations"
             className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
           >
