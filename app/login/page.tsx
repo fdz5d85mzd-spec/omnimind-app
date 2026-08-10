@@ -6,6 +6,7 @@ import { getProviders, signIn, useSession } from "next-auth/react";
 import type { ClientSafeProvider } from "next-auth/react";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+import { PasswordField } from "@/components/PasswordField";
 
 function GitHubIcon() {
   return (
@@ -157,15 +158,21 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Password</label>
-              <input
-                type="password"
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-muted">Password</label>
+                {mode === "signin" && (
+                  <Link href="/forgot-password" className="text-xs text-cyan hover:underline">
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
+              <PasswordField
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={setPassword}
                 required
                 minLength={mode === "signup" ? 8 : undefined}
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:border-accent/60 transition-colors"
                 placeholder={mode === "signup" ? "At least 8 characters" : "••••••••"}
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
               />
             </div>
 
