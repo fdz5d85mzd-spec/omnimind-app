@@ -1,23 +1,27 @@
 # OmniMind App
 
-The public "ask anything" front end for [OmniMind](https://github.com/fdz5d85mzd-spec/omnimind) — type a
-request, watch a real agent work (policy check → memory → orchestrator → LLM), get an answer.
+The public "ask anything" front end for [OmniMind](https://github.com/fdz5d85mzd-spec/omnimind) — a
+multi-turn streaming chat, in the spirit of Claude / DeepSeek: the answer types itself in as it's
+generated, not a spinner-then-dump.
 
 Next.js 14 (App Router) + TypeScript + Tailwind. No backend of its own — it's a thin client over the
-OmniMind control plane's `POST /agent/run` and `GET /twin/stream` (WebSocket).
+OmniMind control plane's `POST /agent/run/stream` (Server-Sent Events).
 
 ## How it works
 
-1. On load, opens a WebSocket to `/twin/stream` on the OmniMind backend and generates a random
-   `session_id` (stored in `localStorage`, stable across visits from the same browser).
-2. On submit, calls `POST /agent/run` with `{ prompt, session_id }`.
-3. While that request is in flight, the backend publishes live progress events
-   (`agent.<run_id>.started` → `policy_evaluated` → `memory_stored` → `task_assigned` → `thinking` →
-   `completed`/`failed`/`denied`) over the same WebSocket. Each event carries the `session_id` that
-   triggered it, so this client only renders events matching its own — the stream is shared across every
-   visitor, and this filter is what keeps sessions from seeing each other's prompts.
-4. When the `POST` resolves, the final answer (or a real "not configured" / "denied" error — never a
-   fabricated response) is rendered.
+1. Generates a random `session_id` on first load (stored in `localStorage`, stable across visits from the
+   same browser).
+2. On submit, opens `POST /agent/run/stream` with `{ prompt, session_id }` and reads the response body as
+   an SSE stream via `fetch()` + a `ReadableStream` reader (not `EventSource`, which can't send a POST
+   body).
+3. Each `delta` event is appended to the in-progress assistant message as it arrives — real token-by-token
+   rendering, not a fake typing animation over an already-complete answer.
+4. A `done` event finalizes the message; a `failed`/`denied` event renders the real error in place (never
+   a fabricated answer) — e.g. "no LLM key configured" if the backend has none set.
+
+Behind that stream, the backend still runs the full pipeline (policy check → memory write → orchestrator
+task → LLM) — this UI just doesn't surface those internal stages to the end user; that level of detail
+lives in the OmniMind ops dashboard (`/dashboard` on the backend), not the consumer chat.
 
 ## Requirements on the backend
 
