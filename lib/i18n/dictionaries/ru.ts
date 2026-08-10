@@ -2,6 +2,7 @@ import type { Dictionary } from "../types";
 
 const ru: Dictionary = {
   navHelen: "Helen",
+  navVoxStudio: "VoxStudio",
   navMissionControl: "Mission Control",
   navPricing: "Цены",
   navSignIn: "Войти",

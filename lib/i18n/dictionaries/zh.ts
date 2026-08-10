@@ -2,6 +2,7 @@ import type { Dictionary } from "../types";
 
 const zh: Dictionary = {
   navHelen: "Helen",
+  navVoxStudio: "VoxStudio",
   navMissionControl: "任务控制中心",
   navPricing: "价格",
   navSignIn: "登录",

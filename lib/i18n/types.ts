@@ -1,5 +1,6 @@
 export interface Dictionary {
   navHelen: string;
+  navVoxStudio: string;
   navMissionControl: string;
   navPricing: string;
   navSignIn: string;
