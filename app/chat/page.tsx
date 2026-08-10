@@ -141,14 +141,19 @@ export default function Home() {
       }));
     }
 
+    let waking = false;
+
     await streamAgent(
       q,
       {
         onDelta: (text) => {
           updateConversation(id!, (c) => ({
             ...c,
-            messages: c.messages.map((m) => (m.id === assistantId ? { ...m, content: m.content + text } : m)),
+            messages: c.messages.map((m) =>
+              m.id === assistantId ? { ...m, content: waking ? text : m.content + text } : m
+            ),
           }));
+          waking = false;
         },
         onDone: () => {
           patchAssistant({ status: "done" });
@@ -159,6 +164,10 @@ export default function Home() {
         },
         onError: (message) => patchAssistant({ content: message, status: "error" }),
         onBlocked: (info) => patchAssistant({ content: describeBlocked(info), status: "error" }),
+        onWaking: () => {
+          waking = true;
+          patchAssistant({ content: "Waking up the OmniMind backend — this can take up to a minute…" });
+        },
       },
       controller.signal,
       !!session?.user

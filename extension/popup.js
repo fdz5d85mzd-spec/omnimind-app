@@ -10,6 +10,27 @@ function sessionId() {
   return id;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// The backend's Render free tier spins down after ~15min idle, and the next
+// request eats a 30-60s cold start. Retry through that window instead of
+// failing on the first attempt.
+const WAKE_RETRY_DELAYS_MS = [3000, 5000, 8000, 12000, 15000, 15000];
+
+async function fetchWithWakeRetry(url, init, onWaking) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      if (attempt >= WAKE_RETRY_DELAYS_MS.length) throw err;
+      onWaking?.();
+      await sleep(WAKE_RETRY_DELAYS_MS[attempt]);
+    }
+  }
+}
+
 const form = document.getElementById("form");
 const promptEl = document.getElementById("prompt");
 const submitBtn = document.getElementById("submit");
@@ -35,11 +56,18 @@ form.addEventListener("submit", async (e) => {
 
   let res;
   try {
-    res = await fetch(`${API_BASE}/agent/run/stream`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, session_id: sessionId() }),
-    });
+    res = await fetchWithWakeRetry(
+      `${API_BASE}/agent/run/stream`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, session_id: sessionId() }),
+      },
+      () => {
+        answerEl.classList.remove("error");
+        answerEl.textContent = "Waking up the OmniMind backend — this can take up to a minute…";
+      }
+    );
   } catch {
     answerEl.classList.add("error");
     answerEl.textContent = "Can't reach OmniMind — it may be waking up, try again in a moment.";
@@ -57,6 +85,7 @@ form.addEventListener("submit", async (e) => {
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let gotFirstDelta = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -76,7 +105,8 @@ form.addEventListener("submit", async (e) => {
         continue;
       }
       if (evt.type === "delta") {
-        answerEl.textContent += evt.text;
+        answerEl.textContent = gotFirstDelta ? answerEl.textContent + evt.text : evt.text;
+        gotFirstDelta = true;
         answerEl.scrollTop = answerEl.scrollHeight;
       } else if (evt.type === "failed" || evt.type === "denied") {
         answerEl.classList.add("error");

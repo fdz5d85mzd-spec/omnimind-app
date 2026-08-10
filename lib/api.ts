@@ -23,6 +23,42 @@ export type BlockedReason =
   | { reason: "cooldown"; retryAt: string }
   | { reason: "no_credits" };
 
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(t);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true }
+    );
+  });
+}
+
+// The Render free tier this API runs on spins the service down after ~15min
+// idle, and the next request eats a 30-60s cold start. Retry through that
+// window instead of failing on the first attempt.
+const WAKE_RETRY_DELAYS_MS = [3000, 5000, 8000, 12000, 15000, 15000];
+
+async function fetchWithWakeRetry(
+  url: string,
+  init: RequestInit,
+  signal: AbortSignal | undefined,
+  onWaking?: () => void
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError" || attempt >= WAKE_RETRY_DELAYS_MS.length) throw err;
+      onWaking?.();
+      await sleep(WAKE_RETRY_DELAYS_MS[attempt], signal);
+    }
+  }
+}
+
 export async function streamAgent(
   prompt: string,
   handlers: {
@@ -30,6 +66,7 @@ export async function streamAgent(
     onDone: () => void;
     onError: (message: string) => void;
     onBlocked?: (info: BlockedReason) => void;
+    onWaking?: () => void;
   },
   signal?: AbortSignal,
   // Signed-in users go through the server-side gated proxy (credits
@@ -42,13 +79,19 @@ export async function streamAgent(
 
   let res: Response;
   try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    res = await fetchWithWakeRetry(
+      url,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal,
+      },
       signal,
-    });
-  } catch {
+      handlers.onWaking
+    );
+  } catch (err) {
+    if ((err as Error)?.name === "AbortError") return;
     handlers.onError("Can't reach the OmniMind backend. It may be waking up — try again in a moment.");
     return;
   }
