@@ -33,6 +33,14 @@ function RadarIcon() {
   );
 }
 
+function HeartIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
+    </svg>
+  );
+}
+
 function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -110,6 +118,13 @@ export default function Sidebar({
         >
           <RadarIcon />
           Mission Control
+        </Link>
+        <Link
+          href="/helen"
+          className="mt-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:text-white hover:bg-white/[0.04] transition-colors"
+        >
+          <HeartIcon />
+          Helen
         </Link>
       </div>
 

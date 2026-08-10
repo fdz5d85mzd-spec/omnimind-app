@@ -17,6 +17,17 @@ const config: Config = {
         crimson: "#f87171",
         muted: "#9ca3d4",
         mutedDark: "#6b72a8",
+        // Helen (/helen/*) has its own warm palette, distinct from the rest
+        // of the app -- prefixed so it never collides with the tokens above
+        // (e.g. "card" already means something else at the top level).
+        "helen-ink": "#241b2f",
+        "helen-ink-2": "#2e2338",
+        "helen-card": "#352842",
+        "helen-paper": "#f5efe6",
+        "helen-dim": "#b8a9c4",
+        "helen-coral": "#f2795c",
+        "helen-sage": "#8fae72",
+        "helen-gold": "#e8b54d",
       },
       fontFamily: {
         head: [
@@ -35,6 +46,9 @@ const config: Config = {
           "system-ui",
           "sans-serif",
         ],
+        "helen-display": ["var(--font-helen-fraunces)", "serif"],
+        "helen-body": ["var(--font-helen-inter)", "sans-serif"],
+        "helen-num": ["var(--font-helen-space-mono)", "monospace"],
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(91,110,245,0.5), 0 8px 30px -6px rgba(91,110,245,0.45)",

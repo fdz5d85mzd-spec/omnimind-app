@@ -261,6 +261,7 @@ function TopNav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
+    { href: "/helen", label: "Helen" },
     { href: "/mission-control", label: "Mission Control" },
     { href: "/pricing", label: "Pricing" },
     ...(status !== "loading" && !session?.user ? [{ href: "/login", label: "Sign in" }] : []),

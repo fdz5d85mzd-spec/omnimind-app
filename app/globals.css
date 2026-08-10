@@ -92,3 +92,183 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================
+   Helen (/helen/*) — scoped so it never touches the rest of the
+   app's global body/select styling.
+   ============================================================ */
+.helen-scope {
+  background: var(--helen-color-ink);
+  color: var(--helen-color-paper);
+  --helen-color-ink: #241b2f;
+  --helen-color-ink-2: #2e2338;
+  --helen-color-paper: #f5efe6;
+}
+.helen-scope select option {
+  background: var(--helen-color-ink-2);
+  color: var(--helen-color-paper);
+}
+
+@keyframes helen-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-helen-card-in {
+  animation: helen-card-in 0.6s ease;
+}
+
+@keyframes helen-egg-shake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-6deg);
+  }
+  75% {
+    transform: rotate(6deg);
+  }
+}
+.animate-helen-egg-shake {
+  animation: helen-egg-shake 0.4s ease;
+}
+
+@keyframes helen-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-helen-pop-in {
+  animation: helen-pop-in 0.4s ease;
+}
+
+@keyframes helen-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-helen-spin-fast {
+  animation: helen-spin 0.7s linear infinite;
+}
+
+@keyframes helen-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.7);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+  30% {
+    transform: translateY(-4px) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-28px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-42px) scale(0.95);
+  }
+}
+.animate-helen-float-up {
+  animation: helen-float-up 1.6s ease forwards;
+}
+
+@keyframes helen-bump {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.12);
+  }
+  55% {
+    transform: scale(0.96);
+  }
+}
+.animate-helen-bump {
+  animation: helen-bump 0.45s ease;
+}
+
+@keyframes helen-idle-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-3px) rotate(-1.5deg) scale(1.006);
+  }
+  50% {
+    transform: translateY(-7px) rotate(0deg) scale(1.018);
+  }
+  75% {
+    transform: translateY(-3px) rotate(1.5deg) scale(1.006);
+  }
+}
+.animate-helen-idle {
+  animation: helen-idle-bob 3.2s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* --- /helen/lab/creature experimental route ------------------ */
+
+@keyframes helen-lab-float-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6vmax, 8vmax) scale(1.12);
+  }
+}
+@keyframes helen-lab-float-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-8vmax, 5vmax) scale(0.92);
+  }
+}
+@keyframes helen-lab-float-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4vmax, -7vmax) scale(1.08);
+  }
+}
+.helen-lab-blob {
+  will-change: transform;
+}
+.helen-lab-blob-1 {
+  animation: helen-lab-float-1 22s ease-in-out infinite;
+}
+.helen-lab-blob-2 {
+  animation: helen-lab-float-2 26s ease-in-out infinite;
+}
+.helen-lab-blob-3 {
+  animation: helen-lab-float-3 19s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helen-lab-blob-1,
+  .helen-lab-blob-2,
+  .helen-lab-blob-3 {
+    animation: none;
+  }
+}
