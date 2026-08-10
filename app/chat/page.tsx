@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { streamAgent } from "@/lib/api";
+import { useSession } from "next-auth/react";
+import { streamAgent, type BlockedReason } from "@/lib/api";
 import {
   type ChatMessage,
   type Conversation,
@@ -13,6 +14,18 @@ import {
 import Sidebar from "@/components/Sidebar";
 import { Logo, LogoMark } from "@/components/Logo";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
+import { notifyCreditsChanged } from "@/lib/useCredits";
+
+function describeBlocked(info: BlockedReason): string {
+  if (info.reason === "cooldown") {
+    const mins = Math.max(1, Math.round((new Date(info.retryAt).getTime() - Date.now()) / 60000));
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    const wait = hrs > 0 ? `${hrs}h ${rem}m` : `${rem}m`;
+    return `Out of free credits — more arrive automatically in about ${wait}.`;
+  }
+  return "Out of credits. Add more from a paid plan to keep going.";
+}
 
 const SUGGESTIONS = [
   "Explain how a leader election algorithm works",
@@ -40,6 +53,7 @@ function MicIcon() {
 }
 
 export default function Home() {
+  const { data: session } = useSession();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [input, setInput] = useState("");
@@ -136,10 +150,18 @@ export default function Home() {
             messages: c.messages.map((m) => (m.id === assistantId ? { ...m, content: m.content + text } : m)),
           }));
         },
-        onDone: () => patchAssistant({ status: "done" }),
+        onDone: () => {
+          patchAssistant({ status: "done" });
+          // The gated route deducts credits just after the stream closes
+          // server-side — a short delay avoids fetching the balance a
+          // beat before that write lands.
+          if (session?.user) setTimeout(() => notifyCreditsChanged(), 600);
+        },
         onError: (message) => patchAssistant({ content: message, status: "error" }),
+        onBlocked: (info) => patchAssistant({ content: describeBlocked(info), status: "error" }),
       },
-      controller.signal
+      controller.signal,
+      !!session?.user
     );
 
     setIsStreaming(false);

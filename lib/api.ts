@@ -19,25 +19,43 @@ type StreamEvent =
   | { type: "done"; run_id: string; answer: string; duration_ms: number }
   | { type: "failed" | "denied"; run_id: string; error: string };
 
+export type BlockedReason =
+  | { reason: "cooldown"; retryAt: string }
+  | { reason: "no_credits" };
+
 export async function streamAgent(
   prompt: string,
   handlers: {
     onDelta: (text: string) => void;
     onDone: () => void;
     onError: (message: string) => void;
+    onBlocked?: (info: BlockedReason) => void;
   },
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  // Signed-in users go through the server-side gated proxy (credits
+  // enforced, can't be bypassed from the client); guests go straight to
+  // the backend, exactly as before — nothing changes for them.
+  gated = false
 ): Promise<void> {
+  const url = gated ? "/api/chat/stream" : `${API_BASE}/agent/run/stream`;
+  const body = gated ? { prompt } : { prompt, session_id: sessionId() };
+
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}/agent/run/stream`, {
+    res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, session_id: sessionId() }),
+      body: JSON.stringify(body),
       signal,
     });
   } catch {
     handlers.onError("Can't reach the OmniMind backend. It may be waking up — try again in a moment.");
+    return;
+  }
+
+  if (res.status === 402) {
+    const info = await res.json().catch(() => ({ reason: "no_credits" }));
+    handlers.onBlocked?.(info);
     return;
   }
 

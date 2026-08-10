@@ -20,6 +20,17 @@ export async function requireMaster(): Promise<AdminSessionCheck> {
   return { ok: true, isMaster: true };
 }
 
+// View-only check: both master and admin pass, guests/regular users don't.
+// Use this for GET routes; mutation routes still call requireMaster().
+export async function requireAdminOrMaster(): Promise<AdminSessionCheck> {
+  const session = await getServerSession(authOptions);
+  const isMaster = session?.user?.isMaster ?? false;
+  const isAdmin = session?.user?.isAdmin ?? false;
+  if (!session?.user) return { ok: false, status: 401, error: "Not signed in" };
+  if (!isMaster && !isAdmin) return { ok: false, status: 403, error: "Not authorized" };
+  return { ok: true, isMaster };
+}
+
 export async function callBackendAdmin(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
   if (process.env.ADMIN_API_KEY) headers.set("X-Admin-Key", process.env.ADMIN_API_KEY);

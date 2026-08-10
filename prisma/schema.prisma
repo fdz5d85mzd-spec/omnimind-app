@@ -8,18 +8,46 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String?
-  email     String    @unique
-  password  String?
-  image     String?
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  image         String?
+  creditBalance Int       @default(200) @map("credit_balance")
+  plan          String    @default("free")
+  cooldownUntil DateTime? @map("cooldown_until")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  accounts Account[]
-  sessions Session[]
+  accounts    Account[]
+  sessions    Session[]
+  usageEvents UsageEvent[]
 
   @@map("users")
+}
+
+model UsageEvent {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  runId       String   @map("run_id")
+  chars       Int
+  durationMs  Int      @map("duration_ms")
+  creditsCost Int      @map("credits_cost")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("usage_events")
+}
+
+model CostSettings {
+  id          String   @id @default("singleton")
+  items       Json     @default("[]")
+  marginPct   Float    @default(40)
+  subscribers Int      @default(1)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("cost_settings")
 }
 
 model Account {

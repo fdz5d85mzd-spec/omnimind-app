@@ -5,6 +5,15 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import type { Conversation } from "@/lib/conversations";
 import { Logo } from "@/components/Logo";
+import { useCredits } from "@/lib/useCredits";
+
+function BoltIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />
+    </svg>
+  );
+}
 
 function ShieldIcon() {
   return (
@@ -69,6 +78,7 @@ export default function Sidebar({
   const user = session?.user;
   const privileged = user?.isMaster || user?.isAdmin;
   const initial = (user?.name || user?.email || "G").charAt(0).toUpperCase();
+  const credits = useCredits();
 
   return (
     <aside
@@ -147,6 +157,15 @@ export default function Sidebar({
                   <p className="text-xs font-semibold text-white mb-0.5 truncate">{user.name || user.email}</p>
                   <p className="text-[11px] text-mutedDark truncate">{user.email}</p>
                 </div>
+                {credits && (
+                  <div className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-2.5 py-2">
+                    <span className="flex items-center gap-1.5 text-xs text-amber font-semibold">
+                      <BoltIcon />
+                      {credits.creditBalance} credits
+                    </span>
+                    <span className="text-[10px] text-mutedDark uppercase">{credits.plan}</span>
+                  </div>
+                )}
                 <p className="text-xs text-muted leading-relaxed">
                   Conversation history is still stored on this device only — accounts don&apos;t sync it
                   across devices yet.
