@@ -23,7 +23,13 @@ export const metadata: Metadata = {
   },
 };
 
+// Without width/initialScale, mobile browsers fall back to their desktop-
+// width default (~980px) and scale the whole page down to fit -- exactly
+// the "have to pinch-zoom out" bug reported on the live site. Same fix
+// already applied to Helen's own layout (app/helen/layout.tsx).
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#06071a",
 };
 
