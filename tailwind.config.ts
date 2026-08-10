@@ -15,8 +15,40 @@ const config: Config = {
         mutedDark: "#6b72a8",
       },
       fontFamily: {
-        head: ["Cambria", "Georgia", "serif"],
-        body: ["Calibri", "system-ui", "sans-serif"],
+        head: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Inter",
+          "system-ui",
+          "sans-serif",
+        ],
+        body: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Inter",
+          "system-ui",
+          "sans-serif",
+        ],
+      },
+      boxShadow: {
+        glow: "0 0 0 1px rgba(91,110,245,0.5), 0 8px 30px -6px rgba(91,110,245,0.45)",
+        panel: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 60px -20px rgba(0,0,0,0.6)",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0", transform: "translateY(4px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        popIn: {
+          "0%": { opacity: "0", transform: "scale(0.96) translateY(4px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+      },
+      animation: {
+        fadeIn: "fadeIn 0.35s ease-out",
+        popIn: "popIn 0.15s ease-out",
       },
     },
   },

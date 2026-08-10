@@ -7,10 +7,61 @@ body {
   background-color: #0a0e2e;
 }
 
+::selection {
+  background: rgba(91, 110, 245, 0.35);
+  color: #fff;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #171c4d;
+  background: #232a63;
   border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2b3378;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-mesh::before,
+.bg-mesh::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+}
+.bg-mesh::before {
+  top: -12%;
+  left: -8%;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(91, 110, 245, 0.28) 0%, transparent 70%);
+}
+.bg-mesh::after {
+  bottom: -18%;
+  right: -10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.16) 0%, transparent 70%);
+}
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
 }
