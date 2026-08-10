@@ -1,5 +1,5 @@
 export const API_BASE =
-  process.env.NEXT_PUBLIC_OMNIMIND_API?.replace(/\/$/, "") || "https://origox.xyz";
+  process.env.NEXT_PUBLIC_OMNIMIND_API?.replace(/\/$/, "") || "https://api.origox.xyz";
 
 export const WS_BASE = API_BASE.replace(/^http/, "ws");
 
