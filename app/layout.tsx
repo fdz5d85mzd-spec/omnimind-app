@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AuthSessionProvider from "@/components/AuthSessionProvider";
+import InstallPrompt from "@/components/InstallPrompt";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="bg-mesh" aria-hidden />
         <div className="bg-grid" aria-hidden />
         <ServiceWorkerRegistrar />
+        <InstallPrompt />
         <LanguageProvider>
           <AuthSessionProvider>{children}</AuthSessionProvider>
         </LanguageProvider>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AuthProvider } from "@/lib/helen/auth/AuthProvider";
 import { LanguageProvider } from "@/lib/helen/i18n/LanguageProvider";
 import { ProfileProvider } from "@/lib/helen/ProfileProvider";
+import ReferralCapture from "@/components/helen/ReferralCapture";
 
 const fraunces = Fraunces({
   variable: "--font-helen-fraunces",
@@ -45,6 +46,7 @@ export default function HelenLayout({ children }: { children: React.ReactNode })
       <LanguageProvider>
         <AuthProvider>
           <ProfileProvider>
+            <ReferralCapture />
             {children}
             {/* Bottom-left, not top: Helen's own screens already claim both
                 top corners (sound/help + HELEN wordmark on the left,

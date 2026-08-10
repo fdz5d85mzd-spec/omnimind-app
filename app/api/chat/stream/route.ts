@@ -22,9 +22,16 @@ export async function POST(request: NextRequest) {
   const user = await getUserWithRefill(session.user.id);
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  const gate = checkCreditGate(user);
-  if (!gate.allowed) {
-    return NextResponse.json({ error: "blocked", ...gate }, { status: 402 });
+  // Michail and Marina (MASTER_EMAIL / ADMIN_EMAIL) need to be able to
+  // exercise every flow to check it actually works, without spending real
+  // money or running into the same credit wall a normal signup would.
+  const isPrivileged = Boolean(session.user.isMaster || session.user.isAdmin);
+
+  if (!isPrivileged) {
+    const gate = checkCreditGate(user);
+    if (!gate.allowed) {
+      return NextResponse.json({ error: "blocked", ...gate }, { status: 402 });
+    }
   }
 
   const body = await request.json().catch(() => ({}));
@@ -84,23 +91,28 @@ export async function POST(request: NextRequest) {
 
       if (finalAnswer !== null) {
         const cost = creditsForAnswer(finalAnswer.length);
-        const newBalance = startingBalance - cost;
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            creditBalance: newBalance,
-            ...(newBalance <= 0
-              ? { cooldownUntil: new Date(Date.now() + FREE_COOLDOWN_HOURS * 3600_000) }
-              : {}),
-          },
-        });
+        // Usage is still logged for admins (useful for their own checks),
+        // just never deducted -- so testing a flow never runs them into
+        // the same cooldown a real free-tier user would hit.
+        if (!isPrivileged) {
+          const newBalance = startingBalance - cost;
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              creditBalance: newBalance,
+              ...(newBalance <= 0
+                ? { cooldownUntil: new Date(Date.now() + FREE_COOLDOWN_HOURS * 3600_000) }
+                : {}),
+            },
+          });
+        }
         await prisma.usageEvent.create({
           data: {
             userId,
             runId: finalRunId || `unknown_${Date.now()}`,
             chars: finalAnswer.length,
             durationMs: finalDurationMs,
-            creditsCost: cost,
+            creditsCost: isPrivileged ? 0 : cost,
           },
         });
       }

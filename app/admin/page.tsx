@@ -63,6 +63,18 @@ export default async function AdminPage() {
             Revenue
           </Link>
           <Link
+            href="/admin/promo-codes"
+            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
+          >
+            Promo Codes
+          </Link>
+          <Link
+            href="/admin/partners"
+            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
+          >
+            Partners
+          </Link>
+          <Link
             href="/admin/integrations"
             className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
           >
@@ -95,6 +107,27 @@ export default async function AdminPage() {
           <MiniStat label="Tasks Queued" value={report?.tasks_queued} />
           <MiniStat label="Bottlenecks" value={report?.bottlenecks} />
           <MiniStat label="Fleet Nodes" value={fleet ? fleet.peers.length + 1 : undefined} />
+        </div>
+
+        <div className="glass rounded-2xl p-5">
+          <h2 className="text-sm font-semibold text-white mb-1">Agent success rate</h2>
+          <p className="text-xs text-mutedDark mb-4">
+            Completed vs. failed task runs across the fleet — a real distinction now (see task_status
+            FAILED), not inferred from whether a result happened to contain an error.
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <MiniStat
+              label="Success rate"
+              value={
+                report && report.tasks_completed + report.tasks_failed > 0
+                  ? Math.round((report.tasks_completed / (report.tasks_completed + report.tasks_failed)) * 100)
+                  : undefined
+              }
+              suffix="%"
+            />
+            <MiniStat label="Completed" value={report?.tasks_completed} />
+            <MiniStat label="Failed" value={report?.tasks_failed} />
+          </div>
         </div>
 
         <AdminActions pending={pending ?? []} />
@@ -158,11 +191,22 @@ export default async function AdminPage() {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: number | undefined }) {
+function MiniStat({
+  label,
+  value,
+  suffix,
+}: {
+  label: string;
+  value: number | undefined;
+  suffix?: string;
+}) {
   return (
     <div className="glass rounded-xl p-4">
       <p className="text-[10px] tracking-wide text-mutedDark uppercase mb-1">{label}</p>
-      <p className="font-head text-xl font-semibold text-white">{value ?? "—"}</p>
+      <p className="font-head text-xl font-semibold text-white tabular-nums">
+        {value ?? "—"}
+        {value !== undefined && suffix}
+      </p>
     </div>
   );
 }

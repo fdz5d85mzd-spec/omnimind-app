@@ -7,6 +7,7 @@ export type OrchestratorReport = {
   tasks_total: number;
   tasks_queued: number;
   tasks_completed: number;
+  tasks_failed: number;
   avg_load: number;
   predicted_tasks_next_10m: number;
   bottlenecks: number;

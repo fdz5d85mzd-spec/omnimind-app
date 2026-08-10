@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/helen/auth/AuthProvider";
 import { levelFor, SHOP_ITEMS } from "@/lib/helen/domain";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { useProfile } from "@/lib/helen/ProfileProvider";
+import { getReferralCode } from "@/lib/helen/referral";
 import { playBuySound } from "@/lib/helen/sound";
 
 function ShopContent() {
@@ -60,12 +61,21 @@ function ShopContent() {
       const res = await fetch("/helen/api/shop-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, clientReferenceId: user?.id }),
+        body: JSON.stringify({ itemId, clientReferenceId: user?.id, refCode: getReferralCode() }),
       });
       if (res.ok) {
-        const { url } = (await res.json()) as { url: string };
-        window.location.href = url;
-        return;
+        const body = (await res.json()) as { url?: string; bypass?: boolean };
+        if (body.bypass) {
+          // Admin/master account -- checked out server-side, no Stripe redirect.
+          await purchaseItem(itemId);
+          playBuySound();
+          setBuyingId(null);
+          return;
+        }
+        if (body.url) {
+          window.location.href = body.url;
+          return;
+        }
       }
     } catch {
       // network error reaching /api/shop-checkout — fall through to the mock flow below

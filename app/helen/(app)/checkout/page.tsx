@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/helen/auth/AuthProvider";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { useProfile } from "@/lib/helen/ProfileProvider";
+import { getReferralCode } from "@/lib/helen/referral";
 
 export default function CheckoutPage() {
   const { t } = useLanguage();
@@ -45,12 +46,25 @@ export default function CheckoutPage() {
       const res = await fetch("/helen/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientReferenceId: user?.id, username: trimmedUsername }),
+        body: JSON.stringify({
+          clientReferenceId: user?.id,
+          username: trimmedUsername,
+          refCode: getReferralCode(),
+        }),
       });
       if (res.ok) {
-        const { url } = (await res.json()) as { url: string };
-        window.location.href = url;
-        return;
+        const body = (await res.json()) as { url?: string; bypass?: boolean };
+        if (body.bypass) {
+          // Admin/master account -- checked out server-side, no Stripe redirect.
+          join(trimmedUsername);
+          setProcessing(false);
+          router.push("/helen/card");
+          return;
+        }
+        if (body.url) {
+          window.location.href = body.url;
+          return;
+        }
       }
     } catch {
       // network error reaching /api/checkout — fall through to the mock flow below

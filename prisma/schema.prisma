@@ -163,3 +163,22 @@ model VoxJob {
 
   @@map("vox_jobs")
 }
+
+// ---------------------------------------------------------------- Partners
+// Admin-managed referral partners. Attribution itself lives in Stripe, not
+// a join table here: a referred checkout carries { ref_code: <code> } in
+// the Checkout Session's metadata (see app/helen/api/checkout,
+// shop-checkout), so commission owed is computed by summing real Stripe
+// charges tagged with a partner's code -- never a guess, never a separate
+// number that could drift from what Stripe actually shows.
+model Partner {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  referralCode  String   @unique @map("referral_code")
+  commissionPct Float    @default(20) @map("commission_pct")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("partners")
+}
