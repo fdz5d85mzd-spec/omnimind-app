@@ -244,35 +244,90 @@ function Stat({ label, value, live }: { label: string; value: number | null; liv
 
 function TopNav() {
   const { data: session, status } = useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const links = [
+    { href: "/mission-control", label: "Mission Control" },
+    { href: "/pricing", label: "Pricing" },
+    ...(status !== "loading" && !session?.user ? [{ href: "/login", label: "Sign in" }] : []),
+    ...(session?.user?.isMaster || session?.user?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
+
   return (
-    <header className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-6 sm:px-10 py-6">
-      <Link href="/" className="flex items-center gap-2">
-        <LogoMark size={22} />
-        <span className="font-head font-semibold text-[15px] tracking-tight text-white">OmniMind</span>
-      </Link>
-      <nav className="flex items-center gap-2">
-        <Link
-          href="/mission-control"
-          className="hidden sm:inline-block text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
-        >
-          Mission Control
+    <header className="absolute top-0 inset-x-0 z-20 px-6 sm:px-10 py-6">
+      <div className="flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <LogoMark size={22} />
+          <span className="font-head font-semibold text-[15px] tracking-tight text-white">OmniMind</span>
         </Link>
-        {status !== "loading" && !session?.user && (
+
+        <nav className="hidden sm:flex items-center gap-2">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
+            >
+              {l.label}
+            </Link>
+          ))}
           <Link
-            href="/login"
-            className="hidden sm:inline-block text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
+            href="/chat"
+            className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
           >
-            Sign in
+            Ask OmniMind
           </Link>
-        )}
-        <Link
-          href="/chat"
-          className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
-        >
-          Ask OmniMind
-        </Link>
-      </nav>
+        </nav>
+
+        <div className="flex sm:hidden items-center gap-2">
+          <Link
+            href="/chat"
+            className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
+          >
+            Ask OmniMind
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            className="glass rounded-xl p-2.5 text-white"
+          >
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
+      </div>
+
+      {menuOpen && (
+        <nav className="sm:hidden mt-3 glass rounded-2xl p-2 flex flex-col animate-fadeIn">
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setMenuOpen(false)}
+              className="text-sm text-muted hover:text-white px-4 py-3 rounded-xl hover:bg-white/[0.05] transition-colors"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+function CloseIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
   );
 }
 
