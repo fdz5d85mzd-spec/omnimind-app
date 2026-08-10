@@ -36,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Opens on http://localhost:3000, talking to `https://api.origox.xyz` by default. Copy `.env.example` to
+Opens on http://localhost:3000, talking to `https://api.omnimindai.app` by default. Copy `.env.example` to
 `.env.local` and set `NEXT_PUBLIC_OMNIMIND_API` to point at a different backend (e.g. a local
 `uvicorn omni.api.main:app` instance) if needed.
 

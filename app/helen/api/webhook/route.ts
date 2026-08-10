@@ -7,7 +7,7 @@ import {
   welcomeEmailHtml,
 } from "@/lib/helen/resend";
 
-const TEAM_NOTIFICATION_EMAIL = "helpdesk@origox.xyz";
+const TEAM_NOTIFICATION_EMAIL = "helpdesk@omnimindai.app";
 import { getStripeClient, isStripeConfigured } from "@/lib/helen/stripe/server";
 import { getSupabaseServerClient } from "@/lib/helen/supabase/server";
 

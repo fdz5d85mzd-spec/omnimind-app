@@ -11,7 +11,7 @@ interface RecentMember {
   createdAt: string;
 }
 
-const SITE_URL = "https://origox.xyz";
+const SITE_URL = "https://omnimindai.app";
 const MUSIC_VOLUME = 0.35;
 const FADE_MS = 1200;
 
@@ -229,7 +229,7 @@ export default function LivePage() {
       <div className="relative z-10 flex items-center justify-between gap-8 bg-gradient-to-t from-black/50 to-transparent px-10 pb-10 pt-6">
         <div>
           <div className="font-helen-display text-3xl font-bold text-helen-paper">Join now for €1</div>
-          <div className="mt-1 font-helen-num text-2xl tracking-wide text-helen-coral">origox.xyz</div>
+          <div className="mt-1 font-helen-num text-2xl tracking-wide text-helen-coral">omnimindai.app</div>
           <div className="mt-2 max-w-md text-sm text-helen-dim">
             Get your permanent Member ID, hatch your own creature, and help decide which charities we fund —
             before the founder spots are gone.

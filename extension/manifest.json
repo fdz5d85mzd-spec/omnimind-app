@@ -18,7 +18,7 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "host_permissions": ["https://api.origox.xyz/*"],
+  "host_permissions": ["https://api.omnimindai.app/*"],
   "permissions": ["contextMenus", "storage"],
   "background": {
     "service_worker": "background.js"

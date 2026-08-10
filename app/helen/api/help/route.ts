@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/helen/resend";
 
-const TEAM_EMAIL = "helpdesk@origox.xyz";
+const TEAM_EMAIL = "helpdesk@omnimindai.app";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { email?: string; message?: string };

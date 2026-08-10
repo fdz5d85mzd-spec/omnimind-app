@@ -36,7 +36,7 @@ export function welcomeEmailHtml(memberId: number): string {
       <h1 style="color: #E8B54D;">Welcome to HELEN 🌍</h1>
       <p>You're member <strong>#${String(memberId).padStart(6, "0")}</strong> — one world, built together, one person at a time.</p>
       <p>Your creature is waiting for you. Come feed it, play with it, and watch it grow — every bit of care (and every membership) feeds our shared Impact Fund.</p>
-      <p style="margin-top: 24px;"><a href="https://origox.xyz/helen/home" style="background:#E8722F;color:#241B2F;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold;">Open HELEN</a></p>
+      <p style="margin-top: 24px;"><a href="https://omnimindai.app/helen/home" style="background:#E8722F;color:#241B2F;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold;">Open HELEN</a></p>
     </div>
   `;
 }
@@ -70,7 +70,7 @@ export function inactivityReminderHtml(memberId: number, creatureName: string | 
       <h1 style="color: #E8B54D;">${who} misses you 🥺</h1>
       <p>It's been a week since you last checked in, member <strong>#${String(memberId).padStart(6, "0")}</strong>.</p>
       <p>${who} is waiting for a visit — come feed it, play, and keep your streak alive.</p>
-      <p style="margin-top: 24px;"><a href="https://origox.xyz/helen/home" style="background:#E8722F;color:#241B2F;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold;">Go say hi</a></p>
+      <p style="margin-top: 24px;"><a href="https://omnimindai.app/helen/home" style="background:#E8722F;color:#241B2F;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold;">Go say hi</a></p>
     </div>
   `;
 }

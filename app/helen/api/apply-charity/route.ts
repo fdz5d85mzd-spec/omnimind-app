@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   // Best-effort notification — never blocks the applicant's response.
   sendEmail(
-    "helpdesk@origox.xyz",
+    "helpdesk@omnimindai.app",
     `New charity application: ${name}`,
     `<div style="font-family: sans-serif;">
       <p><strong>${name}</strong> (${category}, ${region})</p>

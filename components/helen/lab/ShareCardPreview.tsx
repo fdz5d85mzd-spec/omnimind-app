@@ -82,7 +82,7 @@ export function ShareCardPreview({ open, onClose, stage, streak, feedsCount }: S
     ctx.fillText("HELEN LAB", 120, ch - 24);
     ctx.font = "11px monospace";
     ctx.fillStyle = "#B8A9C4";
-    ctx.fillText("origox.xyz", 120, ch - 10);
+    ctx.fillText("omnimindai.app", 120, ch - 10);
   }, [open, stage, streak, feedsCount, palette]);
 
   async function handleShareOrDownload() {
