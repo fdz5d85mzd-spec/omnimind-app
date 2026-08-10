@@ -26,11 +26,13 @@ type TwinAgent = {
   cost_spent: number;
 };
 
+// Matches omni.contracts.agent.AgentStatus values exactly (lowercase).
 const STATUS_COLOR: Record<string, string> = {
-  RUNNING: "text-emerald border-emerald/30 bg-emerald/10",
-  IDLE: "text-cyan border-cyan/30 bg-cyan/10",
-  BUSY: "text-amber border-amber/30 bg-amber/10",
-  TERMINATED: "text-mutedDark border-white/10 bg-white/[0.03]",
+  running: "text-emerald border-emerald/30 bg-emerald/10",
+  idle: "text-cyan border-cyan/30 bg-cyan/10",
+  waiting: "text-amber border-amber/30 bg-amber/10",
+  blocked: "text-crimson border-crimson/30 bg-crimson/10",
+  terminated: "text-mutedDark border-white/10 bg-white/[0.03]",
 };
 
 export default function MissionControl() {
@@ -77,7 +79,7 @@ export default function MissionControl() {
     return disconnect;
   }, []);
 
-  const busy = agents.filter((a) => a.status === "RUNNING" || a.status === "BUSY").length;
+  const busy = agents.filter((a) => a.status === "running" || a.status === "waiting").length;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -148,7 +150,9 @@ export default function MissionControl() {
             <div className="glass rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-white">Agents</h2>
-                <span className="text-[11px] text-mutedDark">{busy} active</span>
+                <span className="text-[11px] text-mutedDark">
+                  {agents.length} total · {busy} active
+                </span>
               </div>
               {agents.length === 0 ? (
                 <p className="text-mutedDark text-xs leading-relaxed">
@@ -156,15 +160,31 @@ export default function MissionControl() {
                   orchestrator per-request rather than as a standing fleet member.
                 </p>
               ) : (
-                <div className="space-y-2">
-                  {agents.map((a) => (
-                    <div key={a.id} className="flex items-center justify-between rounded-lg border border-white/[0.06] px-3 py-2">
-                      <span className="text-sm text-white truncate">{a.name}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_COLOR[a.status] ?? "text-mutedDark border-white/10"}`}>
-                        {a.status}
-                      </span>
-                    </div>
-                  ))}
+                <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                  {[...agents]
+                    .sort((a, b) => (a.type === "supervisor" ? -1 : b.type === "supervisor" ? 1 : 0))
+                    .map((a) => (
+                      <div
+                        key={a.id}
+                        className="flex items-center justify-between gap-2 rounded-lg border border-white/[0.06] px-3 py-2"
+                      >
+                        <span className="flex items-center gap-1.5 min-w-0 text-sm text-white truncate">
+                          {a.type === "supervisor" && (
+                            <span className="shrink-0 text-[9px] font-bold text-amber border border-amber/30 bg-amber/10 rounded px-1.5 py-0.5">
+                              LEADER
+                            </span>
+                          )}
+                          <span className="truncate">{a.name}</span>
+                        </span>
+                        <span
+                          className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${
+                            STATUS_COLOR[a.status] ?? "text-mutedDark border-white/10"
+                          }`}
+                        >
+                          {a.status}
+                        </span>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>

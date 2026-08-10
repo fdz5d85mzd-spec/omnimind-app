@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { streamAgent } from "@/lib/api";
 import {
   type ChatMessage,
@@ -12,6 +12,7 @@ import {
 } from "@/lib/conversations";
 import Sidebar from "@/components/Sidebar";
 import { Logo, LogoMark } from "@/components/Logo";
+import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 
 const SUGGESTIONS = [
   "Explain how a leader election algorithm works",
@@ -28,6 +29,16 @@ function MenuIcon() {
   );
 }
 
+function MicIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <path d="M12 19v3" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -39,6 +50,12 @@ export default function Home() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const handleVoiceText = useCallback((text: string) => {
+    setInput((prev) => (prev ? `${prev} ${text}` : text));
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  }, []);
+  const speech = useSpeechRecognition(handleVoiceText);
 
   useEffect(() => {
     setConversations(loadConversations());
@@ -203,6 +220,7 @@ export default function Home() {
                   disabled={isStreaming}
                   textareaRef={textareaRef}
                   autoFocus
+                  speech={speech}
                 />
               </div>
 
@@ -243,6 +261,7 @@ export default function Home() {
                   textareaRef={textareaRef}
                   streaming={isStreaming}
                   onStop={stop}
+                  speech={speech}
                 />
               </div>
             </div>
@@ -302,6 +321,7 @@ function Composer({
   autoFocus,
   streaming,
   onStop,
+  speech,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -311,6 +331,7 @@ function Composer({
   autoFocus?: boolean;
   streaming?: boolean;
   onStop?: () => void;
+  speech?: ReturnType<typeof useSpeechRecognition>;
 }) {
   return (
     <form
@@ -333,9 +354,23 @@ function Composer({
               onSubmit();
             }
           }}
-          placeholder="Ask OmniMind anything…"
+          placeholder={speech?.listening ? "Listening…" : "Ask OmniMind anything…"}
           className="flex-1 min-w-0 bg-transparent outline-none resize-none placeholder:text-mutedDark text-sm sm:text-base py-2 max-h-[200px]"
         />
+        {speech?.supported && (
+          <button
+            type="button"
+            onClick={() => (speech.listening ? speech.stop() : speech.start())}
+            title={speech.listening ? "Stop listening" : "Speak your message"}
+            className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-xl transition-colors ${
+              speech.listening
+                ? "bg-crimson/20 text-crimson animate-pulse"
+                : "bg-white/[0.04] text-muted hover:text-white hover:bg-white/[0.08]"
+            }`}
+          >
+            <MicIcon />
+          </button>
+        )}
         {streaming ? (
           <button
             type="button"
@@ -355,6 +390,7 @@ function Composer({
           </button>
         )}
       </div>
+      {speech?.error && <p className="text-xs text-crimson mt-2 px-1">{speech.error}</p>}
     </form>
   );
 }
