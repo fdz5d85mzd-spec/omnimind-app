@@ -7,45 +7,20 @@ import NeuralField from "@/components/NeuralField";
 import { LogoMark } from "@/components/Logo";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { getFleetStatus, getOrchestratorReport, getTwinSubscribers } from "@/lib/telemetry";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { LANGUAGES } from "@/lib/i18n/languages";
+import type { Dictionary } from "@/lib/i18n/types";
 
-const SUBSYSTEMS = [
-  {
-    name: "Policy Engine",
-    desc: "RBAC/ABAC rules gate every action before it runs — deny-before-allow, priority-sorted, nothing slips through unchecked.",
-    icon: ShieldIcon,
-    color: "accent" as const,
-  },
-  {
-    name: "Meta-Orchestrator",
-    desc: "Registers agents, assigns tasks, balances load, and predicts what's coming next across the whole fleet.",
-    icon: NetworkIcon,
-    color: "cyan" as const,
-  },
-  {
-    name: "Versioned Memory",
-    desc: "Every write is immutable and branchable — diff, roll back, or fork the record at any point in time.",
-    icon: LayersIcon,
-    color: "violet" as const,
-  },
-  {
-    name: "Digital Twin",
-    desc: "A live, replayable mirror of the whole system — every stage of every run, streamed in real time.",
-    icon: PulseIcon,
-    color: "emerald" as const,
-  },
-  {
-    name: "Distributed Fleet",
-    desc: "Nodes announce, elect a leader, and hand off work — the system keeps running if one node goes dark.",
-    icon: GlobeIcon,
-    color: "amber" as const,
-  },
-  {
-    name: "Skill Marketplace",
-    desc: "Agents install, rate, and share capabilities — a real registry, not a static feature list.",
-    icon: GridIcon,
-    color: "cyan" as const,
-  },
-];
+function subsystems(t: Dictionary) {
+  return [
+    { name: t.policyName, desc: t.policyDesc, icon: ShieldIcon, color: "accent" as const },
+    { name: t.orchestratorName, desc: t.orchestratorDesc, icon: NetworkIcon, color: "cyan" as const },
+    { name: t.memoryName, desc: t.memoryDesc, icon: LayersIcon, color: "violet" as const },
+    { name: t.twinName, desc: t.twinDesc, icon: PulseIcon, color: "emerald" as const },
+    { name: t.fleetName, desc: t.fleetDesc, icon: GlobeIcon, color: "amber" as const },
+    { name: t.marketplaceName, desc: t.marketplaceDesc, icon: GridIcon, color: "cyan" as const },
+  ];
+}
 
 const COLOR_CLASSES: Record<string, { text: string; bg: string; border: string }> = {
   accent: { text: "text-accent", bg: "bg-accent/10", border: "border-accent/25" },
@@ -56,6 +31,7 @@ const COLOR_CLASSES: Record<string, { text: string; bg: string; border: string }
 };
 
 export default function Landing() {
+  const { t } = useLanguage();
   const [report, setReport] = useState<Awaited<ReturnType<typeof getOrchestratorReport>>>(null);
   const [fleet, setFleet] = useState<Awaited<ReturnType<typeof getFleetStatus>>>(null);
   const [sessions, setSessions] = useState<number | null>(null);
@@ -114,37 +90,34 @@ export default function Landing() {
 
           <span className="inline-flex items-center gap-2 text-cyan text-[11px] font-bold tracking-[0.22em] mb-6 px-3.5 py-1.5 rounded-full border border-cyan/25 bg-cyan/[0.06]">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan animate-pulseDot" />
-            THE AUTONOMOUS AI OPERATING SYSTEM
+            {t.heroBadge}
           </span>
 
           <h1 className="font-head text-5xl sm:text-7xl font-light tracking-tight mb-5 text-gradient max-w-4xl">
-            Ask anything.
+            {t.heroLine1}
             <br />
-            <span className="font-semibold">Watch it think.</span>
+            <span className="font-semibold">{t.heroLine2}</span>
           </h1>
-          <p className="text-muted text-base sm:text-lg max-w-xl mb-10 leading-relaxed">
-            A policy-checked, orchestrated, remembered agent — every decision runs through a real
-            operating system, streamed live, never faked.
-          </p>
+          <p className="text-muted text-base sm:text-lg max-w-xl mb-10 leading-relaxed">{t.heroSub}</p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/chat"
               className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
             >
-              Ask OmniMind →
+              {t.heroCtaAsk}
             </Link>
             <Link
               href="/mission-control"
               className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white/90 hover:text-white hover:bg-white/[0.06] transition-all hover:-translate-y-0.5"
             >
-              Enter Mission Control
+              {t.heroCtaMissionControl}
             </Link>
           </div>
         </div>
 
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-mutedDark text-xs tracking-wide animate-fadeIn">
-          scroll
+          {t.scrollLabel}
         </div>
       </section>
 
@@ -152,43 +125,37 @@ export default function Landing() {
       <section className="relative -mt-1 border-y border-white/[0.06] bg-card/30 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
           <Stat
-            label="Agents Registered"
+            label={t.statAgents}
             value={report?.agents_total ?? null}
             live={reachable === true}
           />
           <Stat
-            label="Tasks Completed"
+            label={t.statTasks}
             value={report?.tasks_completed ?? null}
             live={reachable === true}
           />
           <Stat
-            label="Live Sessions"
+            label={t.statSessions}
             value={sessions}
             live={reachable === true}
           />
           <Stat
-            label="Fleet Nodes"
+            label={t.statFleet}
             value={fleet ? fleet.peers.length + 1 : null}
             live={reachable === true}
           />
         </div>
-        {reachable === false && (
-          <p className="text-center text-xs text-mutedDark pb-4">
-            Backend unreachable right now — figures will resume the moment it&apos;s back.
-          </p>
-        )}
+        {reachable === false && <p className="text-center text-xs text-mutedDark pb-4">{t.statUnreachable}</p>}
       </section>
 
       {/* ----------------------------------------------------- FEATURES */}
       <section className="max-w-6xl mx-auto px-6 py-28">
         <div className="text-center mb-16">
-          <p className="text-cyan text-xs font-bold tracking-[0.2em] mb-3">REAL SUBSYSTEMS, NOT A DEMO</p>
-          <h2 className="font-head text-3xl sm:text-4xl font-semibold text-gradient">
-            Six systems. One mind.
-          </h2>
+          <p className="text-cyan text-xs font-bold tracking-[0.2em] mb-3">{t.featuresEyebrow}</p>
+          <h2 className="font-head text-3xl sm:text-4xl font-semibold text-gradient">{t.featuresTitle}</h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {SUBSYSTEMS.map((s, i) => {
+          {subsystems(t).map((s, i) => {
             const c = COLOR_CLASSES[s.color];
             const Icon = s.icon;
             return (
@@ -211,12 +178,10 @@ export default function Landing() {
       {/* --------------------------------------------------- ARCHITECTURE */}
       <section className="max-w-5xl mx-auto px-6 pb-28">
         <div className="text-center mb-14">
-          <p className="text-cyan text-xs font-bold tracking-[0.2em] mb-3">HOW A REQUEST FLOWS</p>
-          <h2 className="font-head text-3xl sm:text-4xl font-semibold text-gradient">
-            Every answer earns itself.
-          </h2>
+          <p className="text-cyan text-xs font-bold tracking-[0.2em] mb-3">{t.archEyebrow}</p>
+          <h2 className="font-head text-3xl sm:text-4xl font-semibold text-gradient">{t.archTitle}</h2>
         </div>
-        <FlowDiagram />
+        <FlowDiagram t={t} />
       </section>
 
       {/* --------------------------------------------------------- CTA */}
@@ -225,19 +190,17 @@ export default function Landing() {
           <NeuralField density={30} linkDistance={130} />
         </div>
         <div className="relative">
-          <h2 className="font-head text-3xl sm:text-4xl font-semibold mb-5 text-gradient">
-            Put it to work.
-          </h2>
+          <h2 className="font-head text-3xl sm:text-4xl font-semibold mb-5 text-gradient">{t.ctaTitle}</h2>
           <Link
             href="/chat"
             className="inline-block glass rounded-2xl px-8 py-4 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
           >
-            Ask OmniMind →
+            {t.heroCtaAsk}
           </Link>
         </div>
       </section>
 
-      <Footer />
+      <Footer t={t} />
     </div>
   );
 }
@@ -258,14 +221,16 @@ function Stat({ label, value, live }: { label: string; value: number | null; liv
 
 function TopNav() {
   const { data: session, status } = useSession();
+  const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const links = [
-    { href: "/helen", label: "Helen" },
-    { href: "/mission-control", label: "Mission Control" },
-    { href: "/pricing", label: "Pricing" },
-    ...(status !== "loading" && !session?.user ? [{ href: "/login", label: "Sign in" }] : []),
-    ...(session?.user?.isMaster || session?.user?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+    { href: "/helen", label: t.navHelen },
+    { href: "/mission-control", label: t.navMissionControl },
+    { href: "/pricing", label: t.navPricing },
+    ...(status !== "loading" && !session?.user ? [{ href: "/login", label: t.navSignIn }] : []),
+    ...(session?.user ? [{ href: "/settings", label: t.navSettings }] : []),
+    ...(session?.user?.isMaster || session?.user?.isAdmin ? [{ href: "/admin", label: t.navAdmin }] : []),
   ];
 
   return (
@@ -286,11 +251,12 @@ function TopNav() {
               {l.label}
             </Link>
           ))}
+          <LanguageSwitcher />
           <Link
             href="/chat"
             className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
           >
-            Ask OmniMind
+            {t.navAskOmniMind}
           </Link>
         </nav>
 
@@ -299,7 +265,7 @@ function TopNav() {
             href="/chat"
             className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
           >
-            Ask OmniMind
+            {t.navAskOmniMind}
           </Link>
           <button
             type="button"
@@ -325,9 +291,32 @@ function TopNav() {
               {l.label}
             </Link>
           ))}
+          <div className="px-3 py-2 border-t border-white/[0.06] mt-1 pt-3">
+            <LanguageSwitcher full />
+          </div>
         </nav>
       )}
     </header>
+  );
+}
+
+function LanguageSwitcher({ full = false }: { full?: boolean }) {
+  const { lang, setLang } = useLanguage();
+  return (
+    <select
+      value={lang}
+      onChange={(e) => setLang(e.target.value as (typeof LANGUAGES)[number]["code"])}
+      aria-label="Language"
+      className={`text-sm text-muted hover:text-white bg-transparent border border-white/[0.08] rounded-xl px-3 py-2 outline-none cursor-pointer transition-colors ${
+        full ? "w-full" : ""
+      }`}
+    >
+      {LANGUAGES.map((l) => (
+        <option key={l.code} value={l.code} className="bg-card2 text-white">
+          {l.label}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -346,7 +335,7 @@ function CloseIcon() {
   );
 }
 
-function Footer() {
+function Footer({ t }: { t: Dictionary }) {
   return (
     <footer className="border-t border-white/[0.06] px-6 py-10">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -354,13 +343,13 @@ function Footer() {
           <LogoMark size={18} />
           <span className="font-head font-semibold text-sm text-white">OmniMind</span>
         </div>
-        <p className="text-xs text-mutedDark">The autonomous AI operating system.</p>
+        <p className="text-xs text-mutedDark">{t.footerTagline}</p>
         <div className="flex items-center gap-4 text-xs text-mutedDark">
           <Link href="/terms" className="hover:text-white transition-colors">
-            Terms
+            {t.footerTerms}
           </Link>
           <Link href="/privacy" className="hover:text-white transition-colors">
-            Privacy
+            {t.footerPrivacy}
           </Link>
         </div>
       </div>
@@ -368,13 +357,13 @@ function Footer() {
   );
 }
 
-function FlowDiagram() {
+function FlowDiagram({ t }: { t: Dictionary }) {
   const steps = [
-    { label: "Policy", sub: "checked", color: "accent" as const },
-    { label: "Orchestrator", sub: "assigned", color: "cyan" as const },
-    { label: "Memory", sub: "recorded", color: "violet" as const },
-    { label: "LLM", sub: "answered", color: "emerald" as const },
-    { label: "Twin", sub: "streamed", color: "amber" as const },
+    { label: "Policy", sub: t.archStepChecked, color: "accent" as const },
+    { label: "Orchestrator", sub: t.archStepAssigned, color: "cyan" as const },
+    { label: "Memory", sub: t.archStepRecorded, color: "violet" as const },
+    { label: "LLM", sub: t.archStepAnswered, color: "emerald" as const },
+    { label: "Twin", sub: t.archStepStreamed, color: "amber" as const },
   ];
   return (
     <div className="glass rounded-3xl p-8 sm:p-10">
@@ -394,9 +383,7 @@ function FlowDiagram() {
           );
         })}
       </div>
-      <p className="text-xs text-mutedDark text-center mt-6">
-        Every stage publishes a real event — nothing here is a progress bar for show.
-      </p>
+      <p className="text-xs text-mutedDark text-center mt-6">{t.archCaption}</p>
     </div>
   );
 }

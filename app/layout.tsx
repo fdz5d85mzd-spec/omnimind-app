@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AuthSessionProvider from "@/components/AuthSessionProvider";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "OmniMind — Ask Anything",
@@ -32,7 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="bg-mesh" aria-hidden />
         <div className="bg-grid" aria-hidden />
         <ServiceWorkerRegistrar />
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <LanguageProvider>
+          <AuthSessionProvider>{children}</AuthSessionProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

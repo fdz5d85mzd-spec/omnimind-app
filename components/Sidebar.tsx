@@ -185,6 +185,13 @@ export default function Sidebar({
                   Conversation history is still stored on this device only — accounts don&apos;t sync it
                   across devices yet.
                 </p>
+                <Link
+                  href="/settings"
+                  className="flex items-center gap-2 text-xs font-semibold text-muted hover:text-white transition-colors"
+                >
+                  <GearIcon />
+                  Settings
+                </Link>
                 {privileged && (
                   <Link
                     href="/admin"

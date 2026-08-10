@@ -1,0 +1,72 @@
+import type { Dictionary } from "../types";
+
+const zh: Dictionary = {
+  navHelen: "Helen",
+  navMissionControl: "任务控制中心",
+  navPricing: "价格",
+  navSignIn: "登录",
+  navAdmin: "管理",
+  navSettings: "设置",
+  navAskOmniMind: "询问 OmniMind",
+
+  heroBadge: "自主人工智能操作系统",
+  heroLine1: "问任何问题。",
+  heroLine2: "看它思考。",
+  heroSub: "一个经过策略核查、有编排、有记忆的智能体——每个决策都经过真实的操作系统，实时流式呈现，从不作假。",
+  heroCtaAsk: "询问 OmniMind →",
+  heroCtaMissionControl: "进入任务控制中心",
+  scrollLabel: "滚动",
+
+  statAgents: "已注册智能体",
+  statTasks: "已完成任务",
+  statSessions: "实时会话",
+  statFleet: "集群节点",
+  statUnreachable: "后端目前无法访问——数据将在恢复后继续更新。",
+
+  featuresEyebrow: "真实子系统，非演示",
+  featuresTitle: "六大系统。一个心智。",
+  policyName: "策略引擎",
+  policyDesc: "RBAC/ABAC 规则在每个操作执行前进行把关——默认拒绝，按优先级排序，没有任何操作能未经检查而通过。",
+  orchestratorName: "元编排器",
+  orchestratorDesc: "注册智能体、分配任务、平衡负载，并预测整个集群接下来会发生什么。",
+  memoryName: "版本化记忆",
+  memoryDesc: "每一次写入都是不可变且可分支的——随时对比、回滚或分叉记录。",
+  twinName: "数字孪生",
+  twinDesc: "整个系统的实时可回放镜像——每次运行的每个阶段，实时流式呈现。",
+  fleetName: "分布式集群",
+  fleetDesc: "节点自我声明、选举领导者、交接工作——即使一个节点失效，系统仍能继续运行。",
+  marketplaceName: "技能市场",
+  marketplaceDesc: "智能体安装、评价并分享能力——一个真实的注册表，而非静态功能列表。",
+
+  archEyebrow: "请求如何流转",
+  archTitle: "每个回答都赢得了自己的位置。",
+  archStepChecked: "已核查",
+  archStepAssigned: "已分配",
+  archStepRecorded: "已记录",
+  archStepAnswered: "已回答",
+  archStepStreamed: "已推送",
+  archCaption: "每个阶段都会发布一个真实事件——这里没有用来做样子的进度条。",
+
+  ctaTitle: "让它开始工作。",
+
+  footerTagline: "自主人工智能操作系统。",
+  footerTerms: "条款",
+  footerPrivacy: "隐私",
+
+  settingsTitle: "设置",
+  settingsProfileTitle: "个人资料",
+  settingsNameLabel: "姓名",
+  settingsEmailLabel: "电子邮箱",
+  settingsLanguageTitle: "语言",
+  settingsLanguageSub: "选择 OmniMind 界面使用的语言。",
+  settingsPlanTitle: "套餐与积分",
+  settingsCreditsLabel: "积分",
+  settingsViewPricing: "查看价格",
+  settingsSignOut: "退出登录",
+  settingsSignInRequired: "需要登录",
+  settingsSignInPrompt: "登录以管理你的设置。",
+  settingsSignInLink: "登录 →",
+  settingsGuestNote: "访客会话——登录后可将语言偏好保存到你的账户。",
+};
+
+export default zh;
