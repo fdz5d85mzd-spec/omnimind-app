@@ -1,360 +1,366 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { streamAgent } from "@/lib/api";
-import {
-  type ChatMessage,
-  type Conversation,
-  deriveTitle,
-  loadConversations,
-  newId,
-  saveConversations,
-} from "@/lib/conversations";
-import Sidebar from "@/components/Sidebar";
-import { Logo, LogoMark } from "@/components/Logo";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import NeuralField from "@/components/NeuralField";
+import { LogoMark } from "@/components/Logo";
+import AnimatedCounter from "@/components/AnimatedCounter";
+import { getFleetStatus, getOrchestratorReport, getTwinSubscribers } from "@/lib/telemetry";
 
-const SUGGESTIONS = [
-  "Explain how a leader election algorithm works",
-  "Draft a launch announcement for an AI operating system",
-  "Plan a 3-step rollout for a new feature",
-  "Summarize the tradeoffs of microservices vs a monolith",
+const SUBSYSTEMS = [
+  {
+    name: "Policy Engine",
+    desc: "RBAC/ABAC rules gate every action before it runs — deny-before-allow, priority-sorted, nothing slips through unchecked.",
+    icon: ShieldIcon,
+    color: "accent" as const,
+  },
+  {
+    name: "Meta-Orchestrator",
+    desc: "Registers agents, assigns tasks, balances load, and predicts what's coming next across the whole fleet.",
+    icon: NetworkIcon,
+    color: "cyan" as const,
+  },
+  {
+    name: "Versioned Memory",
+    desc: "Every write is immutable and branchable — diff, roll back, or fork the record at any point in time.",
+    icon: LayersIcon,
+    color: "violet" as const,
+  },
+  {
+    name: "Digital Twin",
+    desc: "A live, replayable mirror of the whole system — every stage of every run, streamed in real time.",
+    icon: PulseIcon,
+    color: "emerald" as const,
+  },
+  {
+    name: "Distributed Fleet",
+    desc: "Nodes announce, elect a leader, and hand off work — the system keeps running if one node goes dark.",
+    icon: GlobeIcon,
+    color: "amber" as const,
+  },
+  {
+    name: "Skill Marketplace",
+    desc: "Agents install, rate, and share capabilities — a real registry, not a static feature list.",
+    icon: GridIcon,
+    color: "cyan" as const,
+  },
 ];
 
-function MenuIcon() {
+const COLOR_CLASSES: Record<string, { text: string; bg: string; border: string }> = {
+  accent: { text: "text-accent", bg: "bg-accent/10", border: "border-accent/25" },
+  cyan: { text: "text-cyan", bg: "bg-cyan/10", border: "border-cyan/25" },
+  violet: { text: "text-violet", bg: "bg-violet/10", border: "border-violet/25" },
+  emerald: { text: "text-emerald", bg: "bg-emerald/10", border: "border-emerald/25" },
+  amber: { text: "text-amber", bg: "bg-amber/10", border: "border-amber/25" },
+};
+
+export default function Landing() {
+  const [report, setReport] = useState<Awaited<ReturnType<typeof getOrchestratorReport>>>(null);
+  const [fleet, setFleet] = useState<Awaited<ReturnType<typeof getFleetStatus>>>(null);
+  const [sessions, setSessions] = useState<number | null>(null);
+  const [reachable, setReachable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function poll() {
+      const [r, f, s] = await Promise.all([getOrchestratorReport(), getFleetStatus(), getTwinSubscribers()]);
+      if (cancelled) return;
+      setReport(r);
+      setFleet(f);
+      setSessions(s?.connected ?? null);
+      setReachable(r !== null || f !== null);
+    }
+    poll();
+    const interval = setInterval(poll, 4000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M3 12h18M3 6h18M3 18h18" />
+    <div className="min-h-screen">
+      <TopNav />
+
+      {/* ---------------------------------------------------------- HERO */}
+      <section className="relative h-[92vh] min-h-[640px] flex flex-col items-center justify-center overflow-hidden px-6">
+        <div className="absolute inset-0">
+          <NeuralField density={70} linkDistance={160} />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg pointer-events-none" />
+
+        <div className="relative flex flex-col items-center text-center animate-rise">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 blur-2xl opacity-70 animate-breathe">
+              <LogoMark size={72} />
+            </div>
+            <LogoMark size={72} />
+          </div>
+
+          <span className="inline-flex items-center gap-2 text-cyan text-[11px] font-bold tracking-[0.22em] mb-6 px-3.5 py-1.5 rounded-full border border-cyan/25 bg-cyan/[0.06]">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan animate-pulseDot" />
+            THE AUTONOMOUS AI OPERATING SYSTEM
+          </span>
+
+          <h1 className="font-head text-5xl sm:text-7xl font-light tracking-tight mb-5 text-gradient max-w-4xl">
+            Ask anything.
+            <br />
+            <span className="font-semibold">Watch it think.</span>
+          </h1>
+          <p className="text-muted text-base sm:text-lg max-w-xl mb-10 leading-relaxed">
+            A policy-checked, orchestrated, remembered agent — every decision runs through a real
+            operating system, streamed live, never faked.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/chat"
+              className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
+            >
+              Ask OmniMind →
+            </Link>
+            <Link
+              href="/mission-control"
+              className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white/90 hover:text-white hover:bg-white/[0.06] transition-all hover:-translate-y-0.5"
+            >
+              Enter Mission Control
+            </Link>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-mutedDark text-xs tracking-wide animate-fadeIn">
+          scroll
+        </div>
+      </section>
+
+      {/* --------------------------------------------------------- STATS */}
+      <section className="relative -mt-1 border-y border-white/[0.06] bg-card/30 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <Stat
+            label="Agents Registered"
+            value={report?.agents_total ?? null}
+            live={reachable === true}
+          />
+          <Stat
+            label="Tasks Completed"
+            value={report?.tasks_completed ?? null}
+            live={reachable === true}
+          />
+          <Stat
+            label="Live Sessions"
+            value={sessions}
+            live={reachable === true}
+          />
+          <Stat
+            label="Fleet Nodes"
+            value={fleet ? fleet.peers.length + 1 : null}
+            live={reachable === true}
+          />
+        </div>
+        {reachable === false && (
+          <p className="text-center text-xs text-mutedDark pb-4">
+            Backend unreachable right now — figures will resume the moment it&apos;s back.
+          </p>
+        )}
+      </section>
+
+      {/* ----------------------------------------------------- FEATURES */}
+      <section className="max-w-6xl mx-auto px-6 py-28">
+        <div className="text-center mb-16">
+          <p className="text-cyan text-xs font-bold tracking-[0.2em] mb-3">REAL SUBSYSTEMS, NOT A DEMO</p>
+          <h2 className="font-head text-3xl sm:text-4xl font-semibold text-gradient">
+            Six systems. One mind.
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {SUBSYSTEMS.map((s, i) => {
+            const c = COLOR_CLASSES[s.color];
+            const Icon = s.icon;
+            return (
+              <div
+                key={s.name}
+                className="group glass rounded-2xl p-6 hover:border-white/20 transition-all hover:-translate-y-1"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div className={`h-10 w-10 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center mb-4 ${c.text}`}>
+                  <Icon />
+                </div>
+                <h3 className="font-semibold text-white mb-1.5">{s.name}</h3>
+                <p className="text-sm text-muted leading-relaxed">{s.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* --------------------------------------------------- ARCHITECTURE */}
+      <section className="max-w-5xl mx-auto px-6 pb-28">
+        <div className="text-center mb-14">
+          <p className="text-cyan text-xs font-bold tracking-[0.2em] mb-3">HOW A REQUEST FLOWS</p>
+          <h2 className="font-head text-3xl sm:text-4xl font-semibold text-gradient">
+            Every answer earns itself.
+          </h2>
+        </div>
+        <FlowDiagram />
+      </section>
+
+      {/* --------------------------------------------------------- CTA */}
+      <section className="relative border-t border-white/[0.06] py-24 px-6 text-center overflow-hidden">
+        <div className="absolute inset-0 opacity-40">
+          <NeuralField density={30} linkDistance={130} />
+        </div>
+        <div className="relative">
+          <h2 className="font-head text-3xl sm:text-4xl font-semibold mb-5 text-gradient">
+            Put it to work.
+          </h2>
+          <Link
+            href="/chat"
+            className="inline-block glass rounded-2xl px-8 py-4 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
+          >
+            Ask OmniMind →
+          </Link>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
+
+function Stat({ label, value, live }: { label: string; value: number | null; live: boolean }) {
+  return (
+    <div className="text-center">
+      <div className="flex items-center justify-center gap-1.5 mb-1">
+        {live && <span className="h-1.5 w-1.5 rounded-full bg-emerald animate-pulseDot" />}
+        <span className="font-head text-2xl sm:text-3xl font-semibold text-white tabular-nums">
+          <AnimatedCounter value={value} />
+        </span>
+      </div>
+      <p className="text-[11px] tracking-wide text-mutedDark uppercase">{label}</p>
+    </div>
+  );
+}
+
+function TopNav() {
+  return (
+    <header className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-6 sm:px-10 py-6">
+      <Link href="/" className="flex items-center gap-2">
+        <LogoMark size={22} />
+        <span className="font-head font-semibold text-[15px] tracking-tight text-white">OmniMind</span>
+      </Link>
+      <nav className="flex items-center gap-2">
+        <Link
+          href="/mission-control"
+          className="hidden sm:inline-block text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
+        >
+          Mission Control
+        </Link>
+        <Link
+          href="/chat"
+          className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
+        >
+          Ask OmniMind
+        </Link>
+      </nav>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-white/[0.06] px-6 py-10">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <LogoMark size={18} />
+          <span className="font-head font-semibold text-sm text-white">OmniMind</span>
+        </div>
+        <p className="text-xs text-mutedDark">The autonomous AI operating system.</p>
+      </div>
+    </footer>
+  );
+}
+
+function FlowDiagram() {
+  const steps = [
+    { label: "Policy", sub: "checked", color: "accent" as const },
+    { label: "Orchestrator", sub: "assigned", color: "cyan" as const },
+    { label: "Memory", sub: "recorded", color: "violet" as const },
+    { label: "LLM", sub: "answered", color: "emerald" as const },
+    { label: "Twin", sub: "streamed", color: "amber" as const },
+  ];
+  return (
+    <div className="glass rounded-3xl p-8 sm:p-10">
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-2">
+        {steps.map((s, i) => {
+          const c = COLOR_CLASSES[s.color];
+          return (
+            <div key={s.label} className="flex items-center gap-2 sm:gap-2 w-full sm:w-auto">
+              <div className={`flex-1 sm:flex-none rounded-xl border ${c.border} ${c.bg} px-5 py-4 text-center min-w-[120px]`}>
+                <p className={`font-semibold text-sm ${c.text}`}>{s.label}</p>
+                <p className="text-[11px] text-mutedDark mt-0.5">{s.sub}</p>
+              </div>
+              {i < steps.length - 1 && (
+                <div className="hidden sm:block w-8 h-px bg-gradient-to-r from-white/20 to-white/5 shrink-0" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-xs text-mutedDark text-center mt-6">
+        Every stage publishes a real event — nothing here is a progress bar for show.
+      </p>
+    </div>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
 }
-
-export default function Home() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
-
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    setConversations(loadConversations());
-    setSidebarCollapsed(window.innerWidth < 1024);
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) saveConversations(conversations);
-  }, [conversations, hydrated]);
-
-  const active = conversations.find((c) => c.id === activeId) || null;
-  const messages = active?.messages ?? [];
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [active?.messages]);
-
-  function autoGrow() {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 200) + "px";
-  }
-
-  function updateConversation(id: string, updater: (c: Conversation) => Conversation) {
-    setConversations((prev) => prev.map((c) => (c.id === id ? updater(c) : c)));
-  }
-
-  async function send(text?: string) {
-    const q = (text ?? input).trim();
-    if (!q || isStreaming) return;
-
-    let convoId = activeId;
-    const userMsg: ChatMessage = { id: newId(), role: "user", content: q, status: "done" };
-    const assistantId = newId();
-    const assistantMsg: ChatMessage = { id: assistantId, role: "assistant", content: "", status: "streaming" };
-
-    if (!convoId) {
-      convoId = newId();
-      const convo: Conversation = {
-        id: convoId,
-        title: deriveTitle(q),
-        messages: [userMsg, assistantMsg],
-        updatedAt: Date.now(),
-      };
-      setConversations((prev) => [convo, ...prev]);
-      setActiveId(convoId);
-    } else {
-      updateConversation(convoId, (c) => ({
-        ...c,
-        messages: [...c.messages, userMsg, assistantMsg],
-        updatedAt: Date.now(),
-      }));
-    }
-
-    setInput("");
-    setIsStreaming(true);
-    requestAnimationFrame(autoGrow);
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-    const id = convoId;
-
-    function patchAssistant(patch: Partial<ChatMessage>) {
-      updateConversation(id!, (c) => ({
-        ...c,
-        messages: c.messages.map((m) => (m.id === assistantId ? { ...m, ...patch } : m)),
-      }));
-    }
-
-    await streamAgent(
-      q,
-      {
-        onDelta: (text) => {
-          updateConversation(id!, (c) => ({
-            ...c,
-            messages: c.messages.map((m) => (m.id === assistantId ? { ...m, content: m.content + text } : m)),
-          }));
-        },
-        onDone: () => patchAssistant({ status: "done" }),
-        onError: (message) => patchAssistant({ content: message, status: "error" }),
-      },
-      controller.signal
-    );
-
-    setIsStreaming(false);
-  }
-
-  function stop() {
-    abortRef.current?.abort();
-    setIsStreaming(false);
-    if (activeId) {
-      updateConversation(activeId, (c) => ({
-        ...c,
-        messages: c.messages.map((m) => (m.status === "streaming" ? { ...m, status: "done" } : m)),
-      }));
-    }
-  }
-
-  function newChat() {
-    if (isStreaming) stop();
-    setActiveId(null);
-    setInput("");
-    if (window.innerWidth < 1024) setSidebarCollapsed(true);
-  }
-
-  function selectConversation(id: string) {
-    if (isStreaming) stop();
-    setActiveId(id);
-    if (window.innerWidth < 1024) setSidebarCollapsed(true);
-  }
-
-  const empty = messages.length === 0;
-
+function NetworkIcon() {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        conversations={conversations}
-        activeId={activeId}
-        onSelect={selectConversation}
-        onNew={newChat}
-        collapsed={sidebarCollapsed}
-        onCloseMobile={() => setSidebarCollapsed(true)}
-      />
-      {!sidebarCollapsed && (
-        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarCollapsed(true)} />
-      )}
-
-      <main className="flex-1 flex flex-col min-w-0 relative">
-        <header className="flex items-center gap-3 px-4 py-3 lg:hidden border-b border-white/[0.06] bg-bg/70 backdrop-blur-xl z-10">
-          <button onClick={() => setSidebarCollapsed(false)} className="text-muted hover:text-white p-1 -ml-1 transition-colors">
-            <MenuIcon />
-          </button>
-          <Logo size={18} />
-        </header>
-
-        {empty ? (
-          <section className="flex-1 flex flex-col items-center justify-center px-6 text-center relative overflow-hidden">
-            <div className="relative animate-fadeIn">
-              <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center">
-                <LogoMark size={44} />
-              </div>
-              <span className="inline-block text-cyan text-[11px] font-bold tracking-[0.2em] mb-5 px-3 py-1 rounded-full border border-cyan/25 bg-cyan/[0.06]">
-                THE AUTONOMOUS AI OPERATING SYSTEM
-              </span>
-              <h1 className="font-head text-4xl sm:text-5xl font-bold mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-                Ask anything.
-              </h1>
-              <p className="text-muted max-w-xl mb-10 mx-auto leading-relaxed">
-                A real OmniMind agent — policy-checked, orchestrated, remembered — goes to work and answers.
-              </p>
-
-              <div className="w-full">
-                <Composer
-                  value={input}
-                  onChange={(v) => {
-                    setInput(v);
-                    autoGrow();
-                  }}
-                  onSubmit={() => send()}
-                  disabled={isStreaming}
-                  textareaRef={textareaRef}
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-2 justify-center mt-6 max-w-2xl">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="text-xs text-muted bg-white/[0.03] hover:bg-white/[0.07] hover:text-white border border-white/[0.07] hover:border-accent/40 rounded-full px-4 py-2 transition-all hover:-translate-y-0.5"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : (
-          <>
-            <section className="flex-1 overflow-y-auto px-4 sm:px-0">
-              <div className="max-w-3xl mx-auto w-full py-8 space-y-7">
-                {messages.map((m) => (
-                  <MessageRow key={m.id} message={m} />
-                ))}
-                <div ref={bottomRef} />
-              </div>
-            </section>
-
-            <div className="border-t border-white/[0.06] bg-bg/80 backdrop-blur-xl px-4 sm:px-0 py-4">
-              <div className="max-w-3xl mx-auto w-full">
-                <Composer
-                  value={input}
-                  onChange={(v) => {
-                    setInput(v);
-                    autoGrow();
-                  }}
-                  onSubmit={() => send()}
-                  disabled={isStreaming}
-                  textareaRef={textareaRef}
-                  streaming={isStreaming}
-                  onStop={stop}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </main>
-    </div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="5" r="2.2" />
+      <circle cx="5" cy="19" r="2.2" />
+      <circle cx="19" cy="19" r="2.2" />
+      <path d="M12 7.2V13M12 13 6.7 17M12 13l5.3 4" />
+    </svg>
   );
 }
-
-function MessageRow({ message }: { message: ChatMessage }) {
-  if (message.role === "user") {
-    return (
-      <div className="flex justify-end animate-fadeIn">
-        <div className="bg-gradient-to-br from-accent to-accent/80 text-white rounded-2xl rounded-br-md px-4 py-2.5 max-w-[85%] text-sm sm:text-base whitespace-pre-wrap shadow-lg shadow-accent/10">
-          {message.content}
-        </div>
-      </div>
-    );
-  }
-
+function LayersIcon() {
   return (
-    <div className="flex gap-3 items-start animate-fadeIn">
-      <div className="shrink-0 mt-0.5">
-        <LogoMark size={26} />
-      </div>
-      <div
-        className={`flex-1 min-w-0 text-sm sm:text-base leading-relaxed whitespace-pre-wrap pt-0.5 ${
-          message.status === "error" ? "text-red-400" : "text-white/90"
-        }`}
-      >
-        {message.content || (message.status === "streaming" ? <TypingDots /> : null)}
-        {message.status === "streaming" && message.content && (
-          <span className="inline-block w-1.5 h-4 bg-cyan/80 ml-0.5 align-middle animate-pulse" />
-        )}
-      </div>
-    </div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 2 9 5-9 5-9-5 9-5z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 17 9 5 9-5" />
+    </svg>
   );
 }
-
-function TypingDots() {
+function PulseIcon() {
   return (
-    <span className="inline-flex items-center gap-1 py-1">
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-accent to-cyan animate-bounce [animation-delay:-0.3s]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-accent to-cyan animate-bounce [animation-delay:-0.15s]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-accent to-cyan animate-bounce" />
-    </span>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12h4l2-7 4 14 2-7h6" />
+    </svg>
   );
 }
-
-function Composer({
-  value,
-  onChange,
-  onSubmit,
-  disabled,
-  textareaRef,
-  autoFocus,
-  streaming,
-  onStop,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  onSubmit: () => void;
-  disabled: boolean;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
-  autoFocus?: boolean;
-  streaming?: boolean;
-  onStop?: () => void;
-}) {
+function GlobeIcon() {
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}
-      className="w-full max-w-2xl mx-auto"
-    >
-      <div className="flex items-end gap-2 bg-card/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl pl-4 pr-2 py-2 focus-within:border-accent/60 focus-within:shadow-glow shadow-panel transition-all">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          autoFocus={autoFocus}
-          rows={1}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              onSubmit();
-            }
-          }}
-          placeholder="Ask OmniMind anything…"
-          className="flex-1 min-w-0 bg-transparent outline-none resize-none placeholder:text-mutedDark text-sm sm:text-base py-2 max-h-[200px]"
-        />
-        {streaming ? (
-          <button
-            type="button"
-            onClick={onStop}
-            className="shrink-0 flex items-center gap-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
-          >
-            <span className="h-2 w-2 rounded-sm bg-white" />
-            Stop
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={disabled || !value.trim()}
-            className="shrink-0 bg-gradient-to-br from-accent to-accent/90 hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity text-white text-sm font-bold px-5 py-2.5 rounded-xl"
-          >
-            Ask
-          </button>
-        )}
-      </div>
-    </form>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z" />
+    </svg>
+  );
+}
+function GridIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
   );
 }

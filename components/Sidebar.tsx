@@ -1,8 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Conversation } from "@/lib/conversations";
 import { Logo } from "@/components/Logo";
+
+function RadarIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 12 L12 4.5 A7.5 7.5 0 0 1 19.5 12 Z" fill="currentColor" stroke="none" opacity="0.35" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 function PlusIcon() {
   return (
@@ -54,7 +65,9 @@ export default function Sidebar({
     >
       <div className="p-3">
         <div className="flex items-center justify-between px-2 py-2.5 mb-3">
-          <Logo />
+          <Link href="/">
+            <Logo />
+          </Link>
           <button onClick={onCloseMobile} className="lg:hidden text-muted hover:text-white p-1 transition-colors">
             ✕
           </button>
@@ -68,6 +81,13 @@ export default function Sidebar({
           </span>
           New chat
         </button>
+        <Link
+          href="/mission-control"
+          className="mt-1.5 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:text-white hover:bg-white/[0.04] transition-colors"
+        >
+          <RadarIcon />
+          Mission Control
+        </Link>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5">

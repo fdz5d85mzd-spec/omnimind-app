@@ -1,6 +1,8 @@
 export const API_BASE =
   process.env.NEXT_PUBLIC_OMNIMIND_API?.replace(/\/$/, "") || "https://origox.xyz";
 
+export const WS_BASE = API_BASE.replace(/^http/, "ws");
+
 export function sessionId(): string {
   if (typeof window === "undefined") return "server";
   const KEY = "omnimind_session_id";
