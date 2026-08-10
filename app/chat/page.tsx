@@ -324,7 +324,7 @@ function MessageRow({ message }: { message: ChatMessage }) {
           message.status === "error" ? "text-red-400" : "text-white/90"
         }`}
       >
-        {message.content || (message.status === "streaming" ? <TypingDots /> : null)}
+        {message.content || (message.status === "streaming" ? <ThinkingVideo /> : null)}
         {message.status === "streaming" && message.content && (
           <span className="inline-block w-1.5 h-4 bg-cyan/80 ml-0.5 align-middle animate-pulse" />
         )}
@@ -333,12 +333,26 @@ function MessageRow({ message }: { message: ChatMessage }) {
   );
 }
 
-function TypingDots() {
+// Higgsfield-generated (seedance_2_5) clip: an AI in an intense thinking
+// state, shown for the gap between "sent" and the first token arriving.
+// Hosted on Higgsfield's own CDN rather than self-hosted in /public --
+// this environment's network policy couldn't reach that CDN to download a
+// local copy, so this references their URL directly. If it ever needs to
+// come off that dependency, regenerate and place it under /public/videos.
+const THINKING_VIDEO_URL =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_3H6UhncW5DoRLIfEn3yyJY05j6D/hf_20260810_190517_2b815241-a0b0-404f-a50b-4746a9432b68.mp4";
+
+function ThinkingVideo() {
   return (
-    <span className="inline-flex items-center gap-1 py-1">
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-accent to-cyan animate-bounce [animation-delay:-0.3s]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-accent to-cyan animate-bounce [animation-delay:-0.15s]" />
-      <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-accent to-cyan animate-bounce" />
+    <span className="block w-44 sm:w-52 aspect-video rounded-xl overflow-hidden border border-white/[0.08] shadow-glow my-1">
+      <video
+        src={THINKING_VIDEO_URL}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="h-full w-full object-cover"
+      />
     </span>
   );
 }
