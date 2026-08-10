@@ -1,7 +1,3 @@
-import { getServerSession } from "next-auth";
-import Link from "next/link";
-import { authOptions } from "@/lib/auth";
-import { LogoMark } from "@/components/Logo";
 import {
   getFleetStatus,
   getOrchestratorReport,
@@ -14,28 +10,6 @@ import AdminActions from "@/components/admin/AdminActions";
 export const metadata = { title: "Admin — OmniMind" };
 
 export default async function AdminPage() {
-  const session = await getServerSession(authOptions);
-  const isMaster = session?.user?.isMaster ?? false;
-  const isAdmin = session?.user?.isAdmin ?? false;
-
-  if (!session?.user) {
-    return (
-      <Gate title="Sign in required">
-        <Link href="/login" className="text-cyan hover:underline">
-          Sign in →
-        </Link>
-      </Gate>
-    );
-  }
-
-  if (!isMaster && !isAdmin) {
-    return (
-      <Gate title="Not authorized">
-        <p>This page is visible only to the admin or master account.</p>
-      </Gate>
-    );
-  }
-
   const [report, fleet, pending, rules, log] = await Promise.all([
     getOrchestratorReport(),
     getFleetStatus(),
@@ -46,56 +20,9 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-card/30 backdrop-blur-xl">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2">
-            <LogoMark size={20} />
-            <span className="font-head font-semibold text-sm text-white">OmniMind</span>
-          </Link>
-          <span className="hidden sm:inline text-xs text-mutedDark tracking-wide">ADMIN</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-muted">Admin access · {session.user.email}</span>
-          <Link
-            href="/admin/revenue"
-            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-          >
-            Revenue
-          </Link>
-          <Link
-            href="/admin/promo-codes"
-            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-          >
-            Promo Codes
-          </Link>
-          <Link
-            href="/admin/partners"
-            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-          >
-            Partners
-          </Link>
-          <Link
-            href="/admin/integrations"
-            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-          >
-            Integrations
-          </Link>
-          <Link
-            href="/admin/pricing"
-            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-          >
-            Pricing
-          </Link>
-          <Link
-            href="/mission-control"
-            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-          >
-            Mission Control
-          </Link>
-        </div>
-      </header>
-
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <h1 className="font-head text-2xl font-semibold text-white">Overview</h1>
+
         {!report && !fleet && (
           <div className="glass border-crimson/30 bg-crimson/[0.06] rounded-xl px-4 py-3 text-sm text-crimson">
             Backend unreachable — figures below may be stale.
@@ -207,18 +134,6 @@ function MiniStat({
         {value ?? "—"}
         {value !== undefined && suffix}
       </p>
-    </div>
-  );
-}
-
-function Gate({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="glass rounded-2xl p-8 text-center max-w-sm">
-        <LogoMark size={28} />
-        <h1 className="font-head text-xl font-semibold text-white mt-4 mb-2">{title}</h1>
-        <div className="text-sm text-muted">{children}</div>
-      </div>
     </div>
   );
 }
