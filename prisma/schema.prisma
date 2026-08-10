@@ -22,6 +22,7 @@ model User {
   accounts    Account[]
   sessions    Session[]
   usageEvents UsageEvent[]
+  voxProjects VoxProject[]
 
   @@map("users")
 }
@@ -88,4 +89,77 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// ---------------------------------------------------------------- VoxStudio
+// The native, OmniMind-hosted rebuild of VoxAvatar's product surface. The
+// original voxavatar.xyz generation pipeline runs through an internal-only
+// Higgsfield hostname (fnf.internal) that isn't reachable outside their own
+// network, so this is a from-scratch rebuild, not a code port -- it starts
+// with pre-production (Director Agent creative briefs, on the Anthropic key
+// already configured for the rest of OmniMind) and grows adapters for real
+// image/video/voice generation as those provider keys are added.
+model VoxProject {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  idea      String   @db.Text
+  title     String
+  logline   String   @db.Text
+  status    String   @default("briefed") // briefed | in_production | complete
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  characters VoxCharacter[]
+  scenes     VoxScene[]
+  jobs       VoxJob[]
+
+  @@map("vox_projects")
+}
+
+model VoxCharacter {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  name        String
+  description String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project VoxProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("vox_characters")
+}
+
+model VoxScene {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  order       Int
+  heading     String
+  description String   @db.Text
+  shots       Json     @default("[]") // ordered shot list: {camera, action} per shot
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project VoxProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("vox_scenes")
+}
+
+// One row per generation request a finished production would need (image,
+// video, voice, music per scene/character). Created with status
+// "not_configured" until a real provider adapter exists for `kind` -- the
+// row is the honest record of "this would be a job" even before anything
+// can actually run it.
+model VoxJob {
+  id        String   @id @default(cuid())
+  projectId String   @map("project_id")
+  kind      String // "image" | "video" | "voice" | "music"
+  status    String   @default("not_configured") // not_configured | queued | running | completed | failed
+  input     Json     @default("{}")
+  output    Json?
+  error     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project VoxProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("vox_jobs")
 }

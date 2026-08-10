@@ -41,6 +41,16 @@ function HeartIcon() {
   );
 }
 
+function ClapperIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8.5 20.5 5l.9 4.4L3.9 12.9z" />
+      <path d="M3 8.5 4 20h16l1-11.5H3z" />
+      <path d="m7 8-1.5-3M12 8l-1.5-3M17 8l-1.5-3" />
+    </svg>
+  );
+}
+
 function PlusIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -125,6 +135,13 @@ export default function Sidebar({
         >
           <HeartIcon />
           Helen
+        </Link>
+        <Link
+          href="/voxstudio"
+          className="mt-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:text-white hover:bg-white/[0.04] transition-colors"
+        >
+          <ClapperIcon />
+          VoxStudio
         </Link>
       </div>
 
