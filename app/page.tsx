@@ -85,6 +85,20 @@ export default function Landing() {
 
       {/* ---------------------------------------------------------- HERO */}
       <section className="relative h-[92vh] min-h-[640px] flex flex-col items-center justify-center overflow-hidden px-6">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute -bottom-[30%] -left-[15%] w-[780px] h-[780px] rounded-full opacity-60 blur-[130px] animate-breathe"
+            style={{ background: "radial-gradient(circle, #5B6EF5 0%, transparent 70%)" }}
+          />
+          <div
+            className="absolute -top-[25%] -right-[15%] w-[680px] h-[680px] rounded-full opacity-45 blur-[130px]"
+            style={{ background: "radial-gradient(circle, #A855F7 0%, transparent 70%)" }}
+          />
+          <div
+            className="absolute bottom-[5%] right-[10%] w-[520px] h-[520px] rounded-full opacity-35 blur-[120px]"
+            style={{ background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)" }}
+          />
+        </div>
         <div className="absolute inset-0">
           <NeuralField density={70} linkDistance={160} />
         </div>
