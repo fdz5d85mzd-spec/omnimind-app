@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>OmniMind</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#5B6EF5" />
+            <stop offset="100%" stop-color="#22D3EE" />
+          </linearGradient>
+        </defs>
+        <rect x="1" y="1" width="22" height="22" rx="7" fill="url(#g)" />
+        <circle cx="12" cy="12" r="4.2" fill="#0A0E2E" />
+        <circle cx="12" cy="12" r="1.7" fill="url(#g)" />
+      </svg>
+      <span>OmniMind</span>
+      <a href="https://origox.xyz/chat" target="_blank" rel="noopener" title="Open full app">⤢</a>
+    </header>
+
+    <main id="answer" class="empty">Ask anything — a real agent goes to work and answers.</main>
+
+    <form id="form">
+      <textarea id="prompt" rows="2" placeholder="Ask OmniMind…"></textarea>
+      <button id="submit" type="submit">Ask</button>
+    </form>
+  </body>
+  <script src="popup.js"></script>
+</html>

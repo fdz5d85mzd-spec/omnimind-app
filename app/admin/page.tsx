@@ -59,6 +59,12 @@ export default async function AdminPage() {
             {isMaster ? "Full master access" : "Read-only admin view"} · {session.user.email}
           </span>
           <Link
+            href="/admin/integrations"
+            className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
+          >
+            Integrations
+          </Link>
+          <Link
             href="/admin/pricing"
             className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
           >

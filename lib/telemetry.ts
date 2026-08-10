@@ -63,12 +63,19 @@ async function getJSON<T>(path: string): Promise<T | null> {
   }
 }
 
+export type IntegrationsStatus = {
+  llm_provider: "anthropic" | "openai" | null;
+  admin_api_key_configured: boolean;
+  nats_configured: boolean;
+};
+
 export const getOrchestratorReport = () => getJSON<OrchestratorReport>("/orchestrator/report");
 export const getFleetStatus = () => getJSON<FleetStatus>("/fleet/status");
 export const getTwinSubscribers = () => getJSON<{ connected: number }>("/twin/stream/subscribers");
 export const getPolicyRules = () => getJSON<PolicyRule[]>("/policy/rules");
 export const getPendingApprovals = () => getJSON<PolicyDecision[]>("/policy/pending");
 export const getPolicyLog = (limit = 30) => getJSON<PolicyDecision[]>(`/policy/log?limit=${limit}`);
+export const getIntegrationsStatus = () => getJSON<IntegrationsStatus>("/integrations/status");
 
 export function connectTwinStream(
   onEvent: (event: TwinEvent) => void,

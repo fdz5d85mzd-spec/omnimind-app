@@ -1,0 +1,16 @@
+{
+  "name": "OmniMind — Ask Anything",
+  "short_name": "OmniMind",
+  "description": "The autonomous AI operating system. Policy-checked, orchestrated, remembered — streamed live.",
+  "start_url": "/chat",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06071a",
+  "theme_color": "#06071a",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,81 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  width: 360px;
+  margin: 0;
+  background: #06071a;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+header span {
+  font-weight: 600;
+  font-size: 14px;
+}
+header a {
+  margin-left: auto;
+  color: #6b72a8;
+  text-decoration: none;
+  font-size: 14px;
+}
+header a:hover {
+  color: #fff;
+}
+main#answer {
+  min-height: 120px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  color: rgba(255, 255, 255, 0.9);
+}
+main#answer.empty {
+  color: #6b72a8;
+}
+main#answer.error {
+  color: #f87171;
+}
+form {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+textarea {
+  flex: 1;
+  resize: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+textarea:focus {
+  border-color: rgba(91, 110, 245, 0.6);
+}
+button {
+  background: linear-gradient(135deg, #5b6ef5, #4a5de0);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
