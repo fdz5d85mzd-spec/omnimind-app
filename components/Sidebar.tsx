@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 import type { Conversation } from "@/lib/conversations";
 import { Logo } from "@/components/Logo";
+
+function ShieldIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
 
 function RadarIcon() {
   return (
@@ -56,6 +65,10 @@ export default function Sidebar({
   onCloseMobile: () => void;
 }) {
   const [accountOpen, setAccountOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const privileged = user?.isMaster || user?.isAdmin;
+  const initial = (user?.name || user?.email || "G").charAt(0).toUpperCase();
 
   return (
     <aside
@@ -127,12 +140,44 @@ export default function Sidebar({
 
       <div className="border-t border-white/[0.06] p-3 relative">
         {accountOpen && (
-          <div className="absolute bottom-full left-3 right-3 mb-2 bg-card2 border border-white/[0.08] rounded-xl p-3.5 shadow-panel animate-popIn origin-bottom">
-            <p className="text-xs font-semibold text-white mb-1">Guest session</p>
-            <p className="text-xs text-muted leading-relaxed">
-              History is stored on this device only. Accounts, cross-device sync, and subscription plans
-              aren&apos;t built yet.
-            </p>
+          <div className="absolute bottom-full left-3 right-3 mb-2 bg-card2 border border-white/[0.08] rounded-xl p-3.5 shadow-panel animate-popIn origin-bottom space-y-2.5">
+            {user ? (
+              <>
+                <div>
+                  <p className="text-xs font-semibold text-white mb-0.5 truncate">{user.name || user.email}</p>
+                  <p className="text-[11px] text-mutedDark truncate">{user.email}</p>
+                </div>
+                <p className="text-xs text-muted leading-relaxed">
+                  Conversation history is still stored on this device only — accounts don&apos;t sync it
+                  across devices yet.
+                </p>
+                {privileged && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 text-xs font-semibold text-cyan hover:text-white transition-colors"
+                  >
+                    <ShieldIcon />
+                    Admin dashboard
+                  </Link>
+                )}
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-xs font-semibold text-crimson hover:text-white transition-colors"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-xs font-semibold text-white mb-1">Guest session</p>
+                <p className="text-xs text-muted leading-relaxed">
+                  History is stored on this device only. Sign in to unlock account features as they ship.
+                </p>
+                <Link href="/login" className="block text-xs font-semibold text-cyan hover:text-white transition-colors">
+                  Sign in →
+                </Link>
+              </>
+            )}
           </div>
         )}
         <button
@@ -140,9 +185,11 @@ export default function Sidebar({
           className="w-full flex items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-white/[0.04] transition-colors"
         >
           <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-br from-accent to-cyan flex items-center justify-center text-[10px] font-bold text-bg">
-            G
+            {initial}
           </div>
-          <span className="flex-1 text-sm text-muted truncate">Guest</span>
+          <span className="flex-1 text-sm text-muted truncate">
+            {status === "loading" ? "…" : user ? user.name || user.email : "Guest"}
+          </span>
           <span className="text-mutedDark">
             <GearIcon />
           </span>

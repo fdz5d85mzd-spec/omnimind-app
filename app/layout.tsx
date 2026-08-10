@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AuthSessionProvider from "@/components/AuthSessionProvider";
 
 export const metadata: Metadata = {
   title: "OmniMind — Ask Anything",
@@ -12,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-bg text-white antialiased min-h-screen font-body">
         <div className="bg-mesh" aria-hidden />
         <div className="bg-grid" aria-hidden />
-        {children}
+        <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>
     </html>
   );

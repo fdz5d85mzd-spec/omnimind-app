@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import NeuralField from "@/components/NeuralField";
 import { LogoMark } from "@/components/Logo";
 import AnimatedCounter from "@/components/AnimatedCounter";
@@ -242,6 +243,7 @@ function Stat({ label, value, live }: { label: string; value: number | null; liv
 }
 
 function TopNav() {
+  const { data: session, status } = useSession();
   return (
     <header className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-6 sm:px-10 py-6">
       <Link href="/" className="flex items-center gap-2">
@@ -255,6 +257,14 @@ function TopNav() {
         >
           Mission Control
         </Link>
+        {status !== "loading" && !session?.user && (
+          <Link
+            href="/login"
+            className="hidden sm:inline-block text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
+          >
+            Sign in
+          </Link>
+        )}
         <Link
           href="/chat"
           className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
@@ -275,6 +285,14 @@ function Footer() {
           <span className="font-head font-semibold text-sm text-white">OmniMind</span>
         </div>
         <p className="text-xs text-mutedDark">The autonomous AI operating system.</p>
+        <div className="flex items-center gap-4 text-xs text-mutedDark">
+          <Link href="/terms" className="hover:text-white transition-colors">
+            Terms
+          </Link>
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            Privacy
+          </Link>
+        </div>
       </div>
     </footer>
   );

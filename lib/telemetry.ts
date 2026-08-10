@@ -28,6 +28,28 @@ export type TwinEvent = {
   [key: string]: unknown;
 };
 
+export type PolicyRule = {
+  id: string;
+  action: string;
+  effect: string;
+  roles: string[];
+  priority: number;
+  require_approval: boolean;
+  approve_roles: string[];
+};
+
+export type PolicyDecision = {
+  decision_id: string;
+  allowed: boolean;
+  matched_rule: string | null;
+  reason: string;
+  principal_id: string;
+  risk_level: string;
+  require_approval: boolean;
+  approval_status: string;
+  evaluated_at: string;
+};
+
 // Real reads against the live OmniMind control plane — no fabricated numbers.
 // A failed fetch surfaces as `null`, rendered as an honest "unreachable"
 // state by the caller, never silently swapped for a placeholder figure.
@@ -44,6 +66,9 @@ async function getJSON<T>(path: string): Promise<T | null> {
 export const getOrchestratorReport = () => getJSON<OrchestratorReport>("/orchestrator/report");
 export const getFleetStatus = () => getJSON<FleetStatus>("/fleet/status");
 export const getTwinSubscribers = () => getJSON<{ connected: number }>("/twin/stream/subscribers");
+export const getPolicyRules = () => getJSON<PolicyRule[]>("/policy/rules");
+export const getPendingApprovals = () => getJSON<PolicyDecision[]>("/policy/pending");
+export const getPolicyLog = (limit = 30) => getJSON<PolicyDecision[]>(`/policy/log?limit=${limit}`);
 
 export function connectTwinStream(
   onEvent: (event: TwinEvent) => void,
