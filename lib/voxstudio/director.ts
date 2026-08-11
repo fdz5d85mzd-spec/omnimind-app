@@ -1,4 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import * as z from "zod/v4";
 
 export interface CreativeBrief {
   title: string;
@@ -14,52 +16,28 @@ const SYSTEM_PROMPT = `You are the Director Agent of VoxStudio, OmniMind's AI fi
 Given a one-line idea, produce a concrete creative brief for a SHORT piece (under 2 minutes runtime):
 a title, a one-sentence logline, 2-4 characters, and 2-4 scenes each broken into 2-4 shots
 (camera + action per shot). Be specific and concrete -- name real camera moves and real actions,
-never generic filler like "the story unfolds".
+never generic filler like "the story unfolds".`;
 
-Reply with ONLY a JSON object, no prose before or after it, no markdown fences:
-{"title": string, "logline": string,
- "characters": [{"name": string, "description": string}],
- "scenes": [{"heading": string, "description": string,
-             "shots": [{"camera": string, "action": string}]}]}`;
-
-function tryParseObject(text: string): Record<string, unknown> | null {
-  try {
-    const parsed = JSON.parse(text);
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null;
-  } catch {
-    return null;
-  }
-}
-
-function extractBrief(raw: string): CreativeBrief | null {
-  const text = raw.trim();
-  // Try the raw text, a code-fenced version, and whatever's between the
-  // first "{" and the last "}" -- covers the model adding ```json fences
-  // or a leading/trailing sentence despite being told not to.
-  const candidates = [text];
-  if (text.includes("```")) {
-    candidates.push(text.replace(/^[\s\S]*?```(?:json)?/, "").replace(/```[\s\S]*$/, "").trim());
-  }
-  const first = text.indexOf("{");
-  const last = text.lastIndexOf("}");
-  if (first !== -1 && last > first) candidates.push(text.slice(first, last + 1));
-
-  let parsed: Record<string, unknown> | null = null;
-  for (const candidate of candidates) {
-    parsed = tryParseObject(candidate);
-    if (parsed) break;
-  }
-  if (
-    parsed &&
-    typeof parsed.title === "string" &&
-    typeof parsed.logline === "string" &&
-    Array.isArray(parsed.scenes) &&
-    Array.isArray(parsed.characters)
-  ) {
-    return parsed as unknown as CreativeBrief;
-  }
-  return null;
-}
+// Constrains the model's response server-side via output_config.format
+// (see lib/social/scriptWriter.ts for the same pattern) -- claude-sonnet-5
+// and the rest of the current model family reject the older "assistant
+// message prefill" trick (400 invalid_request_error), so this is the
+// supported way to force valid, schema-matching JSON.
+const CreativeBriefSchema = z.object({
+  title: z.string(),
+  logline: z.string(),
+  characters: z.array(z.object({ name: z.string(), description: z.string() })).min(2).max(4),
+  scenes: z
+    .array(
+      z.object({
+        heading: z.string(),
+        description: z.string(),
+        shots: z.array(z.object({ camera: z.string(), action: z.string() })).min(2).max(4),
+      })
+    )
+    .min(2)
+    .max(4),
+});
 
 /**
  * Generates a structured creative brief from a one-line idea. Runs on the
@@ -73,33 +51,24 @@ export async function generateCreativeBrief(idea: string): Promise<CreativeBrief
   if (!apiKey) throw new DirectorNotConfigured("ANTHROPIC_API_KEY is not set");
 
   const client = new Anthropic({ apiKey });
-  const response = await client.messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 1500,
-    system: SYSTEM_PROMPT,
-    messages: [
-      { role: "user", content: idea },
-      // Forces the continuation straight into JSON instead of a
-      // conversational preamble -- sturdier than instructions alone.
-      // The model's continuation doesn't repeat this prefill text, so
-      // it's re-added below.
-      { role: "assistant", content: "{" },
-    ],
-  });
 
-  const continuation = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("\n")
-    .trim();
-  const raw = "{" + continuation;
-
-  const brief = extractBrief(raw);
-  if (!brief) {
-    const snippet = raw.slice(0, 220).replace(/\s+/g, " ");
+  let response;
+  try {
+    response = await client.messages.parse({
+      model: "claude-sonnet-5",
+      max_tokens: 1500,
+      system: SYSTEM_PROMPT,
+      output_config: { format: zodOutputFormat(CreativeBriefSchema) },
+      messages: [{ role: "user", content: idea }],
+    });
+  } catch (err) {
     throw new DirectorError(
-      `Director Agent returned a response that couldn't be parsed as a brief. Raw start: ${snippet}${raw.length > 220 ? "…" : ""}`
+      `Director Agent returned a response that couldn't be parsed as a brief. ${err instanceof Error ? err.message : String(err)}`
     );
   }
-  return brief;
+
+  if (!response.parsed_output) {
+    throw new DirectorError("Director Agent returned an empty response.");
+  }
+  return response.parsed_output;
 }

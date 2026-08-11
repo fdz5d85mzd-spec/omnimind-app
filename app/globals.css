@@ -293,6 +293,24 @@ body {
   }
 }
 
+/* iOS Safari auto-zooms the whole page in on focus of any input/textarea/
+   select whose computed font-size is under 16px, to make the text legible --
+   and it doesn't reliably zoom back out afterward, leaving the layout
+   visibly cut off at both edges. Several fields across the app (chat
+   composer, login, settings, the Help widget) use Tailwind's text-sm/text-xs
+   (14px/12px) below the sm: breakpoint, which is exactly this trap on phones.
+   Force 16px on every form field under that breakpoint so focusing one never
+   triggers the zoom, instead of chasing it field by field. !important is
+   required: a bare element selector is lower specificity than Tailwind's
+   .text-sm/.text-xs classes, so without it those utility classes win. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 /* Homepage mascot "blink": an aperture-shutter close/open over the eye,
    mostly open (scale 0, invisible) with one quick close near the end of
    each cycle. translate(-50%,-50%) centers the disc on its own top/left
