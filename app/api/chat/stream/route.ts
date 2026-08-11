@@ -5,6 +5,7 @@ import { API_BASE } from "@/lib/api";
 import { checkCreditGate, creditsForAnswer, FREE_COOLDOWN_HOURS } from "@/lib/credits";
 import { getUserWithRefill } from "@/lib/creditsServer";
 import { prisma } from "@/lib/prisma";
+import { getUserProviderKey } from "@/lib/connectorLookup";
 
 // Gated version of POST /agent/run/stream for signed-in users: checks
 // credits/cooldown BEFORE the request reaches the LLM (the browser never
@@ -27,7 +28,13 @@ export async function POST(request: NextRequest) {
   // money or running into the same credit wall a normal signup would.
   const isPrivileged = Boolean(session.user.isMaster || session.user.isAdmin);
 
-  if (!isPrivileged) {
+  // A user's own connected provider key means they're spending their own
+  // quota, not ours -- same free pass as admins get, but for a different
+  // reason (no cost to us either way).
+  const ownOpenAiKey = await getUserProviderKey(user.id, "openai");
+  const usingOwnKey = Boolean(ownOpenAiKey);
+
+  if (!isPrivileged && !usingOwnKey) {
     const gate = checkCreditGate(user);
     if (!gate.allowed) {
       return NextResponse.json({ error: "blocked", ...gate }, { status: 402 });
@@ -43,7 +50,11 @@ export async function POST(request: NextRequest) {
     backendRes = await fetch(`${API_BASE}/agent/run/stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, session_id: `user_${user.id}` }),
+      body: JSON.stringify({
+        prompt,
+        session_id: `user_${user.id}`,
+        ...(usingOwnKey ? { user_api_key: ownOpenAiKey, user_api_provider: "openai" } : {}),
+      }),
     });
   } catch {
     return NextResponse.json({ error: "Backend unreachable" }, { status: 502 });
@@ -91,10 +102,12 @@ export async function POST(request: NextRequest) {
 
       if (finalAnswer !== null) {
         const cost = creditsForAnswer(finalAnswer.length);
-        // Usage is still logged for admins (useful for their own checks),
-        // just never deducted -- so testing a flow never runs them into
-        // the same cooldown a real free-tier user would hit.
-        if (!isPrivileged) {
+        // Usage is still logged for admins and BYOK users (useful for
+        // their own checks), just never deducted -- admins because
+        // they're testing, BYOK users because they're spending their own
+        // provider quota, not ours.
+        const skipDeduction = isPrivileged || usingOwnKey;
+        if (!skipDeduction) {
           const newBalance = startingBalance - cost;
           await prisma.user.update({
             where: { id: userId },
@@ -112,7 +125,7 @@ export async function POST(request: NextRequest) {
             runId: finalRunId || `unknown_${Date.now()}`,
             chars: finalAnswer.length,
             durationMs: finalDurationMs,
-            creditsCost: isPrivileged ? 0 : cost,
+            creditsCost: skipDeduction ? 0 : cost,
           },
         });
       }

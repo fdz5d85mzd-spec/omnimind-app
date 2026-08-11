@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { LogoMark } from "@/components/Logo";
@@ -7,6 +8,99 @@ import { useCredits } from "@/lib/useCredits";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { LANGUAGES } from "@/lib/i18n/languages";
 import type { LangCode } from "@/lib/i18n/types";
+
+interface Connection {
+  provider: string;
+  maskedKey: string;
+}
+
+function ConnectionsSection() {
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/connections")
+      .then((r) => r.json())
+      .then((d) => setConnections(d.connections || []))
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const openai = connections.find((c) => c.provider === "openai");
+
+  async function save() {
+    if (!apiKey.trim() || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/connections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: "openai", apiKey: apiKey.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not save");
+        return;
+      }
+      setConnections((prev) => [...prev.filter((c) => c.provider !== "openai"), { provider: "openai", maskedKey: data.maskedKey }]);
+      setApiKey("");
+    } catch {
+      setError("Could not reach the server");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    setConnections((prev) => prev.filter((c) => c.provider !== "openai"));
+    await fetch("/api/connections?provider=openai", { method: "DELETE" }).catch(() => {});
+  }
+
+  return (
+    <section className="glass rounded-2xl p-5">
+      <h2 className="text-sm font-semibold text-white mb-1.5">Connections</h2>
+      <p className="text-xs text-mutedDark mb-4">
+        Add your own OpenAI (ChatGPT) API key to answer chats with your own quota instead of OmniMind&apos;s
+        shared credits — nothing is deducted from your balance while it&apos;s connected.
+      </p>
+      {!loaded ? (
+        <p className="text-xs text-mutedDark">—</p>
+      ) : openai ? (
+        <div className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3.5 py-3">
+          <div>
+            <p className="text-sm text-white font-semibold">OpenAI</p>
+            <p className="text-xs text-mutedDark font-mono">{openai.maskedKey}</p>
+          </div>
+          <button onClick={remove} className="text-xs font-semibold text-crimson hover:text-white transition-colors">
+            Remove
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="sk-..."
+            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-mutedDark outline-none focus:border-accent/60 transition-colors"
+          />
+          <button
+            onClick={save}
+            disabled={!apiKey.trim() || saving}
+            className="text-sm font-semibold text-cyan hover:text-white disabled:opacity-50 transition-colors"
+          >
+            {saving ? "Saving…" : "Connect OpenAI"}
+          </button>
+          {error && <p className="text-xs text-crimson">{error}</p>}
+        </div>
+      )}
+    </section>
+  );
+}
 
 export function SettingsSignInGate() {
   const { t } = useLanguage();
@@ -105,6 +199,8 @@ export default function SettingsClient({
             {t.settingsViewPricing} →
           </Link>
         </section>
+
+        <ConnectionsSection />
 
         <button
           onClick={() => signOut({ callbackUrl: "/" })}

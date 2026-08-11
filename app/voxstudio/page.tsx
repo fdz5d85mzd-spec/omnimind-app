@@ -1,14 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+
+interface Shot {
+  camera: string;
+  action: string;
+}
+
+interface Scene {
+  heading: string;
+  description: string;
+  shots: Shot[];
+}
 
 interface CreativeBrief {
   title: string;
   logline: string;
   characters: { name: string; description: string }[];
-  scenes: { heading: string; description: string; shots: { camera: string; action: string }[] }[];
+  scenes: Scene[];
 }
 
 interface BriefResponse {
@@ -19,24 +30,50 @@ interface BriefResponse {
   error?: string;
 }
 
-const ADAPTERS: { label: string; ready: boolean; note: string }[] = [
-  { label: "Planning (Director Agent)", ready: true, note: "Live — Anthropic" },
-  { label: "Voice", ready: false, note: "ElevenLabs connected elsewhere in OmniMind, not wired here yet" },
-  { label: "Image", ready: false, note: "Needs a provider key (not configured)" },
-  { label: "Video", ready: false, note: "Needs a provider key (not configured)" },
-];
+interface SceneMedia {
+  imageUrl?: string;
+  videoUrl?: string;
+  imageLoading?: boolean;
+  videoLoading?: boolean;
+  error?: string;
+}
+
+function scenePrompt(scene: Scene): string {
+  const shotBits = scene.shots.map((s) => `${s.camera}: ${s.action}`).join("; ");
+  return `${scene.heading}. ${scene.description}${shotBits ? ` Shots: ${shotBits}.` : ""} Cinematic film still, dramatic lighting.`;
+}
 
 export default function VoxStudioPage() {
   const [idea, setIdea] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BriefResponse | null>(null);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [sceneMedia, setSceneMedia] = useState<Record<number, SceneMedia>>({});
+
+  useEffect(() => {
+    fetch("/voxstudio/api/status")
+      .then((r) => r.json())
+      .then((d) => setMediaReady(Boolean(d.imageReady)))
+      .catch(() => {});
+  }, []);
+
+  const adapters = [
+    { label: "Planning (Director Agent)", ready: true, note: "Live — Anthropic" },
+    {
+      label: "Image & Video",
+      ready: mediaReady,
+      note: mediaReady ? "Live — Higgsfield" : "Needs HF_CREDENTIALS set (not configured)",
+    },
+    { label: "Voice", ready: false, note: "ElevenLabs connected elsewhere in OmniMind, not wired here yet" },
+  ];
 
   async function generate() {
     if (!idea.trim() || loading) return;
     setLoading(true);
     setError(null);
     setResult(null);
+    setSceneMedia({});
     try {
       const res = await fetch("/voxstudio/api/brief", {
         method: "POST",
@@ -53,6 +90,53 @@ export default function VoxStudioPage() {
       setError("Could not reach VoxStudio — check your connection and try again.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function generateImage(i: number, scene: Scene) {
+    setSceneMedia((prev) => ({ ...prev, [i]: { ...prev[i], imageLoading: true, error: undefined } }));
+    try {
+      const res = await fetch("/voxstudio/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: scenePrompt(scene), projectId: result?.projectId ?? undefined, sceneIndex: i }),
+      });
+      const data = await res.json();
+      setSceneMedia((prev) => ({
+        ...prev,
+        [i]: res.ok
+          ? { ...prev[i], imageLoading: false, imageUrl: data.url }
+          : { ...prev[i], imageLoading: false, error: data.error || "Generation failed" },
+      }));
+    } catch {
+      setSceneMedia((prev) => ({ ...prev, [i]: { ...prev[i], imageLoading: false, error: "Could not reach VoxStudio" } }));
+    }
+  }
+
+  async function generateVideo(i: number, scene: Scene) {
+    const media = sceneMedia[i];
+    if (!media?.imageUrl) return;
+    setSceneMedia((prev) => ({ ...prev, [i]: { ...prev[i], videoLoading: true, error: undefined } }));
+    try {
+      const res = await fetch("/voxstudio/api/generate-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageUrl: media.imageUrl,
+          prompt: scenePrompt(scene),
+          projectId: result?.projectId ?? undefined,
+          sceneIndex: i,
+        }),
+      });
+      const data = await res.json();
+      setSceneMedia((prev) => ({
+        ...prev,
+        [i]: res.ok
+          ? { ...prev[i], videoLoading: false, videoUrl: data.url }
+          : { ...prev[i], videoLoading: false, error: data.error || "Generation failed" },
+      }));
+    } catch {
+      setSceneMedia((prev) => ({ ...prev, [i]: { ...prev[i], videoLoading: false, error: "Could not reach VoxStudio" } }));
     }
   }
 
@@ -77,7 +161,7 @@ export default function VoxStudioPage() {
             What actually works right now
           </p>
           <div className="grid grid-cols-2 gap-3">
-            {ADAPTERS.map((a) => (
+            {adapters.map((a) => (
               <div key={a.label} className="flex items-start gap-2.5">
                 <span
                   className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${a.ready ? "bg-emerald-400" : "bg-white/20"}`}
@@ -154,20 +238,62 @@ export default function VoxStudioPage() {
 
             <div className="glass rounded-3xl p-8">
               <p className="text-xs font-semibold tracking-wide text-mutedDark uppercase mb-4">Scenes</p>
-              <div className="space-y-6">
-                {result.brief.scenes.map((s, i) => (
-                  <div key={i}>
-                    <p className="text-sm font-semibold text-white">{s.heading}</p>
-                    <p className="text-sm text-muted leading-relaxed mb-2">{s.description}</p>
-                    <ul className="space-y-1.5 pl-4 border-l border-white/[0.08]">
-                      {s.shots.map((shot, j) => (
-                        <li key={j} className="text-xs text-mutedDark">
-                          <span className="text-cyan">{shot.camera}</span> — {shot.action}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+              <div className="space-y-8">
+                {result.brief.scenes.map((s, i) => {
+                  const media = sceneMedia[i] ?? {};
+                  return (
+                    <div key={i}>
+                      <p className="text-sm font-semibold text-white">{s.heading}</p>
+                      <p className="text-sm text-muted leading-relaxed mb-2">{s.description}</p>
+                      <ul className="space-y-1.5 pl-4 border-l border-white/[0.08] mb-3">
+                        {s.shots.map((shot, j) => (
+                          <li key={j} className="text-xs text-mutedDark">
+                            <span className="text-cyan">{shot.camera}</span> — {shot.action}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {mediaReady && (
+                        <div className="pl-4">
+                          {!media.imageUrl && (
+                            <button
+                              onClick={() => generateImage(i, s)}
+                              disabled={media.imageLoading}
+                              className="text-xs font-semibold text-cyan hover:text-white disabled:opacity-50 transition-colors"
+                            >
+                              {media.imageLoading ? "Generating image…" : "Generate image ✨"}
+                            </button>
+                          )}
+
+                          {media.imageUrl && (
+                            <div className="space-y-2 max-w-sm">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={media.imageUrl}
+                                alt={s.heading}
+                                className="w-full rounded-xl border border-white/[0.08]"
+                              />
+                              {!media.videoUrl && (
+                                <button
+                                  onClick={() => generateVideo(i, s)}
+                                  disabled={media.videoLoading}
+                                  className="text-xs font-semibold text-cyan hover:text-white disabled:opacity-50 transition-colors"
+                                >
+                                  {media.videoLoading ? "Animating…" : "Generate video from this image ✨"}
+                                </button>
+                              )}
+                              {media.videoUrl && (
+                                <video src={media.videoUrl} controls className="w-full rounded-xl border border-white/[0.08]" />
+                              )}
+                            </div>
+                          )}
+
+                          {media.error && <p className="text-xs text-red-300 mt-1.5">{media.error}</p>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

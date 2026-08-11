@@ -23,8 +23,28 @@ model User {
   sessions    Session[]
   usageEvents UsageEvent[]
   voxProjects VoxProject[]
+  connections UserConnection[]
 
   @@map("users")
+}
+
+// A user's own API key for another provider ("bring your own key") --
+// stored encrypted (see lib/connectorCrypto.ts), never in plaintext.
+// When present, chat requests use this key/provider instead of OmniMind's
+// own shared one, and aren't charged against the user's credit balance
+// (they're spending their own provider quota, not ours).
+model UserConnection {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  provider     String // "openai" for now
+  encryptedKey String   @map("encrypted_key") @db.Text
+  maskedKey    String   @map("masked_key") // e.g. "sk-...ab3f", for display only
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("user_connections")
 }
 
 model UsageEvent {

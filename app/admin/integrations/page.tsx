@@ -1,10 +1,12 @@
 import { getIntegrationsStatus } from "@/lib/telemetry";
+import { isHiggsfieldConfigured } from "@/lib/voxstudio/higgsfield";
 
 export const metadata = { title: "Integrations — OmniMind Admin" };
 
 export default async function IntegrationsPage() {
   const status = await getIntegrationsStatus();
   const githubConfigured = !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
+  const higgsfieldConfigured = isHiggsfieldConfigured();
 
   return (
     <div className="min-h-screen">
@@ -53,8 +55,12 @@ export default async function IntegrationsPage() {
           />
           <Row
             name="Higgsfield"
-            connected={false}
-            detail="Not wired up yet — needs a Higgsfield API key and a backend integration to let agents call it. Tell me when you have a key and I'll build it."
+            connected={higgsfieldConfigured}
+            detail={
+              higgsfieldConfigured
+                ? "Active — powering VoxStudio's real image and video generation."
+                : "Set HF_CREDENTIALS (\"KEY_ID:KEY_SECRET\" from cloud.higgsfield.ai) to enable VoxStudio image/video generation."
+            }
           />
         </div>
 
