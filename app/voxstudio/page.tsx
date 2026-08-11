@@ -39,6 +39,13 @@ interface SceneMedia {
   error?: string;
 }
 
+interface ProjectSummary {
+  id: string;
+  title: string;
+  logline: string;
+  createdAt: string;
+}
+
 function scenePrompt(scene: Scene): string {
   const shotBits = scene.shots.map((s) => `${s.camera}: ${s.action}`).join("; ");
   return `${scene.heading}. ${scene.description}${shotBits ? ` Shots: ${shotBits}.` : ""} Cinematic film still, dramatic lighting.`;
@@ -57,6 +64,8 @@ export default function VoxStudioPage() {
   const [result, setResult] = useState<BriefResponse | null>(null);
   const [mediaReady, setMediaReady] = useState(false);
   const [sceneMedia, setSceneMedia] = useState<Record<number, SceneMedia>>({});
+  const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
+  const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/voxstudio/api/status")
@@ -64,6 +73,36 @@ export default function VoxStudioPage() {
       .then((d) => setMediaReady(Boolean(d.imageReady)))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetch("/voxstudio/api/projects")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setProjects(d?.projects ?? []))
+      .catch(() => setProjects([]));
+  }, []);
+
+  async function openProject(id: string) {
+    setLoadingProjectId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/voxstudio/api/projects/${id}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not load that project");
+        return;
+      }
+      setResult(data);
+      const media: Record<number, SceneMedia> = {};
+      for (const [idx, m] of Object.entries(data.media ?? {})) {
+        media[Number(idx)] = m as SceneMedia;
+      }
+      setSceneMedia(media);
+    } catch {
+      setError("Could not reach VoxStudio — check your connection and try again.");
+    } finally {
+      setLoadingProjectId(null);
+    }
+  }
 
   const adapters = [
     { label: "Planning (Director Agent)", ready: true, note: "Live — Anthropic" },
@@ -93,6 +132,13 @@ export default function VoxStudioPage() {
         return;
       }
       setResult(data);
+      if (data.projectId && data.brief) {
+        const created = data.projectId;
+        setProjects((prev) => [
+          { id: created, title: data.brief!.title, logline: data.brief!.logline, createdAt: new Date().toISOString() },
+          ...(prev ?? []),
+        ]);
+      }
     } catch {
       setError("Could not reach VoxStudio — check your connection and try again.");
     } finally {
@@ -181,6 +227,42 @@ export default function VoxStudioPage() {
             ))}
           </div>
         </div>
+
+        {!result && projects && projects.length > 0 && (
+          <div className="glass rounded-2xl p-5 mb-8">
+            <p className="text-xs font-semibold tracking-wide text-mutedDark uppercase mb-3">
+              Your projects
+            </p>
+            <div className="space-y-2">
+              {projects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => openProject(p.id)}
+                  disabled={loadingProjectId !== null}
+                  className="w-full text-left rounded-xl px-3.5 py-2.5 bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] disabled:opacity-50 transition-colors"
+                >
+                  <p className="text-sm text-white font-medium truncate">
+                    {loadingProjectId === p.id ? "Opening…" : p.title}
+                  </p>
+                  <p className="text-xs text-mutedDark truncate">{p.logline}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {result && (
+          <button
+            onClick={() => {
+              setResult(null);
+              setSceneMedia({});
+              setError(null);
+            }}
+            className="text-xs font-semibold text-cyan hover:text-white mb-4 transition-colors"
+          >
+            ← New idea
+          </button>
+        )}
 
         <div className="glass rounded-3xl p-6 mb-8">
           <label htmlFor="idea" className="block text-sm font-medium text-white mb-2">
