@@ -32,4 +32,8 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Without this, the WebView's getUserMedia() call for the mic button
+         is denied outright; Capacitor's Bridge handles the runtime prompt
+         itself once this manifest permission is declared. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 </manifest>
