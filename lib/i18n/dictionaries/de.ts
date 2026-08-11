@@ -108,6 +108,23 @@ const de: Dictionary = {
 
   creditsUnlimited: "Unbegrenzt",
   creditsRefillsIn: "Auffüllung in {time}",
+
+  installTitle: "OmniMind installieren",
+  installSub: "Füge es für Ein-Klick-Zugriff zu deinem Desktop hinzu.",
+  installButton: "Installieren",
+  installDismissLabel: "Schließen",
+
+  helpTitle: "Hilfe",
+  helpGreeting: "Hallo! Frag mich alles zu OmniMind, Helen oder VoxStudio — ich helfe dir so gut ich kann.",
+  helpFaq1: "Was ist OmniMind?",
+  helpFaq2: "Wie funktionieren Credits?",
+  helpFaq3: "Sind meine Daten privat?",
+  helpPlaceholder: "Gib deine Frage ein…",
+  helpHumanTitle: "Brauchst du noch einen Menschen?",
+  helpHumanBody: "Unsere KI kann noch nicht alles lösen. Schick eine Nachricht und ein echter Mensch antwortet per E-Mail.",
+  helpContactPlaceholder: "Deine Nachricht…",
+  helpContactSend: "Senden",
+  helpContactSent: "Gesendet — wir antworten per E-Mail.",
 };
 
 export default de;

@@ -108,6 +108,23 @@ const ru: Dictionary = {
 
   creditsUnlimited: "Безлимит",
   creditsRefillsIn: "Пополнение через {time}",
+
+  installTitle: "Установить OmniMind",
+  installSub: "Добавьте на рабочий стол для доступа в один клик.",
+  installButton: "Установить",
+  installDismissLabel: "Скрыть",
+
+  helpTitle: "Помощь",
+  helpGreeting: "Привет! Спроси меня о чём угодно про OmniMind, Helen или VoxStudio — постараюсь помочь.",
+  helpFaq1: "Что такое OmniMind?",
+  helpFaq2: "Как работают кредиты?",
+  helpFaq3: "Мои данные конфиденциальны?",
+  helpPlaceholder: "Введите ваш вопрос…",
+  helpHumanTitle: "Всё ещё нужен человек?",
+  helpHumanBody: "Наш ИИ пока не может решить всё. Отправьте сообщение, и настоящий человек ответит вам по email.",
+  helpContactPlaceholder: "Ваше сообщение…",
+  helpContactSend: "Отправить",
+  helpContactSent: "Отправлено — мы ответим по email.",
 };
 
 export default ru;

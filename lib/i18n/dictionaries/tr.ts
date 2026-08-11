@@ -108,6 +108,23 @@ const tr: Dictionary = {
 
   creditsUnlimited: "Sınırsız",
   creditsRefillsIn: "{time} içinde yenilenir",
+
+  installTitle: "OmniMind'ı yükle",
+  installSub: "Tek tıkla erişim için masaüstüne ekle.",
+  installButton: "Yükle",
+  installDismissLabel: "Kapat",
+
+  helpTitle: "Yardım",
+  helpGreeting: "Merhaba! OmniMind, Helen veya VoxStudio hakkında istediğini sor — elimden geldiğince yardımcı olurum.",
+  helpFaq1: "OmniMind nedir?",
+  helpFaq2: "Krediler nasıl çalışır?",
+  helpFaq3: "Verilerim gizli mi?",
+  helpPlaceholder: "Sorunu yaz…",
+  helpHumanTitle: "Hâlâ bir kişiyle mi konuşman gerekiyor?",
+  helpHumanBody: "Yapay zekamız henüz her şeyi çözemiyor. Bir mesaj gönder, gerçek biri e-posta ile yanıtlasın.",
+  helpContactPlaceholder: "Mesajın…",
+  helpContactSend: "Gönder",
+  helpContactSent: "Gönderildi — e-posta ile yanıtlayacağız.",
 };
 
 export default tr;
