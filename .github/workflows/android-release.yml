@@ -1,0 +1,82 @@
+name: Build Android app
+
+# Manual trigger only -- this produces a release artifact, not something
+# that should fire on every push. Run it from the Actions tab (or
+# `gh workflow run android-release.yml`) whenever a new build is wanted.
+#
+# Always builds an unsigned debug APK first, so the project's build health
+# is verified even with zero secrets configured. If the four ANDROID_*
+# secrets below are set (Settings -> Secrets and variables -> Actions),
+# it also builds a signed release .aab ready to upload to Play Console.
+#
+# Required secrets for the signed build:
+#   ANDROID_KEYSTORE_BASE64   -- `base64 -w0 upload-keystore.jks` output
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Debug build (always runs -- proves the project itself builds)
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnimind-debug-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Check for release signing secrets
+        id: signing
+        run: |
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decode release keystore
+        if: steps.signing.outputs.configured == 'true'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
+          cat > keystore.properties <<EOF
+          storeFile=upload-keystore.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+
+      - name: Signed release build (.aab, ready for Play Console)
+        if: steps.signing.outputs.configured == 'true'
+        run: ./gradlew bundleRelease --no-daemon
+
+      - name: Upload signed release bundle
+        if: steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnimind-release-aab
+          path: mobile/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f upload-keystore.jks keystore.properties
