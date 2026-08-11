@@ -18,13 +18,8 @@ export default function PrivacyPage() {
         <div className="space-y-6 text-sm text-muted leading-relaxed">
           <p>
             This describes exactly what OmniMind stores today — not a generic template. It will be
-            updated as new features (like server-synced conversation history) ship. This page covers
-            OmniMind, Mission Control, and VoxStudio. Helen is a related but separately-branded product
-            with its own account system and its own{" "}
-            <Link href="/helen/privacy" className="text-cyan hover:underline">
-              privacy policy
-            </Link>
-            .
+            updated as new features (like server-synced conversation history) ship. OmniMind, Mission
+            Control, VoxStudio, and Helen are one product — this page covers all of it.
           </p>
 
           <Section title="What we store">
@@ -44,6 +39,18 @@ export default function PrivacyPage() {
             timestamp, outcome) so the system can function — approvals, memory, and the live activity feed
             all depend on this. This operational log is not the same as saved conversation history and is
             not exposed publicly beyond the Mission Control view.
+          </Section>
+
+          <Section title="Helen">
+            Helen runs on its own sign-in system (Supabase), separate from your OmniMind account, so it
+            keeps its own data: your email (to sign you in), the username and creature name you choose,
+            your creature&apos;s progress (happiness, streak, care points), and confirmation that a payment
+            succeeded — never your card details, which Stripe handles directly. That data is used to run
+            your membership, save your creature&apos;s progress, show your username (never your email) on
+            the leaderboard, and send you occasional emails like a welcome message or a reminder if
+            you&apos;ve been away. You can rename your creature, mute all sound, or ask to have your Helen
+            account and data deleted at any time. Helen is not directed at children under 16, and we
+            don&apos;t knowingly collect data from them.
           </Section>
 
           <Section title="Third parties">
@@ -67,6 +74,10 @@ export default function PrivacyPage() {
                 <span className="text-white font-medium">Stripe</span> — paid plans, credit purchases, and
                 promo codes are processed by Stripe. We never see or store your full card number; Stripe
                 handles that directly.
+              </li>
+              <li>
+                <span className="text-white font-medium">Supabase</span> — Helen&apos;s sign-in and creature
+                data are stored here, separate from your main OmniMind account.
               </li>
               <li>
                 <span className="text-white font-medium">GitHub</span> — only if you choose to sign in with
