@@ -6,40 +6,60 @@ import { checkCreditGate, creditsForAnswer, FREE_COOLDOWN_HOURS } from "@/lib/cr
 import { getUserWithRefill } from "@/lib/creditsServer";
 import { prisma } from "@/lib/prisma";
 import { getUserProviderKey } from "@/lib/connectorLookup";
+import { GUEST_TRIAL_COOKIE, guestTrialRemainingMs } from "@/lib/guestTrial";
 
 // Gated proxy for POST /agent/run/stream -- the only path the chat UI ever
-// calls (see lib/api.ts's streamAgent and app/chat/page.tsx's send(), which
-// requires a session before it even reaches here). Checks credits/cooldown
-// BEFORE the request reaches the LLM (the browser never talks to the
-// backend directly, so this can't be bypassed the way a client-side-only
-// check could), streams the real backend response through unmodified, then
-// deducts credits proportional to the real answer length once the stream
-// completes.
+// calls (see lib/api.ts's streamAgent and app/chat/page.tsx's send()).
+// Signed-in users: checks credits/cooldown BEFORE the request reaches the
+// LLM (the browser never talks to the backend directly, so this can't be
+// bypassed the way a client-side-only check could), then deducts credits
+// proportional to the real answer length once the stream completes. Guests:
+// allowed through only with a valid, server-set trial cookie (see
+// /api/chat/guest-trial) that hasn't run past its 5-minute window --
+// nothing metered against them since there's no account to charge.
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Sign in required" }, { status: 401 });
-  }
 
-  const user = await getUserWithRefill(session.user.id);
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  let userId: string | null = null;
+  let isPrivileged = false;
+  let usingOwnKey = false;
+  let ownOpenAiKey: string | null = null;
+  let startingBalance = 0;
+  let sessionIdForBackend: string;
 
-  // Michail and Marina (MASTER_EMAIL / ADMIN_EMAIL) need to be able to
-  // exercise every flow to check it actually works, without spending real
-  // money or running into the same credit wall a normal signup would.
-  const isPrivileged = Boolean(session.user.isMaster || session.user.isAdmin);
+  if (session?.user?.id) {
+    const user = await getUserWithRefill(session.user.id);
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  // A user's own connected provider key means they're spending their own
-  // quota, not ours -- same free pass as admins get, but for a different
-  // reason (no cost to us either way).
-  const ownOpenAiKey = await getUserProviderKey(user.id, "openai");
-  const usingOwnKey = Boolean(ownOpenAiKey);
+    // Michail and Marina (MASTER_EMAIL / ADMIN_EMAIL) need to be able to
+    // exercise every flow to check it actually works, without spending real
+    // money or running into the same credit wall a normal signup would.
+    isPrivileged = Boolean(session.user.isMaster || session.user.isAdmin);
 
-  if (!isPrivileged && !usingOwnKey) {
-    const gate = checkCreditGate(user);
-    if (!gate.allowed) {
-      return NextResponse.json({ error: "blocked", ...gate }, { status: 402 });
+    // A user's own connected provider key means they're spending their own
+    // quota, not ours -- same free pass as admins get, but for a different
+    // reason (no cost to us either way).
+    ownOpenAiKey = await getUserProviderKey(user.id, "openai");
+    usingOwnKey = Boolean(ownOpenAiKey);
+
+    if (!isPrivileged && !usingOwnKey) {
+      const gate = checkCreditGate(user);
+      if (!gate.allowed) {
+        return NextResponse.json({ error: "blocked", ...gate }, { status: 402 });
+      }
     }
+    userId = user.id;
+    startingBalance = user.creditBalance;
+    sessionIdForBackend = `user_${user.id}`;
+  } else {
+    const trialStartedAt = request.cookies.get(GUEST_TRIAL_COOKIE)?.value;
+    if (!trialStartedAt) {
+      return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+    }
+    if (guestTrialRemainingMs(trialStartedAt) <= 0) {
+      return NextResponse.json({ error: "blocked", reason: "trial_expired" }, { status: 402 });
+    }
+    sessionIdForBackend = `guest_${trialStartedAt}`;
   }
 
   const body = await request.json().catch(() => ({}));
@@ -53,7 +73,7 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt,
-        session_id: `user_${user.id}`,
+        session_id: sessionIdForBackend,
         ...(usingOwnKey ? { user_api_key: ownOpenAiKey, user_api_provider: "openai" } : {}),
       }),
     });
@@ -66,8 +86,6 @@ export async function POST(request: NextRequest) {
 
   const reader = backendRes.body.getReader();
   const decoder = new TextDecoder();
-  const userId = user.id;
-  const startingBalance = user.creditBalance;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -101,7 +119,9 @@ export async function POST(request: NextRequest) {
       }
       controller.close();
 
-      if (finalAnswer !== null) {
+      // Guests have no account to meter usage against -- their only limit
+      // is the trial window already enforced above.
+      if (finalAnswer !== null && userId) {
         const cost = creditsForAnswer(finalAnswer.length);
         // Usage is still logged for admins and BYOK users (useful for
         // their own checks), just never deducted -- admins because

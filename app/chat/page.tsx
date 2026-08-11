@@ -16,6 +16,7 @@ import Sidebar from "@/components/Sidebar";
 import { Logo, LogoMark } from "@/components/Logo";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { notifyCreditsChanged } from "@/lib/useCredits";
+import { GUEST_TRIAL_MINUTES } from "@/lib/guestTrial";
 
 function describeBlocked(info: BlockedReason): string {
   if (info.reason === "cooldown") {
@@ -53,6 +54,30 @@ function MicIcon() {
   );
 }
 
+const GUEST_TRIAL_MS = GUEST_TRIAL_MINUTES * 60_000;
+
+function TrialBadge({ remainingMs, className = "" }: { remainingMs: number | null; className?: string }) {
+  const ms = remainingMs ?? GUEST_TRIAL_MS;
+  const totalSeconds = Math.ceil(ms / 1000);
+  const mm = Math.floor(totalSeconds / 60);
+  const ss = String(totalSeconds % 60).padStart(2, "0");
+  const pct = Math.max(0, Math.min(100, (ms / GUEST_TRIAL_MS) * 100));
+
+  return (
+    <div className={`flex items-center gap-2.5 text-xs text-muted ${className}`}>
+      <span className="whitespace-nowrap">
+        Free trial — <span className="font-semibold text-white tabular-nums">{mm}:{ss}</span> left
+      </span>
+      <div className="h-1 flex-1 rounded-full bg-white/[0.08] overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-[width] duration-1000 ${pct <= 20 ? "bg-crimson" : "bg-accent"}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
@@ -64,6 +89,14 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
 
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  // null = not a guest concern yet (still resolving session, or signed in);
+  // a number once we know -- ms left in the 5-minute trial, ticked down
+  // client-side for display only. The real check happens server-side on
+  // every send (see /api/chat/stream reading the httpOnly trial cookie),
+  // so a manipulated display value here can't buy extra real usage.
+  const [guestTrialMs, setGuestTrialMs] = useState<number | null>(null);
+  const isGuest = sessionStatus !== "loading" && !session?.user;
+  const guestTrialExpired = isGuest && guestTrialMs !== null && guestTrialMs <= 0;
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -124,6 +157,34 @@ export default function Home() {
     if (hydrated) saveConversations(conversations);
   }, [conversations, hydrated]);
 
+  // Starts (or re-syncs, on a page refresh) the guest trial the moment we
+  // know there's no session -- the server sets/reads the actual httpOnly
+  // cookie; this just mirrors the remaining time for display and ticks it
+  // down locally so the countdown doesn't need a network call every second.
+  useEffect(() => {
+    if (!isGuest) return;
+    let cancelled = false;
+    fetch("/api/chat/guest-trial", { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setGuestTrialMs(typeof data.remainingMs === "number" ? data.remainingMs : 0);
+      })
+      .catch(() => {
+        if (!cancelled) setGuestTrialMs(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isGuest]);
+
+  useEffect(() => {
+    if (guestTrialMs === null || guestTrialMs <= 0) return;
+    const interval = setInterval(() => {
+      setGuestTrialMs((ms) => (ms === null ? null : Math.max(0, ms - 1000)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [guestTrialMs !== null && guestTrialMs > 0]);
+
   const active = conversations.find((c) => c.id === activeId) || null;
   const messages = active?.messages ?? [];
 
@@ -145,17 +206,16 @@ export default function Home() {
   async function send(text?: string) {
     const q = (text ?? input).trim();
     if (!q || isStreaming) return;
-    // Every real turn needs an account -- guests used to go straight to the
-    // backend with no credit gate at all (see lib/api.ts's gated param).
-    // Defense in depth: the empty-state screen already hides the composer
-    // for guests, but this still needs to hold up on its own (e.g. a
-    // session expiring mid-conversation).
-    if (sessionStatus !== "loading" && !session?.user) {
+    // Guests get a real 5-minute trial (see /api/chat/guest-trial), not
+    // unlimited free usage -- the server re-checks the actual elapsed time
+    // from an httpOnly cookie on every send regardless of what this client
+    // thinks the countdown says, so this is a UX guard, not the real gate.
+    if (guestTrialExpired) {
       router.push("/login?next=/chat");
       return;
     }
 
-    const spokenTurn = voiceTurnRef.current;
+    const spokenTurn = !isGuest && voiceTurnRef.current;
     voiceTurnRef.current = false;
     stopSpeaking();
 
@@ -315,16 +375,17 @@ export default function Home() {
                 A real OmniMind agent — policy-checked, orchestrated, remembered — goes to work and answers.
               </p>
 
-              {sessionStatus !== "loading" && !session?.user ? (
+              {guestTrialExpired ? (
                 <button
                   type="button"
                   onClick={() => router.push("/login?next=/chat")}
                   className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
                 >
-                  Sign in to start — free credits included
+                  Your 5-minute trial ended — sign in to keep going
                 </button>
               ) : (
                 <>
+                  {isGuest && <TrialBadge remainingMs={guestTrialMs} className="mb-3" />}
                   <div className="w-full">
                     <Composer
                       value={input}
@@ -333,7 +394,7 @@ export default function Home() {
                       disabled={isStreaming}
                       textareaRef={textareaRef}
                       autoFocus
-                      speech={speech}
+                      speech={isGuest ? undefined : speech}
                     />
                   </div>
 
@@ -365,16 +426,27 @@ export default function Home() {
 
             <div className="border-t border-white/[0.06] bg-bg/80 backdrop-blur-xl px-4 sm:px-0 py-4">
               <div className="max-w-3xl mx-auto w-full">
-                <Composer
-                  value={input}
-                  onChange={onComposerChange}
-                  onSubmit={() => send()}
-                  disabled={isStreaming}
-                  textareaRef={textareaRef}
-                  streaming={isStreaming}
-                  onStop={stop}
-                  speech={speech}
-                />
+                {isGuest && <TrialBadge remainingMs={guestTrialMs} className="mb-3" />}
+                {guestTrialExpired ? (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/login?next=/chat")}
+                    className="w-full rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all"
+                  >
+                    Your 5-minute trial ended — sign in to keep going
+                  </button>
+                ) : (
+                  <Composer
+                    value={input}
+                    onChange={onComposerChange}
+                    onSubmit={() => send()}
+                    disabled={isStreaming}
+                    textareaRef={textareaRef}
+                    streaming={isStreaming}
+                    onStop={stop}
+                    speech={isGuest ? undefined : speech}
+                  />
+                )}
               </div>
             </div>
           </>
