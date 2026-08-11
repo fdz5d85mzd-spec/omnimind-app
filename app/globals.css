@@ -222,6 +222,12 @@ body {
   animation: helen-idle-bob 3.2s ease-in-out infinite;
   transform-origin: bottom center;
 }
+/* Same bob/rotate/scale keyframe as Helen's creature, under a brand-neutral
+   name -- used by the OmniMind mascot on the homepage hero. */
+.animate-idle-bob {
+  animation: helen-idle-bob 3.2s ease-in-out infinite;
+  transform-origin: bottom center;
+}
 
 /* --- /helen/lab/creature experimental route ------------------ */
 

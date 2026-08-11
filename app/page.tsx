@@ -79,14 +79,18 @@ export default function Landing() {
         <div className="relative flex flex-col items-center text-center animate-rise">
           <div className="relative mb-2 h-[200px] w-[200px] sm:h-[240px] sm:w-[240px]">
             <div className="absolute inset-0 blur-3xl opacity-60 animate-breathe" style={{ background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)" }} />
-            <video
-              className="relative h-full w-full object-contain"
-              src="/mascot-hero.mp4"
-              poster="/mascot-hero-poster.jpg"
-              autoPlay
-              muted
-              loop
-              playsInline
+            {/* Cutout (background removed via Higgsfield), not the source
+                video's own dark frame -- a boxed rectangle sitting on top of
+                the page background read as a pasted-in placeholder, not a
+                mascot. Referenced from Higgsfield's CDN directly rather than
+                self-hosted: this sandbox's network policy blocks that CDN
+                domain, same reason THINKING_VIDEO_URL in app/chat/page.tsx
+                does the same. */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- external CDN, not a local /public asset next/image can optimize */}
+            <img
+              className="relative h-full w-full object-contain animate-idle-bob"
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_3H6UhncW5DoRLIfEn3yyJY05j6D/hf_20260811_040534_3519a82f-5b95-457a-a925-bd911235991b.png"
+              alt=""
               aria-hidden
             />
           </div>
