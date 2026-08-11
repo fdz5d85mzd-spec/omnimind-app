@@ -22,10 +22,8 @@ export async function GET() {
     ]);
 
   if (memberError || purchaseError) {
-    return NextResponse.json(
-      { error: (memberError ?? purchaseError)?.message ?? "Unknown error" },
-      { status: 500 },
-    );
+    console.error("helen stats: Supabase read failed", memberError ?? purchaseError);
+    return NextResponse.json({ error: "Stats aren't available right now" }, { status: 500 });
   }
 
   const shopRevenueEur = (purchases ?? []).reduce((sum, row) => sum + Number(row.amount_eur), 0);

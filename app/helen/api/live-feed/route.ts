@@ -18,7 +18,8 @@ export async function GET() {
   ]);
 
   if (countError || recentError) {
-    return NextResponse.json({ error: (countError ?? recentError)?.message ?? "Unknown error" }, { status: 500 });
+    console.error("helen live-feed: Supabase read failed", countError ?? recentError);
+    return NextResponse.json({ error: "Live feed isn't available right now" }, { status: 500 });
   }
 
   return NextResponse.json(
