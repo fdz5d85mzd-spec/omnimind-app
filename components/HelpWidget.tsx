@@ -202,10 +202,14 @@ export default function HelpWidget() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={t.helpTitle}
-        className="fixed bottom-4 left-4 z-50 flex items-center gap-1.5 rounded-full bg-card/70 backdrop-blur-xl border border-white/[0.08] text-mutedDark hover:text-white hover:border-accent/30 pl-2.5 pr-3 py-2 text-xs font-medium shadow-panel transition-colors"
+        className="fixed bottom-4 left-4 z-50 flex items-center justify-center gap-1.5 h-10 w-10 sm:h-auto sm:w-auto rounded-full bg-card/70 backdrop-blur-xl border border-white/[0.08] text-mutedDark hover:text-white hover:border-accent/30 sm:pl-2.5 sm:pr-3 sm:py-2 text-xs font-medium shadow-panel transition-colors"
       >
         <HelpIcon />
-        {t.helpTitle}
+        {/* Icon-only on narrow screens -- a wider text pill in this corner
+            can overlap short mobile heroes' primary CTA (measured: 14px
+            overlap with the homepage's "Enter Mission Control" button at
+            375x812). A 40px circle clears it; desktop keeps the label. */}
+        <span className="hidden sm:inline">{t.helpTitle}</span>
       </button>
     </>
   );
