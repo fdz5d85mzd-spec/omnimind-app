@@ -20,6 +20,7 @@ import { notifyCreditsChanged } from "@/lib/useCredits";
 import { GUEST_TRIAL_MINUTES } from "@/lib/guestTrial";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { Dictionary } from "@/lib/i18n/types";
+import { SPEECH_LOCALE } from "@/lib/speechLocale";
 
 function describeBlocked(info: BlockedReason, t: Dictionary): string {
   if (info.reason === "cooldown") {
@@ -77,7 +78,7 @@ function TrialBadge({ remainingMs, className = "" }: { remainingMs: number | nul
 
 export default function Home() {
   const { data: session, status: sessionStatus } = useSession();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -113,7 +114,7 @@ export default function Home() {
     voiceTurnRef.current = true;
     requestAnimationFrame(() => textareaRef.current?.focus());
   }, []);
-  const speech = useSpeechRecognition(handleVoiceText);
+  const speech = useSpeechRecognition(handleVoiceText, SPEECH_LOCALE[lang]);
 
   function onComposerChange(v: string) {
     voiceTurnRef.current = false;
@@ -124,6 +125,7 @@ export default function Home() {
   function stopSpeaking() {
     audioRef.current?.pause();
     if (audioRef.current) audioRef.current.currentTime = 0;
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
     setSpeakingId(null);
     setVoiceFailedId(null);
   }
@@ -163,6 +165,46 @@ export default function Home() {
     } else {
       el.muted = false;
     }
+
+    // Some engines (Safari especially) apply the same "must start inside
+    // a real gesture" rule to speechSynthesis as to <audio> -- an empty,
+    // immediately-cancelled utterance here primes it the same way.
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+        window.speechSynthesis.cancel();
+      } catch {
+        // not fatal -- speakWithBrowserVoice() still gets a real attempt later
+      }
+    }
+  }
+
+  // Fallback path when the primary (ElevenLabs) voice fails for any
+  // reason -- missing/broken server key, network error, quota -- using
+  // the browser's own built-in voice instead of leaving the reply silent.
+  // Lower quality than ElevenLabs, but every modern browser (including
+  // the "cheap Android TV" class of device) ships one, so this is a real
+  // safety net rather than a best-effort attempt.
+  function speakWithBrowserVoice(assistantId: string, text: string): boolean {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = SPEECH_LOCALE[lang];
+      utterance.onstart = () => {
+        setSpeakingId(assistantId);
+        setVoiceFailedId(null);
+      };
+      utterance.onend = () => setSpeakingId((id) => (id === assistantId ? null : id));
+      utterance.onerror = () => {
+        setSpeakingId((id) => (id === assistantId ? null : id));
+        setVoiceFailedId(assistantId);
+      };
+      window.speechSynthesis.speak(utterance);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async function speakReply(assistantId: string, text: string) {
@@ -175,7 +217,7 @@ export default function Home() {
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.audio || !audioRef.current) {
-        setVoiceFailedId(assistantId);
+        if (!speakWithBrowserVoice(assistantId, text)) setVoiceFailedId(assistantId);
         return;
       }
       // A Blob/object URL plays far more reliably across browsers than a
@@ -194,12 +236,14 @@ export default function Home() {
         URL.revokeObjectURL(url);
       };
       await audioRef.current.play().catch(() => {
-        setSpeakingId(null);
-        setVoiceFailedId(assistantId);
         URL.revokeObjectURL(url);
+        if (!speakWithBrowserVoice(assistantId, text)) {
+          setSpeakingId(null);
+          setVoiceFailedId(assistantId);
+        }
       });
     } catch {
-      setVoiceFailedId(assistantId);
+      if (!speakWithBrowserVoice(assistantId, text)) setVoiceFailedId(assistantId);
     }
   }
 
