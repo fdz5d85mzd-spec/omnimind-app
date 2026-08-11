@@ -188,19 +188,35 @@ export default function Home() {
   function speakWithBrowserVoice(assistantId: string, text: string): boolean {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
     try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = SPEECH_LOCALE[lang];
-      utterance.onstart = () => {
-        setSpeakingId(assistantId);
-        setVoiceFailedId(null);
-      };
-      utterance.onend = () => setSpeakingId((id) => (id === assistantId ? null : id));
-      utterance.onerror = () => {
-        setSpeakingId((id) => (id === assistantId ? null : id));
-        setVoiceFailedId(assistantId);
-      };
-      window.speechSynthesis.speak(utterance);
+      const synth = window.speechSynthesis;
+      synth.cancel();
+      // iOS Safari's cancel() doesn't clear the speech queue synchronously --
+      // a speak() called right after it can be silently dropped, with no
+      // error event at all, which is exactly what "the voice never speaks"
+      // looks like from the outside. A short delay before speaking (and a
+      // resume(), since Safari can leave the engine paused after being
+      // idle) is the standard workaround. A watchdog below also catches the
+      // case where onstart simply never fires, since that failure mode
+      // wouldn't otherwise surface at all.
+      // Only fires if onstart below never runs (cleared there otherwise).
+      const watchdog = window.setTimeout(() => setVoiceFailedId(assistantId), 3500);
+      window.setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = SPEECH_LOCALE[lang];
+        utterance.onstart = () => {
+          window.clearTimeout(watchdog);
+          setSpeakingId(assistantId);
+          setVoiceFailedId(null);
+        };
+        utterance.onend = () => setSpeakingId((id) => (id === assistantId ? null : id));
+        utterance.onerror = () => {
+          window.clearTimeout(watchdog);
+          setSpeakingId((id) => (id === assistantId ? null : id));
+          setVoiceFailedId(assistantId);
+        };
+        synth.resume();
+        synth.speak(utterance);
+      }, 150);
       return true;
     } catch {
       return false;
