@@ -40,8 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="bg-mesh" aria-hidden />
         <div className="bg-grid" aria-hidden />
         <ServiceWorkerRegistrar />
-        <InstallPrompt />
         <LanguageProvider>
+          <InstallPrompt />
           <AuthSessionProvider>{children}</AuthSessionProvider>
         </LanguageProvider>
       </body>

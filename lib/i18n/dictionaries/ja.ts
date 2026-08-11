@@ -107,6 +107,11 @@ const ja: Dictionary = {
 
   creditsUnlimited: "無制限",
   creditsRefillsIn: "{time}後に補充",
+
+  installTitle: "OmniMindをインストール",
+  installSub: "デスクトップに追加してワンクリックでアクセス。",
+  installButton: "インストール",
+  installDismissLabel: "閉じる",
 };
 
 export default ja;

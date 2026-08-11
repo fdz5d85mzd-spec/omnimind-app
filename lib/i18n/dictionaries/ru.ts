@@ -108,6 +108,11 @@ const ru: Dictionary = {
 
   creditsUnlimited: "Безлимит",
   creditsRefillsIn: "Пополнение через {time}",
+
+  installTitle: "Установить OmniMind",
+  installSub: "Добавьте на рабочий стол для доступа в один клик.",
+  installButton: "Установить",
+  installDismissLabel: "Скрыть",
 };
 
 export default ru;

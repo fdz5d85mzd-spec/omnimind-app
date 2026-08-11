@@ -108,6 +108,11 @@ const el: Dictionary = {
 
   creditsUnlimited: "Απεριόριστο",
   creditsRefillsIn: "Ανανέωση σε {time}",
+
+  installTitle: "Εγκατάστησε το OmniMind",
+  installSub: "Πρόσθεσέ το στην επιφάνεια εργασίας για πρόσβαση με ένα κλικ.",
+  installButton: "Εγκατάσταση",
+  installDismissLabel: "Απόρριψη",
 };
 
 export default el;

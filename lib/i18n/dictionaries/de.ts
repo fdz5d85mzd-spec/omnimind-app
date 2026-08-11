@@ -108,6 +108,11 @@ const de: Dictionary = {
 
   creditsUnlimited: "Unbegrenzt",
   creditsRefillsIn: "Auffüllung in {time}",
+
+  installTitle: "OmniMind installieren",
+  installSub: "Füge es für Ein-Klick-Zugriff zu deinem Desktop hinzu.",
+  installButton: "Installieren",
+  installDismissLabel: "Schließen",
 };
 
 export default de;

@@ -106,6 +106,11 @@ const zh: Dictionary = {
 
   creditsUnlimited: "无限",
   creditsRefillsIn: "{time} 后刷新",
+
+  installTitle: "安装 OmniMind",
+  installSub: "添加到桌面，一键访问。",
+  installButton: "安装",
+  installDismissLabel: "关闭",
 };
 
 export default zh;

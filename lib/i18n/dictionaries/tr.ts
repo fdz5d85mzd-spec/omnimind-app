@@ -108,6 +108,11 @@ const tr: Dictionary = {
 
   creditsUnlimited: "Sınırsız",
   creditsRefillsIn: "{time} içinde yenilenir",
+
+  installTitle: "OmniMind'ı yükle",
+  installSub: "Tek tıkla erişim için masaüstüne ekle.",
+  installButton: "Yükle",
+  installDismissLabel: "Kapat",
 };
 
 export default tr;

@@ -107,6 +107,11 @@ const ar: Dictionary = {
 
   creditsUnlimited: "غير محدود",
   creditsRefillsIn: "يتجدد خلال {time}",
+
+  installTitle: "تثبيت OmniMind",
+  installSub: "أضفه إلى سطح المكتب للوصول بنقرة واحدة.",
+  installButton: "تثبيت",
+  installDismissLabel: "إغلاق",
 };
 
 export default ar;
