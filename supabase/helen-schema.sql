@@ -135,22 +135,37 @@ alter table payouts enable row level security;
 alter table shop_items enable row level security;
 alter table shop_purchases enable row level security;
 
+-- Postgres has no "create policy if not exists", so drop-then-create makes
+-- this whole script safely re-runnable (matches the "if not exists" used
+-- for tables/sequences above) instead of erroring on a second run.
+
+drop policy if exists "members read own row" on members;
 create policy "members read own row" on members
   for select using (auth.uid() = user_id);
 
+drop policy if exists "members public leaderboard read" on members;
 create policy "members public leaderboard read" on members
   for select using (true); -- id + tier only; expose via a view instead of this table if you need to hide other columns
 
+drop policy if exists "orgs public read" on orgs;
 create policy "orgs public read" on orgs for select using (true);
+
+drop policy if exists "fund_cycles public read" on fund_cycles;
 create policy "fund_cycles public read" on fund_cycles for select using (true);
+
+drop policy if exists "payouts public read" on payouts;
 create policy "payouts public read" on payouts for select using (true);
+
+drop policy if exists "shop_items public read" on shop_items;
 create policy "shop_items public read" on shop_items for select using (true);
 
+drop policy if exists "shop_purchases read own" on shop_purchases;
 create policy "shop_purchases read own" on shop_purchases
   for select using (
     exists (select 1 from members where members.id = shop_purchases.member_id and members.user_id = auth.uid())
   );
 
+drop policy if exists "votes read own" on votes;
 create policy "votes read own" on votes
   for select using (
     exists (select 1 from members where members.id = votes.member_id and members.user_id = auth.uid())
