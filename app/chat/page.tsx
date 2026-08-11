@@ -17,24 +17,19 @@ import { Logo, LogoMark } from "@/components/Logo";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { notifyCreditsChanged } from "@/lib/useCredits";
 import { GUEST_TRIAL_MINUTES } from "@/lib/guestTrial";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { Dictionary } from "@/lib/i18n/types";
 
-function describeBlocked(info: BlockedReason): string {
+function describeBlocked(info: BlockedReason, t: Dictionary): string {
   if (info.reason === "cooldown") {
     const mins = Math.max(1, Math.round((new Date(info.retryAt).getTime() - Date.now()) / 60000));
     const hrs = Math.floor(mins / 60);
     const rem = mins % 60;
     const wait = hrs > 0 ? `${hrs}h ${rem}m` : `${rem}m`;
-    return `Out of free credits — more arrive automatically in about ${wait}.`;
+    return t.chatOutOfCreditsCooldown.replace("{wait}", wait);
   }
-  return "Out of credits. Add more from a paid plan to keep going.";
+  return t.chatOutOfCreditsGeneric;
 }
-
-const SUGGESTIONS = [
-  "Explain how a leader election algorithm works",
-  "Draft a launch announcement for an AI operating system",
-  "Plan a 3-step rollout for a new feature",
-  "Summarize the tradeoffs of microservices vs a monolith",
-];
 
 function MenuIcon() {
   return (
@@ -57,6 +52,7 @@ function MicIcon() {
 const GUEST_TRIAL_MS = GUEST_TRIAL_MINUTES * 60_000;
 
 function TrialBadge({ remainingMs, className = "" }: { remainingMs: number | null; className?: string }) {
+  const { t } = useLanguage();
   const ms = remainingMs ?? GUEST_TRIAL_MS;
   const totalSeconds = Math.ceil(ms / 1000);
   const mm = Math.floor(totalSeconds / 60);
@@ -66,7 +62,7 @@ function TrialBadge({ remainingMs, className = "" }: { remainingMs: number | nul
   return (
     <div className={`flex items-center gap-2.5 text-xs text-muted ${className}`}>
       <span className="whitespace-nowrap">
-        Free trial — <span className="font-semibold text-white tabular-nums">{mm}:{ss}</span> left
+        {t.chatTrialLabel} — <span className="font-semibold text-white tabular-nums">{mm}:{ss}</span> {t.chatTrialLeftSuffix}
       </span>
       <div className="h-1 flex-1 rounded-full bg-white/[0.08] overflow-hidden">
         <div
@@ -80,6 +76,7 @@ function TrialBadge({ remainingMs, className = "" }: { remainingMs: number | nul
 
 export default function Home() {
   const { data: session, status: sessionStatus } = useSession();
+  const { t } = useLanguage();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -282,10 +279,10 @@ export default function Home() {
           setTimeout(() => notifyCreditsChanged(), 600);
         },
         onError: (message) => patchAssistant({ content: message, status: "error" }),
-        onBlocked: (info) => patchAssistant({ content: describeBlocked(info), status: "error" }),
+        onBlocked: (info) => patchAssistant({ content: describeBlocked(info, t), status: "error" }),
         onWaking: () => {
           waking = true;
-          patchAssistant({ content: "Waking up the OmniMind backend — this can take up to a minute…" });
+          patchAssistant({ content: t.chatWaking });
         },
       },
       controller.signal
@@ -366,14 +363,12 @@ export default function Home() {
                 <LogoMark size={44} />
               </div>
               <span className="inline-block text-cyan text-[11px] font-bold tracking-[0.2em] mb-5 px-3 py-1 rounded-full border border-cyan/25 bg-cyan/[0.06]">
-                THE AUTONOMOUS AI OPERATING SYSTEM
+                {t.heroBadge}
               </span>
               <h1 className="font-head text-4xl sm:text-5xl font-bold mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-                Ask anything.
+                {t.heroLine1}
               </h1>
-              <p className="text-muted max-w-xl mb-10 mx-auto leading-relaxed">
-                A real OmniMind agent — policy-checked, orchestrated, remembered — goes to work and answers.
-              </p>
+              <p className="text-muted max-w-xl mb-10 mx-auto leading-relaxed">{t.chatHeroSub}</p>
 
               {guestTrialExpired ? (
                 <button
@@ -381,7 +376,7 @@ export default function Home() {
                   onClick={() => router.push("/login?next=/chat")}
                   className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
                 >
-                  Your 5-minute trial ended — sign in to keep going
+                  {t.chatTrialEnded}
                 </button>
               ) : (
                 <>
@@ -399,7 +394,7 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 justify-center mt-6 max-w-2xl">
-                    {SUGGESTIONS.map((s) => (
+                    {[t.chatSuggestion1, t.chatSuggestion2, t.chatSuggestion3, t.chatSuggestion4].map((s) => (
                       <button
                         key={s}
                         onClick={() => send(s)}
@@ -433,7 +428,7 @@ export default function Home() {
                     onClick={() => router.push("/login?next=/chat")}
                     className="w-full rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all"
                   >
-                    Your 5-minute trial ended — sign in to keep going
+                    {t.chatTrialEnded}
                   </button>
                 ) : (
                   <Composer
@@ -538,6 +533,7 @@ function Composer({
   onStop?: () => void;
   speech?: ReturnType<typeof useSpeechRecognition>;
 }) {
+  const { t } = useLanguage();
   return (
     <form
       onSubmit={(e) => {
@@ -559,14 +555,14 @@ function Composer({
               onSubmit();
             }
           }}
-          placeholder={speech?.listening ? "Listening…" : "Ask OmniMind anything…"}
+          placeholder={speech?.listening ? t.chatComposerListening : t.chatComposerPlaceholder}
           className="flex-1 min-w-0 bg-transparent outline-none resize-none placeholder:text-mutedDark text-sm sm:text-base py-2 max-h-[200px]"
         />
         {speech?.supported && (
           <button
             type="button"
             onClick={() => (speech.listening ? speech.stop() : speech.start())}
-            title={speech.listening ? "Stop listening" : "Speak your message"}
+            title={speech.listening ? t.chatMicStopTitle : t.chatMicSpeakTitle}
             className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-xl transition-colors ${
               speech.listening
                 ? "bg-crimson/20 text-crimson animate-pulse"
@@ -583,7 +579,7 @@ function Composer({
             className="shrink-0 flex items-center gap-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
           >
             <span className="h-2 w-2 rounded-sm bg-white" />
-            Stop
+            {t.chatStopButton}
           </button>
         ) : (
           <button
@@ -591,7 +587,7 @@ function Composer({
             disabled={disabled || !value.trim()}
             className="shrink-0 bg-gradient-to-br from-accent to-accent/90 hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity text-white text-sm font-bold px-5 py-2.5 rounded-xl"
           >
-            Ask
+            {t.chatAskButton}
           </button>
         )}
       </div>
