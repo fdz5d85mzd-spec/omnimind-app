@@ -25,8 +25,11 @@ export async function requireAdminOrMaster(): Promise<AdminSessionCheck> {
   return requireMaster();
 }
 
+// Same reasoning as lib/telemetry.ts's getJSON: the backend can be asleep
+// (Render free tier, 50+s cold start) and without a timeout an admin action
+// button would just hang until the platform kills the request.
 export async function callBackendAdmin(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
   if (process.env.ADMIN_API_KEY) headers.set("X-Admin-Key", process.env.ADMIN_API_KEY);
-  return fetch(`${API_BASE}${path}`, { ...init, headers, cache: "no-store" });
+  return fetch(`${API_BASE}${path}`, { ...init, headers, cache: "no-store", signal: AbortSignal.timeout(8000) });
 }

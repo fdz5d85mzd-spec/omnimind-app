@@ -54,9 +54,16 @@ export type PolicyDecision = {
 // Real reads against the live OmniMind control plane — no fabricated numbers.
 // A failed fetch surfaces as `null`, rendered as an honest "unreachable"
 // state by the caller, never silently swapped for a placeholder figure.
+//
+// The backend runs on Render's free tier, which sleeps after inactivity and
+// can take 50+ seconds to wake up. Without a timeout, that stalls the whole
+// admin page's server render (including the sidebar/hamburger, which can't
+// hydrate until the HTML arrives) until Vercel's own function timeout kills
+// it. Failing fast here lets the page render its shell immediately and show
+// an honest "unreachable" state instead of hanging.
 async function getJSON<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store", signal: AbortSignal.timeout(6000) });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
