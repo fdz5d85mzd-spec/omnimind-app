@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { LogoMark } from "@/components/Logo";
@@ -244,6 +244,20 @@ function TopNav() {
   const { data: session, status } = useSession();
   const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Tapping anywhere outside the open mobile menu (not just its own links
+  // or the X button) closes it -- it had no way to dismiss itself otherwise.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onPointerDown(e: PointerEvent) {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [menuOpen]);
 
   const links = [
     { href: "/helen", label: t.navHelen },
@@ -256,7 +270,7 @@ function TopNav() {
   ];
 
   return (
-    <header className="absolute top-0 inset-x-0 z-20 px-6 sm:px-10 py-6">
+    <header ref={headerRef} className="absolute top-0 inset-x-0 z-20 px-6 sm:px-10 py-6">
       <div className="flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <LogoMark size={22} />
