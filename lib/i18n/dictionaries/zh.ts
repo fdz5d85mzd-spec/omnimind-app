@@ -123,6 +123,26 @@ const zh: Dictionary = {
   helpContactPlaceholder: "你的留言…",
   helpContactSend: "发送",
   helpContactSent: "已发送——我们会通过邮件回复你。",
+
+  guideTitle: "OmniMind 如何运作",
+  guideSub: "一个账户，一个地方。以下所有内容都在 OmniMind 内部——这里没有任何东西是需要单独注册或单独付费的独立应用。",
+  guideCoreEyebrow: "核心",
+  guideCoreCta: "向 OmniMind 提问任何问题",
+  guideCoreBody1:
+    "OmniMind 是整个应用所构建的自主人工智能操作系统。向它提问任何问题，真实的请求都会经过策略引擎（检查是否被允许）、元编排器（根据请求实际需要，将其分配给 40 个具名舰队智能体之一——代码智能体、研究智能体、写作智能体等等），以及版本化记忆（每次交流都会被记录，绝不丢弃）。",
+  guideCoreTrackPre: "在",
+  guideCoreTrackMid: "实时追踪它，并在",
+  guideCoreTrackEnd: "中设置语言、查看额度。",
+  guidePartOfEyebrow: "OmniMind 的一部分",
+  guideHelenCta: "打开 Helen",
+  guideHelenBody:
+    "Helen 是一项 1 欧元的全球会员计划：你会获得一只会随着你的照顾而成长的虚拟生物伙伴，每一份会员费都会汇入一个共享的、真实存在的影响力基金。它有自己的外观和世界，但它是 OmniMind 的一个板块，而不是独立产品——同一个账户，同样的支付方式（在同一个 OmniMind 部署上使用 Stripe，而非独立商户），每个 Helen 页面角落的小小 ← OmniMind 按钮都能带你直接回到这里。",
+  guideVoxCta: "打开 VoxStudio",
+  guideVoxBody1:
+    "VoxStudio 是原生集成在 OmniMind 中的 AI 电影前期制作工具：用一句话描述一个创意，Director Agent 就会将其拆解为标题、故事梗概、角色、场景和分镜列表——运行在同一个 OmniMind 账户上，无需单独注册。",
+  guideVoxBody2:
+    "目前这一策划步骤已完全上线。将简报转化为真正的视频、图像或角色配音是下一层功能，会随着这些生成服务商的接入而陆续添加——页面本身始终如实展示哪些已经上线、哪些尚未上线。",
+  guideFooterDirectly: "。",
 };
 
 export default zh;

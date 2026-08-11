@@ -125,6 +125,27 @@ const es: Dictionary = {
   helpContactPlaceholder: "Tu mensaje…",
   helpContactSend: "Enviar",
   helpContactSent: "Enviado — te responderemos por email.",
+
+  guideTitle: "Cómo funciona OmniMind",
+  guideSub:
+    "Una cuenta, un solo lugar. Todo lo que sigue vive dentro de OmniMind — nada aquí es una app aparte con su propio registro o su propia factura.",
+  guideCoreEyebrow: "El núcleo",
+  guideCoreCta: "Pregúntale a OmniMind lo que sea",
+  guideCoreBody1:
+    "OmniMind es el sistema operativo autónomo de IA sobre el que está construida toda esta app. Pregúntale lo que sea y una solicitud real pasa por un Policy Engine (comprueba que está permitida), un Meta-Orchestrator (la asigna a uno de los 40 agentes con nombre de la flota — un Code Agent, un Research Agent, un Writer Agent, etc. — según lo que realmente necesita la solicitud), y una Memoria Versionada (cada intercambio queda registrado, nada se descarta).",
+  guideCoreTrackPre: "Síguelo en vivo en",
+  guideCoreTrackMid: ", y configura tu idioma y revisa tus créditos en",
+  guideCoreTrackEnd: ".",
+  guidePartOfEyebrow: "Parte de OmniMind",
+  guideHelenCta: "Abrir Helen",
+  guideHelenBody:
+    "Helen es una membresía global de €1: obtienes una criatura virtual compañera que crece mientras la cuidas, y cada membresía alimenta un Impact Fund compartido y real. Tiene su propio aspecto y su propio mundo, pero es una sección de OmniMind, no un producto aparte — misma cuenta, mismos pagos (Stripe en este mismo despliegue de OmniMind, no un comercio separado), y un pequeño botón ← OmniMind en la esquina de cada pantalla de Helen te trae directamente de vuelta aquí.",
+  guideVoxCta: "Abrir VoxStudio",
+  guideVoxBody1:
+    "VoxStudio es preproducción de cine con IA, integrada de forma nativa en OmniMind: describe una idea en una línea y el Director Agent la convierte en título, logline, personajes, escenas y una lista de planos — funciona con la misma cuenta de OmniMind, sin registro aparte.",
+  guideVoxBody2:
+    "Hoy ese paso de planificación está totalmente activo. Convertir un brief en vídeo, imágenes o voz de personaje real es la siguiente capa, que se añade a medida que se conectan esos proveedores de generación — la propia página siempre muestra honestamente qué está activo y qué todavía no.",
+  guideFooterDirectly: "directamente.",
 };
 
 export default es;

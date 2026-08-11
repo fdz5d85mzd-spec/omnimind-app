@@ -125,6 +125,26 @@ const tr: Dictionary = {
   helpContactPlaceholder: "Mesajın…",
   helpContactSend: "Gönder",
   helpContactSent: "Gönderildi — e-posta ile yanıtlayacağız.",
+
+  guideTitle: "OmniMind nasıl çalışır",
+  guideSub: "Tek hesap, tek yer. Aşağıdakilerin hepsi OmniMind'ın içinde yaşar — burada kendi kaydı veya kendi faturası olan ayrı bir uygulama yoktur.",
+  guideCoreEyebrow: "Çekirdek",
+  guideCoreCta: "OmniMind'a istediğini sor",
+  guideCoreBody1:
+    "OmniMind, bu uygulamanın tamamının üzerine kurulduğu otonom yapay zeka işletim sistemidir. Ona istediğini sor; gerçek bir istek bir Policy Engine'den (izinli olup olmadığını kontrol eder), bir Meta-Orchestrator'dan (isteğin gerçekte neye ihtiyacı olduğuna göre filodaki 40 adlandırılmış ajandan birine — bir Code Agent, bir Research Agent, bir Writer Agent ve benzerlerine — atar) ve Versioned Memory'den (her alışveriş kaydedilir, hiçbir şey atılmaz) geçer.",
+  guideCoreTrackPre: "Canlısını",
+  guideCoreTrackMid: "üzerinden takip et; dilini ayarlamak ve kredilerini kontrol etmek için",
+  guideCoreTrackEnd: "sayfasına bakabilirsin.",
+  guidePartOfEyebrow: "OmniMind'ın bir parçası",
+  guideHelenCta: "Helen'ı aç",
+  guideHelenBody:
+    "Helen, 1 €'luk küresel bir üyeliktir: onunla ilgilendikçe büyüyen sanal bir yaratık dostu elde edersin ve her üyelik paylaşımlı, gerçek dünyadaki bir Impact Fund'ı besler. Kendi görünümü ve kendi dünyası vardır, ama ayrı bir ürün değil, OmniMind'ın bir bölümüdür — aynı hesap, aynı ödemeler (ayrı bir satıcı değil, bu aynı OmniMind dağıtımı üzerinde Stripe), ve her Helen ekranının köşesindeki küçük ← OmniMind düğmesi seni doğrudan buraya geri getirir.",
+  guideVoxCta: "VoxStudio'yu aç",
+  guideVoxBody1:
+    "VoxStudio, OmniMind'a doğal olarak entegre edilmiş yapay zeka destekli film ön prodüksiyonudur: bir fikri tek satırda anlat, Director Agent onu bir başlık, logline, karakterler, sahneler ve çekim listesine böler — aynı OmniMind hesabında çalışır, ayrı kayıt gerekmez.",
+  guideVoxBody2:
+    "Bugün bu planlama adımı tamamen çalışır durumda. Bir brifingi gerçek bir videoya, görsellere veya karakter sesine dönüştürmek, bu üretim sağlayıcıları bağlandıkça eklenen bir sonraki katmandır — sayfanın kendisi neyin canlı olduğunu ve neyin henüz olmadığını her zaman dürüstçe gösterir.",
+  guideFooterDirectly: ".",
 };
 
 export default tr;

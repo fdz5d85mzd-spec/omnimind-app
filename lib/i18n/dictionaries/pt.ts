@@ -125,6 +125,27 @@ const pt: Dictionary = {
   helpContactPlaceholder: "Sua mensagem…",
   helpContactSend: "Enviar",
   helpContactSent: "Enviado — responderemos por e-mail.",
+
+  guideTitle: "Como o OmniMind funciona",
+  guideSub:
+    "Uma conta, um só lugar. Tudo abaixo vive dentro do OmniMind — nada aqui é um app separado com seu próprio cadastro ou sua própria fatura.",
+  guideCoreEyebrow: "O núcleo",
+  guideCoreCta: "Pergunte qualquer coisa ao OmniMind",
+  guideCoreBody1:
+    "O OmniMind é o sistema operacional de IA autônomo sobre o qual todo este app é construído. Pergunte qualquer coisa e uma solicitação real passa por um Policy Engine (verifica se é permitida), um Meta-Orchestrator (atribui a um dos 40 agentes nomeados da frota — um Code Agent, um Research Agent, um Writer Agent, e por aí vai — de acordo com o que a solicitação realmente precisa), e uma Memória Versionada (cada troca é registrada, nada é descartado).",
+  guideCoreTrackPre: "Acompanhe ao vivo no",
+  guideCoreTrackMid: ", e defina seu idioma e confira seus créditos nas",
+  guideCoreTrackEnd: ".",
+  guidePartOfEyebrow: "Parte do OmniMind",
+  guideHelenCta: "Abrir Helen",
+  guideHelenBody:
+    "Helen é uma assinatura global de €1: você ganha uma criatura virtual companheira que cresce enquanto você cuida dela, e cada assinatura alimenta um Impact Fund compartilhado e real. Tem visual e mundo próprios, mas é uma seção do OmniMind, não um produto separado — mesma conta, mesmos pagamentos (Stripe neste mesmo deployment do OmniMind, não um comerciante separado), e um pequeno botão ← OmniMind no canto de cada tela da Helen te traz direto de volta para cá.",
+  guideVoxCta: "Abrir VoxStudio",
+  guideVoxBody1:
+    "O VoxStudio é pré-produção de filme com IA, integrado nativamente ao OmniMind: descreva uma ideia em uma linha e o Director Agent a transforma em título, logline, personagens, cenas e uma lista de planos — roda na mesma conta OmniMind, sem cadastro separado.",
+  guideVoxBody2:
+    "Hoje essa etapa de planejamento está totalmente ativa. Transformar um briefing em vídeo, imagens ou voz de personagem de verdade é a próxima camada, adicionada conforme esses provedores de geração forem conectados — a própria página sempre mostra honestamente o que já está ativo e o que ainda não está.",
+  guideFooterDirectly: "diretamente.",
 };
 
 export default pt;
