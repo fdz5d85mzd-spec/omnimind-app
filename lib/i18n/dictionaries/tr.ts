@@ -4,6 +4,7 @@ const tr: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "Mission Control",
   navPricing: "Fiyatlandırma",
   navSignIn: "Giriş yap",

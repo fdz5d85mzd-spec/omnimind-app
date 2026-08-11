@@ -4,6 +4,7 @@ const el: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "Mission Control",
   navPricing: "Τιμές",
   navSignIn: "Σύνδεση",

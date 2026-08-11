@@ -4,6 +4,7 @@ const ar: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "مركز التحكم",
   navPricing: "الأسعار",
   navSignIn: "تسجيل الدخول",

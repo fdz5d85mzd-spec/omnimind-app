@@ -4,6 +4,7 @@ const zh: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "任务控制中心",
   navPricing: "价格",
   navSignIn: "登录",

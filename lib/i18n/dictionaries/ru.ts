@@ -4,6 +4,7 @@ const ru: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "Mission Control",
   navPricing: "Цены",
   navSignIn: "Войти",

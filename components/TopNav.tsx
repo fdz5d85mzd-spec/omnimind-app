@@ -35,6 +35,7 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
     { href: "/helen", label: t.navHelen },
     { href: "/voxstudio", label: t.navVoxStudio },
     { href: "/aria-go", label: t.navAriaGo },
+    { href: "/ogn", label: t.navOgn },
     { href: "/mission-control", label: t.navMissionControl },
     { href: "/pricing", label: t.navPricing },
     ...(status !== "loading" && !session?.user ? [{ href: "/login", label: t.navSignIn }] : []),

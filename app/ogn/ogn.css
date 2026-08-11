@@ -1,0 +1,85 @@
+/* OGN-specific styles, scoped under .ogn-scope so they can't leak into (or
+   collide with) the rest of the app's own .glass / @keyframes fadeIn /
+   body background -- same strategy as Helen's .helen-scope.
+
+   OmniMind's <html> always carries the "dark" class (the whole app is a
+   fixed dark theme, no light mode anywhere), so OGN's light-mode-only
+   variants would never actually be reachable here -- this keeps only the
+   dark styling instead of dead unreachable rules. */
+
+.ogn-scope {
+  --font-serif: "Newsreader", Georgia, serif;
+}
+
+.ogn-scope {
+  background-color: #0a0e1a; /* ogn-navy */
+  color: #e2e8f0; /* slate-200 */
+}
+
+.ogn-scope .glass {
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.65);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.ogn-scope .glass-strong {
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ogn-scope .gradient-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(135deg, #f59e0b 0%, #14b8a6 100%);
+}
+
+.ogn-scope .gradient-hope {
+  background-image: linear-gradient(135deg, #f59e0b 0%, #14b8a6 100%);
+}
+
+.ogn-scope .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.ogn-scope .scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.ogn-scope .netflix-row {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 1rem;
+}
+.ogn-scope .netflix-row > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+.ogn-scope .card-hover {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.ogn-scope .card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.ogn-scope .animate-fade-in {
+  animation: ognFadeIn 0.5s ease-out forwards;
+}
+
+@keyframes ognFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

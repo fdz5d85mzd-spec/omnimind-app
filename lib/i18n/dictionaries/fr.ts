@@ -4,6 +4,7 @@ const fr: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "Mission Control",
   navPricing: "Tarifs",
   navSignIn: "Se connecter",

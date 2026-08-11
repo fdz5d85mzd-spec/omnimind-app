@@ -1,10 +1,23 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
+        // OGN (/ogn/*) brings its own palette, namespaced the same way
+        // Helen's is below -- OmniMind's <html> always carries the "dark"
+        // class already, so OGN's dark: variants are simply always active.
+        ogn: {
+          gold: "#f59e0b",
+          goldLight: "#fbbf24",
+          goldDark: "#d97706",
+          teal: "#14b8a6",
+          tealLight: "#2dd4bf",
+          navy: "#0a0e1a",
+          cream: "#faf9f7",
+        },
         bg: "#06071a",
         card: "#12163f",
         card2: "#171c4d",
