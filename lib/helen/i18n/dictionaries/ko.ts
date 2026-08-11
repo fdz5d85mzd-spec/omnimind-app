@@ -9,6 +9,8 @@ const ko: Dictionary = {
   joinBtn: "가입하기 — 1.00 €",
   charityNote:
     "회원 한 명당 0.15€가 회원 투표로 분배되는 글로벌 임팩트 펀드에 적립됩니다",
+  charityPopupTitle: "1유로의 힘",
+  charityPopupDismiss: "확인",
   memberCaption: "오늘부터 멤버",
   cardCaption: "당신의 번호는 유일하며 영원히 당신의 것입니다.",
   toEggBtn: "알로 계속하기",

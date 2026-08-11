@@ -9,6 +9,8 @@ const zh: Dictionary = {
   joinBtn: "加入 — 1.00 €",
   charityNote:
     "每位会员的0.15欧元将汇入全球影响力基金，由会员投票分配",
+  charityPopupTitle: "每一欧元都有意义",
+  charityPopupDismiss: "知道了",
   memberCaption: "从今天起成为会员",
   cardCaption: "你的编号独一无二，永远属于你。",
   toEggBtn: "继续查看你的蛋",

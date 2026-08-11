@@ -9,6 +9,8 @@ const hi: Dictionary = {
   joinBtn: "शामिल हों — 1.00 €",
   charityNote:
     "हर सदस्य से 0.15 € एक वैश्विक इम्पैक्ट फंड में जाते हैं, जो सदस्यों के वोट से बांटा जाता है",
+  charityPopupTitle: "हर यूरो मायने रखता है",
+  charityPopupDismiss: "समझ गया",
   memberCaption: "आज से सदस्य",
   cardCaption: "आपका नंबर अनोखा है और हमेशा के लिए आपका है।",
   toEggBtn: "अपने अंडे की ओर बढ़ें",

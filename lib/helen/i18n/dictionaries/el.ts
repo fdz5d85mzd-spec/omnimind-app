@@ -9,6 +9,8 @@ const el: Dictionary = {
   joinBtn: "Γίνε Μέλος — 1,00 €",
   charityNote:
     "0,15 € από κάθε μέλος πάνε σε ένα παγκόσμιο Ταμείο Αντίκτυπου, που μοιράζεται με ψηφοφορία",
+  charityPopupTitle: "Κάθε ευρώ μετράει",
+  charityPopupDismiss: "Το κατάλαβα",
   memberCaption: "Μέλος από σήμερα",
   cardCaption: "Ο αριθμός σου είναι μοναδικός και δικός σου για πάντα.",
   toEggBtn: "Συνέχεια στο αυγό σου",

@@ -9,6 +9,8 @@ const ar: Dictionary = {
   joinBtn: "انضم — 1.00 €",
   charityNote:
     "0.15 € من كل عضو تذهب إلى صندوق أثر عالمي، يُوزَّع بتصويت الأعضاء",
+  charityPopupTitle: "أثر حقيقي من كل يورو",
+  charityPopupDismiss: "فهمت",
   memberCaption: "عضو منذ اليوم",
   cardCaption: "رقمك فريد ولك إلى الأبد.",
   toEggBtn: "المتابعة إلى بيضتك",
