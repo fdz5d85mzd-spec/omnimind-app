@@ -113,6 +113,18 @@ const fr: Dictionary = {
   installSub: "Ajoutez-le à votre bureau pour un accès en un clic.",
   installButton: "Installer",
   installDismissLabel: "Ignorer",
+
+  helpTitle: "Aide",
+  helpGreeting: "Bonjour ! Posez-moi une question sur OmniMind, Helen ou VoxStudio — je ferai de mon mieux pour vous aider.",
+  helpFaq1: "Qu'est-ce qu'OmniMind ?",
+  helpFaq2: "Comment fonctionnent les crédits ?",
+  helpFaq3: "Mes données sont-elles privées ?",
+  helpPlaceholder: "Tapez votre question…",
+  helpHumanTitle: "Besoin de parler à quelqu'un ?",
+  helpHumanBody: "Notre IA ne peut pas encore tout résoudre. Envoyez un message et une vraie personne vous répondra par email.",
+  helpContactPlaceholder: "Votre message…",
+  helpContactSend: "Envoyer",
+  helpContactSent: "Envoyé — nous répondrons par email.",
 };
 
 export default fr;

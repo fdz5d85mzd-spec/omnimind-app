@@ -24,3 +24,10 @@ export function isMasterEmail(email?: string | null): boolean {
 export function isAdminEmail(email?: string | null): boolean {
   return !!email && email.toLowerCase() === resolveAdminEmail().toLowerCase();
 }
+
+// For routing help-widget messages to a real inbox server-side -- never
+// exposed to the client, unlike the booleans above which are safe to derive
+// from a public session.
+export function supportContactEmails(): string[] {
+  return [resolveMasterEmail(), resolveAdminEmail()];
+}

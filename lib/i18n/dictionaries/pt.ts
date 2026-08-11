@@ -113,6 +113,18 @@ const pt: Dictionary = {
   installSub: "Adicione-o à área de trabalho para acesso com um clique.",
   installButton: "Instalar",
   installDismissLabel: "Dispensar",
+
+  helpTitle: "Ajuda",
+  helpGreeting: "Olá! Pergunte-me qualquer coisa sobre OmniMind, Helen ou VoxStudio — farei o possível para ajudar.",
+  helpFaq1: "O que é o OmniMind?",
+  helpFaq2: "Como funcionam os créditos?",
+  helpFaq3: "Meus dados são privados?",
+  helpPlaceholder: "Digite sua pergunta…",
+  helpHumanTitle: "Ainda precisa falar com alguém?",
+  helpHumanBody: "Nossa IA ainda não consegue resolver tudo. Envie uma mensagem e uma pessoa real responderá por e-mail.",
+  helpContactPlaceholder: "Sua mensagem…",
+  helpContactSend: "Enviar",
+  helpContactSent: "Enviado — responderemos por e-mail.",
 };
 
 export default pt;

@@ -6,7 +6,12 @@
  * thrown) if either is missing, so a missing email config never breaks the
  * flow that calls it.
  */
-export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+export async function sendEmail(
+  to: string | string[],
+  subject: string,
+  html: string,
+  replyTo?: string
+): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!apiKey || !from) {
@@ -17,7 +22,7 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ from, to, subject, html }),
+      body: JSON.stringify({ from, to, subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
     if (!res.ok) {
       console.error("sendEmail failed:", res.status, await res.text().catch(() => ""));

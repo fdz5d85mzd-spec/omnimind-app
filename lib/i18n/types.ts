@@ -108,6 +108,18 @@ export interface Dictionary {
   installSub: string;
   installButton: string;
   installDismissLabel: string;
+
+  helpTitle: string;
+  helpGreeting: string;
+  helpFaq1: string;
+  helpFaq2: string;
+  helpFaq3: string;
+  helpPlaceholder: string;
+  helpHumanTitle: string;
+  helpHumanBody: string;
+  helpContactPlaceholder: string;
+  helpContactSend: string;
+  helpContactSent: string;
 }
 
 export type LangCode = "en" | "el" | "es" | "fr" | "de" | "it" | "pt" | "ru" | "zh" | "ja" | "ar" | "tr";

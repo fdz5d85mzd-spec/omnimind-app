@@ -113,6 +113,18 @@ const el: Dictionary = {
   installSub: "Πρόσθεσέ το στην επιφάνεια εργασίας για πρόσβαση με ένα κλικ.",
   installButton: "Εγκατάσταση",
   installDismissLabel: "Απόρριψη",
+
+  helpTitle: "Βοήθεια",
+  helpGreeting: "Γεια! Ρώτα με οτιδήποτε για το OmniMind, τη Helen ή το VoxStudio — θα κάνω ό,τι μπορώ για να βοηθήσω.",
+  helpFaq1: "Τι είναι το OmniMind;",
+  helpFaq2: "Πώς λειτουργούν τα credits;",
+  helpFaq3: "Τα δεδομένα μου είναι ιδιωτικά;",
+  helpPlaceholder: "Γράψε την ερώτησή σου…",
+  helpHumanTitle: "Χρειάζεσαι ακόμα άνθρωπο;",
+  helpHumanBody: "Το AI μας δεν μπορεί ακόμα να λύσει τα πάντα. Στείλε ένα μήνυμα και θα σου απαντήσει ένας πραγματικός άνθρωπος μέσω email.",
+  helpContactPlaceholder: "Το μήνυμά σου…",
+  helpContactSend: "Αποστολή",
+  helpContactSent: "Εστάλη — θα σου απαντήσουμε με email.",
 };
 
 export default el;

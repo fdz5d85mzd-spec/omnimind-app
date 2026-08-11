@@ -111,6 +111,18 @@ const zh: Dictionary = {
   installSub: "添加到桌面，一键访问。",
   installButton: "安装",
   installDismissLabel: "关闭",
+
+  helpTitle: "帮助",
+  helpGreeting: "你好！关于 OmniMind、Helen 或 VoxStudio 有任何问题都可以问我——我会尽力帮忙。",
+  helpFaq1: "什么是 OmniMind？",
+  helpFaq2: "额度是如何计算的？",
+  helpFaq3: "我的数据是私密的吗？",
+  helpPlaceholder: "输入你的问题…",
+  helpHumanTitle: "仍需要人工帮助？",
+  helpHumanBody: "我们的 AI 还不能解决所有问题。发送消息，会有真人通过邮件回复你。",
+  helpContactPlaceholder: "你的留言…",
+  helpContactSend: "发送",
+  helpContactSent: "已发送——我们会通过邮件回复你。",
 };
 
 export default zh;

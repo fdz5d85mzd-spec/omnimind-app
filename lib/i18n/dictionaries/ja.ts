@@ -112,6 +112,18 @@ const ja: Dictionary = {
   installSub: "デスクトップに追加してワンクリックでアクセス。",
   installButton: "インストール",
   installDismissLabel: "閉じる",
+
+  helpTitle: "ヘルプ",
+  helpGreeting: "こんにちは！OmniMind、Helen、VoxStudioについて何でも聞いてください。できる限りお手伝いします。",
+  helpFaq1: "OmniMindとは何ですか？",
+  helpFaq2: "クレジットはどのように機能しますか？",
+  helpFaq3: "私のデータはプライベートですか？",
+  helpPlaceholder: "質問を入力…",
+  helpHumanTitle: "まだ人のサポートが必要ですか？",
+  helpHumanBody: "私たちのAIはまだすべてを解決できません。メッセージを送っていただければ、担当者がメールで返信します。",
+  helpContactPlaceholder: "メッセージ…",
+  helpContactSend: "送信",
+  helpContactSent: "送信しました — メールで返信します。",
 };
 
 export default ja;
