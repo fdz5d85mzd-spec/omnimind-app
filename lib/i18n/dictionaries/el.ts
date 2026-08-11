@@ -3,6 +3,7 @@ import type { Dictionary } from "../types";
 const el: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
+  navAriaGo: "Aria Go",
   navMissionControl: "Mission Control",
   navPricing: "Τιμές",
   navSignIn: "Σύνδεση",
@@ -146,6 +147,9 @@ const el: Dictionary = {
     "Το VoxStudio είναι προ-παραγωγή ταινίας με AI, ενσωματωμένο εγγενώς στο OmniMind: περιέγραψε μια ιδέα σε μία γραμμή και ο Director Agent τη σπάει σε τίτλο, logline, χαρακτήρες, σκηνές και λίστα πλάνων — τρέχει στον ίδιο λογαριασμό OmniMind, χωρίς ξεχωριστή εγγραφή.",
   guideVoxBody2:
     "Σήμερα αυτό το βήμα σχεδιασμού είναι πλήρως ζωντανό. Η μετατροπή ενός brief σε πραγματικό βίντεο, εικόνες ή φωνή χαρακτήρα είναι το επόμενο επίπεδο, που προστίθεται καθώς συνδέονται αυτοί οι πάροχοι δημιουργίας — η ίδια η σελίδα δείχνει πάντα ειλικρινά τι είναι ζωντανό και τι όχι ακόμα.",
+  guideAriaGoCta: "Open Aria Go",
+  guideAriaGoBody:
+    "Aria Go turns a short description of your look, energy, and world into a distinctive profile avatar -- same OmniMind account and credits, no separate sign-up.",
   guideFooterDirectly: "απευθείας.",
 };
 

@@ -3,6 +3,7 @@ import type { Dictionary } from "../types";
 const de: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
+  navAriaGo: "Aria Go",
   navMissionControl: "Mission Control",
   navPricing: "Preise",
   navSignIn: "Anmelden",
@@ -146,6 +147,9 @@ const de: Dictionary = {
     "VoxStudio ist KI-Filmvorproduktion, nativ in OmniMind eingebaut: Beschreib eine Idee in einem Satz, und der Director Agent zerlegt sie in Titel, Logline, Charaktere, Szenen und eine Shotlist — läuft auf demselben OmniMind-Konto, keine separate Anmeldung.",
   guideVoxBody2:
     "Heute ist dieser Planungsschritt voll funktionsfähig. Ein Brief in echtes Video, Bilder oder eine Charakterstimme zu verwandeln ist die nächste Ebene, die hinzukommt, sobald diese Generierungs-Anbieter angebunden sind — die Seite selbst zeigt immer ehrlich, was schon live ist und was noch nicht.",
+  guideAriaGoCta: "Open Aria Go",
+  guideAriaGoBody:
+    "Aria Go turns a short description of your look, energy, and world into a distinctive profile avatar -- same OmniMind account and credits, no separate sign-up.",
   guideFooterDirectly: "direkt.",
 };
 

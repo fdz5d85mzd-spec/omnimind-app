@@ -64,6 +64,10 @@ export default function GuideContent() {
             <p>{t.guideVoxBody1}</p>
             <p>{t.guideVoxBody2}</p>
           </Section>
+
+          <Section eyebrow={t.guidePartOfEyebrow} title="Aria Go" cta={{ href: "/aria-go", label: t.guideAriaGoCta }}>
+            <p>{t.guideAriaGoBody}</p>
+          </Section>
         </div>
 
         <p className="text-center text-xs text-mutedDark mt-10">

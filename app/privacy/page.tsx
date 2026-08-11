@@ -63,8 +63,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <span className="text-white font-medium">Higgsfield</span> — VoxStudio image and video
-                generation (and admin-side social content drafts) are produced by calling Higgsfield&apos;s
-                API on your behalf.
+                generation, Aria Go avatar generation, and admin-side social content drafts are produced
+                by calling Higgsfield&apos;s API on your behalf.
               </li>
               <li>
                 <span className="text-white font-medium">Stripe</span> — paid plans, credit purchases, and
