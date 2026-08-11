@@ -287,7 +287,7 @@ export default function Home() {
         ) : (
           <>
             <section className="flex-1 overflow-y-auto px-4 sm:px-0">
-              <div className="max-w-3xl mx-auto w-full py-8 space-y-7">
+              <div className="min-h-full flex flex-col justify-end max-w-3xl mx-auto w-full py-8 space-y-7">
                 {messages.map((m) => (
                   <MessageRow key={m.id} message={m} />
                 ))}
