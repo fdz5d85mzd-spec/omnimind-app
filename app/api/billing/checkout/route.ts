@@ -39,6 +39,10 @@ export async function POST(request: NextRequest) {
         },
       ],
       metadata: { type: "omnimind_credits", userId, credits: String(pack.credits) },
+      // `source: "omnimind"` keeps this out of lib/adminRevenue.ts's Helen
+      // bucket -- see app/helen/api/checkout for why PaymentIntent (not
+      // Session) metadata is what that reads.
+      payment_intent_data: { metadata: { source: "omnimind" } },
       managed_payments: { enabled: false },
       success_url: `${origin}/settings?purchase=success`,
       cancel_url: `${origin}/pricing`,
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
           },
         ],
         metadata: { type: "omnimind_plan", userId, plan: plan.id },
+        payment_intent_data: { metadata: { source: "omnimind" } },
         managed_payments: { enabled: false },
         success_url: `${origin}/settings?purchase=success`,
         cancel_url: `${origin}/pricing`,

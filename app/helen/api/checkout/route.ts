@@ -60,8 +60,10 @@ export async function POST(request: Request) {
     metadata: username ? { username: username.trim().slice(0, 20) } : undefined,
     // Lands on the PaymentIntent (not the Session) -- that's what
     // lib/adminPartners.ts actually scans for commission attribution, since
-    // Charge/PaymentIntent metadata isn't inherited from the Session.
-    payment_intent_data: partnerCode ? { metadata: { ref_code: partnerCode } } : undefined,
+    // Charge/PaymentIntent metadata isn't inherited from the Session. Same
+    // spot lib/adminRevenue.ts reads `source` from to split Helen revenue
+    // (and its 15% charity cut) out from the rest of the account.
+    payment_intent_data: { metadata: { source: "helen", ...(partnerCode ? { ref_code: partnerCode } : {}) } },
     managed_payments: { enabled: false },
     allow_promotion_codes: true,
     success_url: `${origin}/helen/card?session_id={CHECKOUT_SESSION_ID}`,

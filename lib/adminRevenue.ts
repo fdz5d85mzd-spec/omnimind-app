@@ -1,32 +1,52 @@
 import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { getStripeClient, isStripeConfigured } from "@/lib/helen/stripe/server";
+import { HELEN_CHARITY_PERCENT } from "@/lib/billing";
 
 export type Totals = { grossCents: number; count: number };
+export type PeriodSplit = { helen: Totals; other: Totals };
 
 export type RevenueSnapshot = {
   stripeConfigured: boolean;
-  today: Totals;
-  month: Totals;
-  allTime: Totals;
+  today: PeriodSplit;
+  month: PeriodSplit;
+  allTime: PeriodSplit;
   users: number | null;
   newToday: number | null;
   new7d: number | null;
   voxProjects: number | null;
 };
 
-async function sumSucceededCharges(stripe: Stripe, sinceUnixSeconds: number): Promise<Totals> {
-  let grossCents = 0;
-  let count = 0;
-  const params: Stripe.ChargeListParams = { limit: 100 };
+export type HelenCharitySplit = { grossCents: number; charityCents: number; netCents: number };
+
+export function splitHelenCharity(grossCents: number): HelenCharitySplit {
+  const charityCents = Math.round(grossCents * HELEN_CHARITY_PERCENT);
+  return { grossCents, charityCents, netCents: grossCents - charityCents };
+}
+
+const ZERO_TOTALS: Totals = { grossCents: 0, count: 0 };
+const ZERO_SPLIT: PeriodSplit = { helen: ZERO_TOTALS, other: ZERO_TOTALS };
+
+// Reads `source` off the PaymentIntent, not the Charge or the Session --
+// Stripe does not auto-copy metadata between those three, and PaymentIntent
+// is the one every checkout route in this app actually tags (see
+// app/helen/api/checkout and app/api/billing/checkout). Same proven pattern
+// as lib/adminPartners.ts's `ref_code` read. Untagged PaymentIntents (every
+// charge before this split existed) default to Helen -- historically
+// accurate, since Helen's €1 membership was the only thing this account
+// ever charged for until OmniMind's own paid tiers shipped.
+async function sumSucceededByPeriod(stripe: Stripe, sinceUnixSeconds: number): Promise<PeriodSplit> {
+  const helen: Totals = { grossCents: 0, count: 0 };
+  const other: Totals = { grossCents: 0, count: 0 };
+  const params: Stripe.PaymentIntentListParams = { limit: 100 };
   if (sinceUnixSeconds > 0) params.created = { gte: sinceUnixSeconds };
-  for await (const charge of stripe.charges.list(params)) {
-    if (charge.status === "succeeded" && charge.paid && !charge.refunded) {
-      grossCents += charge.amount;
-      count += 1;
-    }
+  for await (const pi of stripe.paymentIntents.list(params)) {
+    if (pi.status !== "succeeded") continue;
+    const bucket = pi.metadata?.source === "omnimind" ? other : helen;
+    bucket.grossCents += pi.amount_received;
+    bucket.count += 1;
   }
-  return { grossCents, count };
+  return { helen, other };
 }
 
 // Real numbers only: every figure here comes from a live Stripe query or a
@@ -49,9 +69,9 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
   if (!isStripeConfigured()) {
     return {
       stripeConfigured: false,
-      today: { grossCents: 0, count: 0 },
-      month: { grossCents: 0, count: 0 },
-      allTime: { grossCents: 0, count: 0 },
+      today: ZERO_SPLIT,
+      month: ZERO_SPLIT,
+      allTime: ZERO_SPLIT,
       users,
       newToday,
       new7d,
@@ -61,9 +81,9 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
 
   const stripe = getStripeClient();
   const [today, month, allTime] = await Promise.all([
-    sumSucceededCharges(stripe, startOfToday),
-    sumSucceededCharges(stripe, startOfMonth),
-    sumSucceededCharges(stripe, 0),
+    sumSucceededByPeriod(stripe, startOfToday),
+    sumSucceededByPeriod(stripe, startOfMonth),
+    sumSucceededByPeriod(stripe, 0),
   ]);
 
   return { stripeConfigured: true, today, month, allTime, users, newToday, new7d, voxProjects };

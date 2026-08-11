@@ -23,6 +23,11 @@ export const CREDIT_PRICE_EUR = 0.01;
 export const IMAGE_GENERATION_CREDITS = 30; // ~EUR 0.30 face value vs ~$0.15 real cost
 export const VIDEO_GENERATION_CREDITS = 180; // ~EUR 1.80 face value vs ~$0.90 real cost
 
+// 15% of every Helen charge (€1 memberships, shop purchases) goes to
+// charity -- that's the point of Helen, not an afterthought. Admins split
+// what's left (see lib/adminRevenue.ts / app/admin/revenue), not the gross.
+export const HELEN_CHARITY_PERCENT = 0.15;
+
 export interface CreditPack {
   id: string;
   credits: number;
