@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AuthSessionProvider from "@/components/AuthSessionProvider";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
 import InstallPrompt from "@/components/InstallPrompt";
 import HelpWidget from "@/components/HelpWidget";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
@@ -44,7 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
           <InstallPrompt />
           <HelpWidget />
-          <AuthSessionProvider>{children}</AuthSessionProvider>
+          <AuthSessionProvider>
+            <ImpersonationBanner />
+            {children}
+          </AuthSessionProvider>
         </LanguageProvider>
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LogoMark } from "@/components/Logo";
+import TopNav from "@/components/TopNav";
 import { IMAGE_GENERATION_CREDITS, VIDEO_GENERATION_CREDITS } from "@/lib/billing";
 
 interface Shot {
@@ -194,13 +194,10 @@ export default function VoxStudioPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-16">
+    <>
+      <TopNav />
+      <div className="min-h-screen px-6 py-12">
       <div className="max-w-3xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 mb-10 w-fit">
-          <LogoMark size={22} />
-          <span className="font-head font-semibold text-white">OmniMind</span>
-        </Link>
-
         <div className="text-center mb-8">
           <h1 className="font-head text-4xl font-semibold text-gradient mb-3">VoxStudio</h1>
           <p className="text-muted text-sm max-w-lg mx-auto leading-relaxed">
@@ -388,6 +385,7 @@ export default function VoxStudioPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

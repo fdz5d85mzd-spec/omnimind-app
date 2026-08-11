@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/Logo";
@@ -11,6 +12,17 @@ function GridIcon() {
       <rect x="13" y="3" width="8" height="8" rx="1.5" />
       <rect x="3" y="13" width="8" height="8" rx="1.5" />
       <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="7" r="3.2" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <circle cx="17.5" cy="8" r="2.4" />
+      <path d="M21 20c0-2.6-1.9-4.8-4.5-5.4" />
     </svg>
   );
 }
@@ -84,6 +96,7 @@ function ClapperIcon() {
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: GridIcon },
+  { href: "/admin/users", label: "Users", icon: UsersIcon },
   { href: "/admin/revenue", label: "Revenue", icon: CoinsIcon },
   { href: "/admin/social", label: "Social", icon: ClapperIcon },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: TagIcon },
@@ -121,6 +134,12 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 // slide-out drawer. Always visible, nothing to open/close or get stuck --
 // swipe to reach a tab that's off-screen, same as any native tab bar.
 function NavTabs({ pathname }: { pathname: string }) {
+  const activeRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [pathname]);
+
   return (
     <nav className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {NAV.map(({ href, label, icon: Icon }) => {
@@ -129,6 +148,7 @@ function NavTabs({ pathname }: { pathname: string }) {
           <Link
             key={href}
             href={href}
+            ref={active ? activeRef : undefined}
             className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] whitespace-nowrap transition-colors ${
               active
                 ? "bg-accent/[0.18] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(91,110,245,0.45)]"

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogoMark } from "@/components/Logo";
+import TopNav from "@/components/TopNav";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 function Section({
@@ -31,13 +31,10 @@ export default function GuideContent() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen px-6 py-16">
+    <>
+      <TopNav />
+      <div className="min-h-screen px-6 py-12">
       <div className="max-w-3xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 mb-10 w-fit">
-          <LogoMark size={22} />
-          <span className="font-head font-semibold text-white">OmniMind</span>
-        </Link>
-
         <div className="text-center mb-12">
           <h1 className="font-head text-4xl font-semibold text-gradient mb-3">{t.guideTitle}</h1>
           <p className="text-muted text-sm max-w-lg mx-auto leading-relaxed">{t.guideSub}</p>
@@ -77,6 +74,7 @@ export default function GuideContent() {
           {t.guideFooterDirectly}
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

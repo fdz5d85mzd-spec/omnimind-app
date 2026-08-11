@@ -3,8 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { isMasterEmail, isAdminEmail } from "@/lib/roles";
+import { IMPERSONATE_COOKIE } from "@/lib/impersonation";
 
 declare module "next-auth" {
   interface Session {
@@ -15,6 +17,7 @@ declare module "next-auth" {
       image?: string | null;
       isMaster: boolean;
       isAdmin: boolean;
+      impersonating?: { adminEmail: string } | null;
     };
   }
 }
@@ -65,8 +68,34 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token.id as string) || (token.sub as string);
-        session.user.isMaster = isMasterEmail(session.user.email);
-        session.user.isAdmin = isAdminEmail(session.user.email);
+        const realEmail = session.user.email;
+        const realIsMaster = isMasterEmail(realEmail);
+        const realIsAdmin = isAdminEmail(realEmail);
+        session.user.isMaster = realIsMaster;
+        session.user.isAdmin = realIsAdmin;
+
+        // Admin "view as user" -- only ever swaps identity when the *real*,
+        // signed JWT belongs to a privileged account (checked above, before
+        // any swap), so a forged/manually-set cookie on a non-admin session
+        // does nothing. See lib/impersonation.ts + app/api/admin/impersonate.
+        if (realIsMaster || realIsAdmin) {
+          const impersonateId = cookies().get(IMPERSONATE_COOKIE)?.value;
+          if (impersonateId && impersonateId !== session.user.id) {
+            const target = await prisma.user.findUnique({
+              where: { id: impersonateId },
+              select: { id: true, email: true, name: true, image: true },
+            });
+            if (target) {
+              session.user.impersonating = { adminEmail: realEmail ?? "" };
+              session.user.id = target.id;
+              session.user.email = target.email;
+              session.user.name = target.name;
+              session.user.image = target.image;
+              session.user.isMaster = isMasterEmail(target.email);
+              session.user.isAdmin = isAdminEmail(target.email);
+            }
+          }
+        }
       }
       return session;
     },

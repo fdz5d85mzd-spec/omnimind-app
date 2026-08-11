@@ -1,17 +1,13 @@
-import Link from "next/link";
-import { LogoMark } from "@/components/Logo";
+import TopNav from "@/components/TopNav";
 
 export const metadata = { title: "Privacy Policy — OmniMind" };
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen px-6 py-16">
+    <>
+      <TopNav />
+      <div className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 mb-10 w-fit">
-          <LogoMark size={22} />
-          <span className="font-head font-semibold text-white">OmniMind</span>
-        </Link>
-
         <h1 className="font-head text-3xl font-semibold text-gradient mb-2">Privacy Policy</h1>
         <p className="text-xs text-mutedDark mb-10">Last updated August 2026</p>
 
@@ -100,7 +96,8 @@ export default function PrivacyPage() {
           </Section>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

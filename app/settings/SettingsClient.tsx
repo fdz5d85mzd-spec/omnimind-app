@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { LogoMark } from "@/components/Logo";
+import TopNav from "@/components/TopNav";
 import { useCredits } from "@/lib/useCredits";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { LANGUAGES } from "@/lib/i18n/languages";
@@ -132,18 +133,7 @@ export default function SettingsClient({
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-card/30 backdrop-blur-xl">
-        <Link href="/" className="flex items-center gap-2">
-          <LogoMark size={20} />
-          <span className="font-head font-semibold text-sm text-white">OmniMind</span>
-        </Link>
-        <Link
-          href="/chat"
-          className="text-xs font-bold text-white glass rounded-lg px-3.5 py-2 hover:bg-white/[0.08] transition-colors"
-        >
-          {t.navAskOmniMind}
-        </Link>
-      </header>
+      <TopNav />
 
       <main className="max-w-xl mx-auto px-6 py-10 space-y-6">
         <h1 className="font-head text-2xl font-semibold text-white">{t.settingsTitle}</h1>

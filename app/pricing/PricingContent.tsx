@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+import TopNav from "@/components/TopNav";
 import { CHARS_PER_CREDIT, FREE_COOLDOWN_HOURS, FREE_REFILL_CREDITS, FREE_STARTING_CREDITS } from "@/lib/credits";
 import { IMAGE_GENERATION_CREDITS, VIDEO_GENERATION_CREDITS } from "@/lib/billing";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -19,13 +20,10 @@ export default function PricingContent() {
   ];
 
   return (
-    <div className="min-h-screen px-6 py-16">
+    <>
+      <TopNav />
+      <div className="min-h-screen px-6 py-12">
       <div className="max-w-5xl mx-auto">
-        <Link href="/" className="flex items-center gap-2 mb-10 w-fit">
-          <LogoMark size={22} />
-          <span className="font-head font-semibold text-white">OmniMind</span>
-        </Link>
-
         <div className="text-center mb-12">
           <h1 className="font-head text-4xl font-semibold text-gradient mb-3">{t.pricingTitle}</h1>
           <p className="text-muted text-sm max-w-md mx-auto leading-relaxed">{t.pricingSub}</p>
@@ -80,7 +78,8 @@ export default function PricingContent() {
           .
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
