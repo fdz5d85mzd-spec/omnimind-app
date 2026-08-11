@@ -51,24 +51,37 @@ export async function generateCreativeBrief(idea: string): Promise<CreativeBrief
   if (!apiKey) throw new DirectorNotConfigured("ANTHROPIC_API_KEY is not set");
 
   const client = new Anthropic({ apiKey });
+  const format = zodOutputFormat(CreativeBriefSchema);
 
-  let response;
+  // 4096 (up from an earlier 1500) -- up to 4 characters plus 4 scenes of
+  // 4 shots each, as JSON, occasionally ran past 1500 and got cut off
+  // mid-string, which surfaced as a confusing "invalid JSON" error instead
+  // of the truncation it actually was. Checking stop_reason below catches
+  // it either way.
+  const response = await client.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 4096,
+    system: SYSTEM_PROMPT,
+    output_config: { format },
+    messages: [{ role: "user", content: idea }],
+  });
+
+  const text = response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("");
+
+  if (response.stop_reason === "max_tokens") {
+    throw new DirectorError(
+      `Director Agent's response was cut off before finishing (hit the ${4096}-token limit). Raw start: ${text.slice(0, 220)}…`
+    );
+  }
+
   try {
-    response = await client.messages.parse({
-      model: "claude-sonnet-5",
-      max_tokens: 1500,
-      system: SYSTEM_PROMPT,
-      output_config: { format: zodOutputFormat(CreativeBriefSchema) },
-      messages: [{ role: "user", content: idea }],
-    });
+    return format.parse(text);
   } catch (err) {
     throw new DirectorError(
       `Director Agent returned a response that couldn't be parsed as a brief. ${err instanceof Error ? err.message : String(err)}`
     );
   }
-
-  if (!response.parsed_output) {
-    throw new DirectorError("Director Agent returned an empty response.");
-  }
-  return response.parsed_output;
 }
