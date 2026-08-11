@@ -126,6 +126,34 @@ export default function Home() {
     setSpeakingId(null);
   }
 
+  // Strict autoplay policies (mobile Safari especially) only allow an
+  // <audio> element to play if the call happens inside a real user
+  // gesture -- not several async hops later, which is exactly when
+  // speakReply()'s play() call was actually happening (after the whole
+  // streamed reply finished). Priming the element with a muted play/pause
+  // *synchronously* at the top of send() -- itself invoked directly from
+  // the Ask click or Enter keydown, before any await -- keeps it inside
+  // that gesture, so the real playback moments later is allowed through.
+  function unlockAudio() {
+    const el = audioRef.current;
+    if (!el) return;
+    el.muted = true;
+    const playPromise = el.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise
+        .then(() => {
+          el.pause();
+          el.currentTime = 0;
+          el.muted = false;
+        })
+        .catch(() => {
+          el.muted = false;
+        });
+    } else {
+      el.muted = false;
+    }
+  }
+
   async function speakReply(assistantId: string, text: string) {
     if (!text.trim()) return;
     try {
@@ -216,6 +244,7 @@ export default function Home() {
     const spokenTurn = !isGuest && voiceTurnRef.current;
     voiceTurnRef.current = false;
     stopSpeaking();
+    if (spokenTurn) unlockAudio();
 
     let convoId = activeId;
     const userMsg: ChatMessage = { id: newId(), role: "user", content: q, status: "done" };
@@ -392,6 +421,7 @@ export default function Home() {
                       textareaRef={textareaRef}
                       autoFocus
                       speech={isGuest ? undefined : speech}
+                      onMicStart={unlockAudio}
                     />
                   </div>
 
@@ -442,6 +472,7 @@ export default function Home() {
                     streaming={isStreaming}
                     onStop={stop}
                     speech={isGuest ? undefined : speech}
+                    onMicStart={unlockAudio}
                   />
                 )}
               </div>
@@ -524,6 +555,7 @@ function Composer({
   streaming,
   onStop,
   speech,
+  onMicStart,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -534,6 +566,7 @@ function Composer({
   streaming?: boolean;
   onStop?: () => void;
   speech?: ReturnType<typeof useSpeechRecognition>;
+  onMicStart?: () => void;
 }) {
   const { t } = useLanguage();
   return (
@@ -563,7 +596,14 @@ function Composer({
         {speech?.supported && (
           <button
             type="button"
-            onClick={() => (speech.listening ? speech.stop() : speech.start())}
+            onClick={() => {
+              if (speech.listening) {
+                speech.stop();
+              } else {
+                onMicStart?.();
+                speech.start();
+              }
+            }}
             title={speech.listening ? t.chatMicStopTitle : t.chatMicSpeakTitle}
             className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-xl transition-colors ${
               speech.listening
