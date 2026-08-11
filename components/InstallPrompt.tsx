@@ -46,7 +46,10 @@ export default function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-2xl bg-card/95 backdrop-blur-xl border border-white/[0.08] shadow-panel px-4 py-3 max-w-xs animate-fadeIn">
+    // bottom-20 on phones clears the Help widget launcher, which sits at
+    // bottom-4 left-4 -- at narrow widths this panel's max-w-xs is wide
+    // enough to visually cover it if both share the same row.
+    <div className="fixed bottom-20 right-4 sm:bottom-4 z-50 flex items-center gap-3 rounded-2xl bg-card/95 backdrop-blur-xl border border-white/[0.08] shadow-panel px-4 py-3 max-w-xs animate-fadeIn">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-white">{t.installTitle}</p>
         <p className="text-xs text-mutedDark mt-0.5">{t.installSub}</p>
