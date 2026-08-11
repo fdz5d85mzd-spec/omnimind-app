@@ -39,18 +39,46 @@ Reply with ONLY a JSON array, no prose before or after, no markdown fences:
   "caption": string (<=150 chars, TikTok post caption),
   "hashtags": string[] (4-6 tags, no # prefix, no spaces)}]`;
 
-function extractPosts(raw: string, expected: PostCategory[]): SocialPost[] | null {
-  let text = raw.trim();
-  if (text.startsWith("```")) {
-    text = text.replace(/^```(json)?/, "").replace(/```$/, "").trim();
-  }
+function tryParseArray(text: string): unknown[] | null {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch {
     return null;
   }
-  if (!Array.isArray(parsed) || parsed.length !== expected.length) return null;
+  if (Array.isArray(parsed)) return parsed;
+  // Some models wrap the array in an object despite instructions not to
+  // (e.g. {"posts": [...]}) -- take the first array-valued property rather
+  // than failing outright.
+  if (parsed && typeof parsed === "object") {
+    for (const value of Object.values(parsed as Record<string, unknown>)) {
+      if (Array.isArray(value)) return value;
+    }
+  }
+  return null;
+}
+
+function extractPosts(raw: string, expected: PostCategory[]): SocialPost[] | null {
+  const text = raw.trim();
+  // Try the raw text first, then a code-fenced version, then whatever's
+  // between the first "[" and the last "]" -- covers the model wrapping
+  // the array in ```json fences, a leading/trailing sentence despite
+  // being told not to, or both at once.
+  const candidates = [text];
+  if (text.includes("```")) {
+    candidates.push(text.replace(/^[\s\S]*?```(?:json)?/, "").replace(/```[\s\S]*$/, "").trim());
+  }
+  const first = text.indexOf("[");
+  const last = text.lastIndexOf("]");
+  if (first !== -1 && last > first) candidates.push(text.slice(first, last + 1));
+
+  let parsed: unknown[] | null = null;
+  for (const candidate of candidates) {
+    parsed = tryParseArray(candidate);
+    if (parsed) break;
+  }
+  if (!parsed || parsed.length !== expected.length) return null;
+
   const posts: SocialPost[] = [];
   for (const item of parsed) {
     if (
@@ -86,16 +114,31 @@ export async function generateDailyPosts(date: Date = new Date()): Promise<Socia
     model: "claude-sonnet-5",
     max_tokens: 1500,
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: `Categories: ${categories.map((c) => CATEGORY_LABEL[c]).join(", ")}` }],
+    messages: [
+      { role: "user", content: `Categories: ${categories.map((c) => CATEGORY_LABEL[c]).join(", ")}` },
+      // Prefilling the assistant turn with the opening bracket is the
+      // standard, reliable way to force Claude to continue directly into
+      // JSON instead of a conversational preamble -- far sturdier than
+      // instructions alone, which models drift from more with each
+      // version. The model's continuation doesn't repeat the prefill
+      // text, so it's re-added below.
+      { role: "assistant", content: "[" },
+    ],
   });
 
-  const raw = response.content
+  const continuation = response.content
     .filter((block): block is Anthropic.TextBlock => block.type === "text")
     .map((block) => block.text)
     .join("\n")
     .trim();
+  const raw = "[" + continuation;
 
   const posts = extractPosts(raw, categories);
-  if (!posts) throw new ScriptWriterError("Script writer returned a response that couldn't be parsed as 3 posts");
+  if (!posts) {
+    const snippet = raw.slice(0, 220).replace(/\s+/g, " ");
+    throw new ScriptWriterError(
+      `Script writer returned a response that couldn't be parsed as 3 posts. Raw start: ${snippet}${raw.length > 220 ? "…" : ""}`
+    );
+  }
   return posts;
 }
