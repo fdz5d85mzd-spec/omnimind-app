@@ -1,5 +1,19 @@
 apply plugin: 'com.android.application'
 
+// Release signing: reads from keystore.properties (gitignored -- CI writes
+// it from GitHub secrets, see .github/workflows/android-release.yml; a local
+// release build reads it the same way if you drop that file in yourself).
+// Absent entirely, releaseSigning stays null and the release build type
+// below just skips signing -- `./gradlew assembleDebug` always works with
+// no setup, which is what CI uses to validate the project builds at all
+// before secrets are configured.
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+def hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace "app.omnimindai"
     compileSdk rootProject.ext.compileSdkVersion
@@ -16,10 +30,23 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

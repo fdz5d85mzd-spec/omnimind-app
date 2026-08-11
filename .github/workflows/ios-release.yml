@@ -1,0 +1,129 @@
+name: Build iOS app
+
+# Manual trigger only. Runs on GitHub's own macOS runners -- Apple's tooling
+# (Xcode, code signing) only exists on macOS, so this is what stands in for
+# not owning a Mac.
+#
+# Always builds for the iOS Simulator first (no signing needed at all), so
+# the Xcode project's build health is verified even with zero secrets
+# configured. If the Apple secrets below are set (Settings -> Secrets and
+# variables -> Actions), it also produces a signed, App-Store-ready .ipa
+# and uploads it straight to App Store Connect / TestFlight.
+#
+# Required secrets for the signed build + upload (all generated from
+# developer.apple.com/account and appstoreconnect.apple.com once enrolled
+# in the Apple Developer Program):
+#   IOS_DIST_CERTIFICATE_BASE64   -- `base64 -w0 distribution.p12` output
+#   IOS_DIST_CERTIFICATE_PASSWORD -- the .p12's export password
+#   IOS_PROVISIONING_PROFILE_BASE64 -- `base64 -w0 profile.mobileprovision`
+#   IOS_TEAM_ID                   -- Apple Developer Team ID (Membership page)
+#   APPSTORE_API_KEY_ID           -- App Store Connect API key ID
+#   APPSTORE_API_ISSUER_ID        -- App Store Connect API issuer ID
+#   APPSTORE_API_KEY_BASE64       -- `base64 -w0 AuthKey_XXXXXXXXXX.p8` output
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile/ios/App
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install CocoaPods dependencies
+        run: pod install
+
+      - name: Simulator build (always runs -- proves the project itself builds)
+        run: |
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Check for signing secrets
+        id: signing
+        run: |
+          if [ -n "${{ secrets.IOS_DIST_CERTIFICATE_BASE64 }}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Import signing certificate + provisioning profile
+        if: steps.signing.outputs.configured == 'true'
+        env:
+          KEYCHAIN_PASSWORD: temporary-ci-keychain-password
+        run: |
+          set -e
+          CERT_PATH="$RUNNER_TEMP/dist.p12"
+          PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/ci-signing.keychain-db"
+
+          echo "${{ secrets.IOS_DIST_CERTIFICATE_BASE64 }}" | base64 -d > "$CERT_PATH"
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 -d > "$PROFILE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}" \
+            -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed 's/"//g')
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PROFILE_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Archive + export signed .ipa
+        if: steps.signing.outputs.configured == 'true'
+        run: |
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -sdk iphoneos \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            DEVELOPMENT_TEAM="${{ secrets.IOS_TEAM_ID }}"
+
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>${{ secrets.IOS_TEAM_ID }}</string>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export"
+
+      - name: Upload build artifact
+        if: steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnimind-ios-ipa
+          path: ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: error
+
+      - name: Upload to App Store Connect / TestFlight
+        if: steps.signing.outputs.configured == 'true'
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.APPSTORE_API_KEY_BASE64 }}" | base64 -d > ~/private_keys/AuthKey_${{ secrets.APPSTORE_API_KEY_ID }}.p8
+          IPA_PATH=$(find "$RUNNER_TEMP/export" -name "*.ipa" | head -n1)
+          xcrun altool --upload-app -f "$IPA_PATH" -t ios \
+            --apiKey "${{ secrets.APPSTORE_API_KEY_ID }}" \
+            --apiIssuer "${{ secrets.APPSTORE_API_ISSUER_ID }}"
