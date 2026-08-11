@@ -32,10 +32,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Select latest stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+
+      # node_modules is gitignored (correctly -- it's build output, not
+      # source); the Podfile requires a script from inside
+      # @capacitor/ios/scripts, so it has to exist before `pod install` runs.
+      - name: Install Capacitor dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Sync Capacitor iOS project
+        working-directory: mobile
+        run: npx cap sync ios
 
       - name: Install CocoaPods dependencies
         run: pod install
