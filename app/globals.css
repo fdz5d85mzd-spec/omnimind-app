@@ -292,3 +292,21 @@ body {
     min-height: 100dvh;
   }
 }
+
+/* Homepage mascot "blink": an aperture-shutter close/open over the eye,
+   mostly open (scale 0, invisible) with one quick close near the end of
+   each cycle. translate(-50%,-50%) centers the disc on its own top/left
+   position (see the inline left/top on the element) before the scale. */
+@keyframes omni-blink {
+  0%,
+  92%,
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  95% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+.animate-omni-blink {
+  animation: omni-blink 4.5s ease-in-out infinite;
+}
