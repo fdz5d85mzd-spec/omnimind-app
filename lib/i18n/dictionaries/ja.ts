@@ -104,6 +104,9 @@ const ja: Dictionary = {
   pricingQuestions: "ご質問は？",
   pricingAskDirectly: "OmniMindに直接聞く",
   pricingOr: "か、こちらの",
+
+  creditsUnlimited: "無制限",
+  creditsRefillsIn: "{time}後に補充",
 };
 
 export default ja;

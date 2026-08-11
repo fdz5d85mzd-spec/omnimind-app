@@ -103,6 +103,9 @@ const zh: Dictionary = {
   pricingQuestions: "有问题？",
   pricingAskDirectly: "直接询问 OmniMind",
   pricingOr: "，或阅读",
+
+  creditsUnlimited: "无限",
+  creditsRefillsIn: "{time} 后刷新",
 };
 
 export default zh;

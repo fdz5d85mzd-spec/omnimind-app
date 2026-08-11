@@ -105,6 +105,9 @@ const el: Dictionary = {
   pricingQuestions: "Ερωτήσεις;",
   pricingAskDirectly: "Ρώτα το OmniMind",
   pricingOr: "απευθείας, ή διάβασε τους",
+
+  creditsUnlimited: "Απεριόριστο",
+  creditsRefillsIn: "Ανανέωση σε {time}",
 };
 
 export default el;

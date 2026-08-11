@@ -100,6 +100,9 @@ export interface Dictionary {
   pricingQuestions: string;
   pricingAskDirectly: string;
   pricingOr: string;
+
+  creditsUnlimited: string;
+  creditsRefillsIn: string;
 }
 
 export type LangCode = "en" | "el" | "es" | "fr" | "de" | "it" | "pt" | "ru" | "zh" | "ja" | "ar" | "tr";

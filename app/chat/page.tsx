@@ -13,6 +13,7 @@ import {
   saveConversations,
 } from "@/lib/conversations";
 import Sidebar from "@/components/Sidebar";
+import CreditsBadge from "@/components/CreditsBadge";
 import { Logo, LogoMark } from "@/components/Logo";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { notifyCreditsChanged } from "@/lib/useCredits";
@@ -354,6 +355,7 @@ export default function Home() {
             <MenuIcon />
           </button>
           <Logo size={18} />
+          <CreditsBadge className="ml-auto" />
         </header>
 
         {empty ? (

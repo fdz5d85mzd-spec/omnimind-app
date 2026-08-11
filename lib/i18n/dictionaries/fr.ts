@@ -105,6 +105,9 @@ const fr: Dictionary = {
   pricingQuestions: "Des questions ?",
   pricingAskDirectly: "Demandez à OmniMind",
   pricingOr: "directement, ou lisez les",
+
+  creditsUnlimited: "Illimité",
+  creditsRefillsIn: "Se recharge dans {time}",
 };
 
 export default fr;

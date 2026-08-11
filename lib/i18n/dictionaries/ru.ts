@@ -105,6 +105,9 @@ const ru: Dictionary = {
   pricingQuestions: "Вопросы?",
   pricingAskDirectly: "Спросите OmniMind",
   pricingOr: "напрямую, или прочитайте",
+
+  creditsUnlimited: "Безлимит",
+  creditsRefillsIn: "Пополнение через {time}",
 };
 
 export default ru;

@@ -104,6 +104,9 @@ const ar: Dictionary = {
   pricingQuestions: "أسئلة؟",
   pricingAskDirectly: "اسأل OmniMind",
   pricingOr: "مباشرة، أو اقرأ",
+
+  creditsUnlimited: "غير محدود",
+  creditsRefillsIn: "يتجدد خلال {time}",
 };
 
 export default ar;

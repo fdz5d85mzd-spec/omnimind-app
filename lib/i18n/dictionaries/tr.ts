@@ -105,6 +105,9 @@ const tr: Dictionary = {
   pricingQuestions: "Sorunuz mu var?",
   pricingAskDirectly: "OmniMind'a doğrudan sor",
   pricingOr: ", ya da şu",
+
+  creditsUnlimited: "Sınırsız",
+  creditsRefillsIn: "{time} içinde yenilenir",
 };
 
 export default tr;

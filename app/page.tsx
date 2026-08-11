@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { LogoMark } from "@/components/Logo";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { getFleetStatus, getOrchestratorReport, getTwinSubscribers } from "@/lib/telemetry";
@@ -287,6 +287,15 @@ function TopNav() {
               {l.label}
             </Link>
           ))}
+          {session?.user && (
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
+            >
+              {t.settingsSignOut}
+            </button>
+          )}
           <LanguageSwitcher />
           <Link
             href="/chat"
@@ -327,6 +336,18 @@ function TopNav() {
               {l.label}
             </Link>
           ))}
+          {session?.user && (
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                signOut({ callbackUrl: "/" });
+              }}
+              className="text-left text-sm text-muted hover:text-white px-4 py-3 rounded-xl hover:bg-white/[0.05] transition-colors"
+            >
+              {t.settingsSignOut}
+            </button>
+          )}
           <div className="px-3 py-2 border-t border-white/[0.06] mt-1 pt-3">
             <LanguageSwitcher full />
           </div>
