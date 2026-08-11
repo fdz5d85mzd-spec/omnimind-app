@@ -1,6 +1,7 @@
 export interface Dictionary {
   navHelen: string;
   navVoxStudio: string;
+  navAriaGo: string;
   navMissionControl: string;
   navPricing: string;
   navSignIn: string;
@@ -136,6 +137,8 @@ export interface Dictionary {
   guideVoxCta: string;
   guideVoxBody1: string;
   guideVoxBody2: string;
+  guideAriaGoCta: string;
+  guideAriaGoBody: string;
   guideFooterDirectly: string;
 }
 

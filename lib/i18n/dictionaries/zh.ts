@@ -3,6 +3,7 @@ import type { Dictionary } from "../types";
 const zh: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
+  navAriaGo: "Aria Go",
   navMissionControl: "任务控制中心",
   navPricing: "价格",
   navSignIn: "登录",
@@ -143,6 +144,9 @@ const zh: Dictionary = {
     "VoxStudio 是原生集成在 OmniMind 中的 AI 电影前期制作工具：用一句话描述一个创意，Director Agent 就会将其拆解为标题、故事梗概、角色、场景和分镜列表——运行在同一个 OmniMind 账户上，无需单独注册。",
   guideVoxBody2:
     "目前这一策划步骤已完全上线。将简报转化为真正的视频、图像或角色配音是下一层功能，会随着这些生成服务商的接入而陆续添加——页面本身始终如实展示哪些已经上线、哪些尚未上线。",
+  guideAriaGoCta: "Open Aria Go",
+  guideAriaGoBody:
+    "Aria Go turns a short description of your look, energy, and world into a distinctive profile avatar -- same OmniMind account and credits, no separate sign-up.",
   guideFooterDirectly: "。",
 };
 

@@ -3,6 +3,7 @@ import type { Dictionary } from "../types";
 const ru: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
+  navAriaGo: "Aria Go",
   navMissionControl: "Mission Control",
   navPricing: "Цены",
   navSignIn: "Войти",
@@ -146,6 +147,9 @@ const ru: Dictionary = {
     "VoxStudio — это допродакшн фильма на основе ИИ, встроенный прямо в OmniMind: опишите идею в одной строке, и Director Agent разбивает её на название, логлайн, персонажей, сцены и список кадров — работает на том же аккаунте OmniMind, без отдельной регистрации.",
   guideVoxBody2:
     "Сегодня этот этап планирования полностью работает. Превращение брифа в настоящее видео, изображения или голос персонажа — следующий уровень, добавляемый по мере подключения этих провайдеров генерации — сама страница всегда честно показывает, что уже работает, а что ещё нет.",
+  guideAriaGoCta: "Open Aria Go",
+  guideAriaGoBody:
+    "Aria Go turns a short description of your look, energy, and world into a distinctive profile avatar -- same OmniMind account and credits, no separate sign-up.",
   guideFooterDirectly: "напрямую.",
 };
 

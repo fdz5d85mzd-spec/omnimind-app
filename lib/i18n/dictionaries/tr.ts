@@ -3,6 +3,7 @@ import type { Dictionary } from "../types";
 const tr: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
+  navAriaGo: "Aria Go",
   navMissionControl: "Mission Control",
   navPricing: "Fiyatlandırma",
   navSignIn: "Giriş yap",
@@ -145,6 +146,9 @@ const tr: Dictionary = {
     "VoxStudio, OmniMind'a doğal olarak entegre edilmiş yapay zeka destekli film ön prodüksiyonudur: bir fikri tek satırda anlat, Director Agent onu bir başlık, logline, karakterler, sahneler ve çekim listesine böler — aynı OmniMind hesabında çalışır, ayrı kayıt gerekmez.",
   guideVoxBody2:
     "Bugün bu planlama adımı tamamen çalışır durumda. Bir brifingi gerçek bir videoya, görsellere veya karakter sesine dönüştürmek, bu üretim sağlayıcıları bağlandıkça eklenen bir sonraki katmandır — sayfanın kendisi neyin canlı olduğunu ve neyin henüz olmadığını her zaman dürüstçe gösterir.",
+  guideAriaGoCta: "Open Aria Go",
+  guideAriaGoBody:
+    "Aria Go turns a short description of your look, energy, and world into a distinctive profile avatar -- same OmniMind account and credits, no separate sign-up.",
   guideFooterDirectly: ".",
 };
 
