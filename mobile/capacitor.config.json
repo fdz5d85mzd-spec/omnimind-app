@@ -1,0 +1,27 @@
+{
+  "appId": "app.omnimindai",
+  "appName": "OmniMind",
+  "webDir": "www",
+  "server": {
+    "url": "https://omnimindai.app",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "always"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 800,
+      "backgroundColor": "#06071a",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#06071a"
+    }
+  }
+}
