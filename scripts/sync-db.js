@@ -4,15 +4,22 @@
 // until it's configured. Once DATABASE_URL exists, this keeps the
 // database schema in sync with prisma/schema.prisma automatically, so
 // nobody has to run a migration command by hand after a deploy.
+//
+// OGN_DATABASE_URL gets the same treatment for prisma/ogn-schema.prisma
+// (OGN's separate database) -- same "skip until configured" no-op.
 const { execSync } = require("child_process");
 
-if (!process.env.DATABASE_URL) {
-  console.log("[sync-db] DATABASE_URL not set — skipping schema sync.");
-  process.exit(0);
+function sync(envVar, schema) {
+  if (!process.env[envVar]) {
+    console.log(`[sync-db] ${envVar} not set — skipping schema sync for ${schema}.`);
+    return;
+  }
+  execSync(`npx prisma db push --skip-generate --schema=${schema}`, { stdio: "inherit" });
 }
 
 try {
-  execSync("npx prisma db push --skip-generate", { stdio: "inherit" });
+  sync("DATABASE_URL", "prisma/schema.prisma");
+  sync("OGN_DATABASE_URL", "prisma/ogn-schema.prisma");
 } catch (err) {
   console.error("[sync-db] Schema sync failed:", err.message);
   process.exit(1);

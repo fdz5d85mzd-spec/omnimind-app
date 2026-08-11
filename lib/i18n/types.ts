@@ -2,6 +2,7 @@ export interface Dictionary {
   navHelen: string;
   navVoxStudio: string;
   navAriaGo: string;
+  navOgn: string;
   navMissionControl: string;
   navPricing: string;
   navSignIn: string;

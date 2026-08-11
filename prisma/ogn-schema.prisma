@@ -1,0 +1,441 @@
+// OGN runs on its own database, separate from the main OmniMind schema.prisma
+// -- OGN's own `User`/etc. models would otherwise collide by name with
+// OmniMind's, so this generates into its own client output path and reads
+// its own OGN_DATABASE_URL, exactly like Helen keeps its data in a separate
+// Supabase project instead of merging into the main Postgres.
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
+  output   = "../node_modules/.prisma/ogn-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("OGN_DATABASE_URL")
+}
+
+// ─── Admin & Public Users ─────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user") // admin | editor | user
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  comments  Comment[]
+  likes     Like[]
+  bookmarks Bookmark[]
+  profile   UserProfile?
+
+  @@map("users")
+}
+
+// ─── News Sources ─────────────────────────────────────────────
+model Source {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  url               String
+  feedUrl           String?  @map("feed_url")
+  credibilityRating Float    @default(0.8) @map("credibility_rating") // 0-1
+  language          String   @default("en")
+  country           String?
+  logoUrl           String?  @map("logo_url")
+  isActive          Boolean  @default(true) @map("is_active")
+  lastFetchedAt     DateTime? @map("last_fetched_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  articles Article[]
+
+  @@map("sources")
+}
+
+// ─── Categories ───────────────────────────────────────────────
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  color       String   @default("#f59e0b")
+  icon        String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  articles Article[]
+
+  @@map("categories")
+}
+
+// ─── Articles ─────────────────────────────────────────────────
+model Article {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  summary          String   @db.Text
+  content          String?  @db.Text
+  sourceUrl        String   @map("source_url")
+  sourceName       String   @map("source_name")
+  imageUrl         String?  @map("image_url")
+  categorySlug     String   @map("category_slug")
+  sentimentScore   Float    @default(0.5) @map("sentiment_score") // 0-1, higher = more positive
+  credibilityScore Float    @default(0.8) @map("credibility_score") // 0-1
+  language         String   @default("en")
+  isPublished      Boolean  @default(false) @map("is_published")
+  isFeatured       Boolean  @default(false) @map("is_featured")
+  isVerified       Boolean  @default(false) @map("is_verified")
+  viewCount        Int      @default(0) @map("view_count")
+  bookmarkCount    Int      @default(0) @map("bookmark_count")
+  publishedAt      DateTime? @map("published_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // SEO fields (Phase 2)
+  metaTitle        String?  @map("meta_title")
+  metaDescription  String?  @db.Text @map("meta_description")
+  keywords         String[] @default([])
+  jsonLdSchema     String?  @db.Text @map("json_ld_schema")
+
+  source      Source?      @relation(fields: [sourceName], references: [name], onDelete: SetNull)
+  category    Category?    @relation(fields: [categorySlug], references: [slug], onDelete: SetNull)
+  translations Translation[]
+  videos      Video[]
+  podcastEpisodes PodcastEpisodeArticle[]
+  comments    Comment[]
+  likes       Like[]
+  bookmarks   Bookmark[]
+
+  @@index([categorySlug])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+// ─── Translations ─────────────────────────────────────────────
+model Translation {
+  id        String   @id @default(cuid())
+  articleId String   @map("article_id")
+  language  String
+  title     String
+  summary   String   @db.Text
+  content   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, language])
+  @@index([articleId])
+  @@index([language])
+  @@map("translations")
+}
+
+// ─── Agent Logs ───────────────────────────────────────────────
+model AgentLog {
+  id               String   @id @default(cuid())
+  agentName        String   @map("agent_name")
+  action           String
+  status           String   @default("running") // running | completed | failed
+  details          String?  @db.Text // JSON string
+  articlesProcessed Int     @default(0) @map("articles_processed")
+  articlesFiltered  Int     @default(0) @map("articles_filtered")
+  duration          Int?    @map("duration_ms")
+  errorMessage      String?  @map("error_message") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([agentName])
+  @@index([status])
+  @@index([createdAt])
+  @@map("agent_logs")
+}
+
+// ─── Newsletter Subscribers ──────────────────────────────────
+model Subscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  language    String   @default("en") // preferred language
+  isActive    Boolean  @default(true) @map("is_active")
+  subscribedAt DateTime @default(now()) @map("subscribed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([isActive])
+  @@map("subscribers")
+}
+
+// ─── Newsletter Logs ─────────────────────────────────────────
+model NewsletterLog {
+  id            String   @id @default(cuid())
+  subject       String
+  recipientCount Int     @default(0) @map("recipient_count")
+  articleIds     String[] @default([]) @map("article_ids")
+  status        String   @default("pending") // pending | sent | failed
+  errorMessage   String?  @map("error_message") @db.Text
+  sentAt        DateTime? @map("sent_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([status])
+  @@map("newsletter_logs")
+}
+
+// ─── API Keys (Public API) ────────────────────────────────────
+model ApiKey {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String   // label for the key
+  isActive    Boolean  @default(true) @map("is_active")
+  rateLimitPerHour Int @default(100) @map("rate_limit_per_hour")
+  lastUsedAt  DateTime? @map("last_used_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([key])
+  @@map("api_keys")
+}
+
+// ─── API Usage Logs (rate limiting) ───────────────────────────
+model ApiUsageLog {
+  id        String   @id @default(cuid())
+  apiKeyId  String   @map("api_key_id")
+  endpoint  String
+  method    String
+  statusCode Int     @map("status_code")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([apiKeyId])
+  @@index([createdAt])
+  @@map("api_usage_logs")
+}
+
+// ─── Settings (key-value store for platform config) ──────────
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// ─── Videos (OGN TV) ─────────────────────────────────────────
+model Video {
+  id           String   @id @default(cuid())
+  articleId    String   @map("article_id")
+  title        String
+  description  String?  @db.Text
+  videoUrl     String?  @map("video_url")       // CDN URL to the generated video
+  thumbnailUrl String?  @map("thumbnail_url")
+  duration     Int?     // seconds
+  type         String   @default("slideshow")   // slideshow | ai_generated
+  status       String   @default("pending")     // pending | generating | completed | failed
+  script       String?  @db.Text                 // narration script
+  voiceoverUrl String?  @map("voiceover_url")   // TTS audio URL
+  errorMessage String?  @map("error_message") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("videos")
+}
+
+// ─── Podcast Episodes (OGN Radio) ────────────────────────────
+model PodcastEpisode {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?  @db.Text
+  audioUrl     String?  @map("audio_url")
+  duration     Int?     // seconds
+  episodeNumber Int     @default(0) @map("episode_number")
+  status       String   @default("pending")     // pending | generating | completed | failed
+  script       String?  @db.Text                 // full narration script
+  voiceId      String?  @map("voice_id")        // ElevenLabs voice ID used
+  coverArtUrl  String?  @map("cover_art_url")
+  errorMessage String?  @map("error_message") @db.Text
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  articles PodcastEpisodeArticle[]
+
+  @@index([status])
+  @@index([episodeNumber])
+  @@index([createdAt])
+  @@map("podcast_episodes")
+}
+
+// ─── Podcast ↔ Article Join ──────────────────────────────────
+model PodcastEpisodeArticle {
+  id           String   @id @default(cuid())
+  episodeId    String   @map("episode_id")
+  articleId    String   @map("article_id")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  episode  PodcastEpisode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  article  Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([episodeId, articleId])
+  @@index([episodeId])
+  @@index([articleId])
+  @@map("podcast_episode_articles")
+}
+
+// ─── Community: Comments ──────────────────────────────────────
+model Comment {
+  id        String   @id @default(cuid())
+  articleId String   @map("article_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  parentId  String?  @map("parent_id")
+  status    String   @default("approved") @map("status") // 'pending' | 'approved' | 'rejected'
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  article Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([articleId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([status])
+  @@map("comments")
+}
+
+// ─── Community: Likes ─────────────────────────────────────────
+model Like {
+  id        String   @id @default(cuid())
+  articleId String   @map("article_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([articleId])
+  @@index([userId])
+  @@map("likes")
+}
+
+// ─── Community: Bookmarks ─────────────────────────────────────
+model Bookmark {
+  id        String   @id @default(cuid())
+  articleId String   @map("article_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([articleId])
+  @@index([userId])
+  @@map("bookmarks")
+}
+
+// ─── Community: User Profiles ─────────────────────────────────
+model UserProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  bio               String?  @db.Text
+  avatarUrl         String?  @map("avatar_url")
+  displayName       String?  @map("display_name")
+  preferredLanguage String   @default("en") @map("preferred_language")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+// Phase 4 Additions: Affiliate Program & Analytics
+
+// ─── Affiliate Program ─────────────────────────────────────────
+model Affiliate {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  referralCode    String   @unique @map("referral_code")
+  commissionRate  Decimal  @default(0.1) @map("commission_rate") @db.Decimal(10, 4)
+  totalEarnings   Decimal  @default(0) @map("total_earnings") @db.Decimal(10, 2)
+  pendingEarnings Decimal  @default(0) @map("pending_earnings") @db.Decimal(10, 2)
+  paidOut         Decimal  @default(0) @map("paid_out") @db.Decimal(10, 2)
+  status          String   @default("active") // active | suspended
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  referrals AffiliateReferral[]
+  payouts   AffiliatePayout[]
+
+  @@map("affiliates")
+}
+
+model AffiliateReferral {
+  id             String   @id @default(cuid())
+  affiliateId    String   @map("affiliate_id")
+  referredUserId String   @map("referred_user_id")
+  articleId      String?  @map("article_id")
+  commission     Decimal  @default(0) @map("commission") @db.Decimal(10, 2)
+  status         String   @default("pending") // pending | confirmed | paid
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([status])
+  @@map("affiliate_referrals")
+}
+
+model AffiliatePayout {
+  id          String    @id @default(cuid())
+  affiliateId String    @map("affiliate_id")
+  amount      Decimal   @map("amount") @db.Decimal(10, 2)
+  status      String    @default("requested") // requested | processing | completed | rejected
+  requestedAt DateTime  @default(now()) @map("requested_at")
+  processedAt DateTime? @map("processed_at")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([status])
+  @@map("affiliate_payouts")
+}
+
+// ─── Analytics ────────────────────────────────────────────────
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  type      String
+  articleId String?  @map("article_id")
+  userId    String?  @map("user_id")
+  sessionId String   @map("session_id")
+  url       String
+  referrer  String?
+  userAgent String?  @map("user_agent")
+  metadata  String?  @db.Text
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([type])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+model DailyAnalytics {
+  id             String   @id @default(cuid())
+  date           DateTime @unique
+  pageViews      Int      @default(0) @map("page_views")
+  uniqueVisitors Int      @default(0) @map("unique_visitors")
+  articleViews   Int      @default(0) @map("article_views")
+  newUsers       Int      @default(0) @map("new_users")
+  likes          Int      @default(0)
+  comments       Int      @default(0)
+  shares         Int      @default(0)
+
+  @@map("daily_analytics")
+}

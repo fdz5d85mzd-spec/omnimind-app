@@ -4,6 +4,7 @@ const ja: Dictionary = {
   navHelen: "Helen",
   navVoxStudio: "VoxStudio",
   navAriaGo: "Aria Go",
+  navOgn: "OGN",
   navMissionControl: "ミッションコントロール",
   navPricing: "料金",
   navSignIn: "ログイン",
