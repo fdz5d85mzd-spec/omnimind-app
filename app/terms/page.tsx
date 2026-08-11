@@ -17,9 +17,9 @@ export default function TermsPage() {
 
         <div className="prose-sm space-y-6 text-sm text-muted leading-relaxed">
           <p>
-            OmniMind is an early-stage product, actively changing. These terms cover the basics of using
-            it; they are not a substitute for advice from a lawyer, and we&apos;ll update them as the
-            product grows.
+            OmniMind — including Mission Control, VoxStudio, and Helen, all one product — is an
+            early-stage product, actively changing. These terms cover the basics of using it; they are not
+            a substitute for advice from a lawyer, and we&apos;ll update them as the product grows.
           </p>
 
           <Section title="1. What OmniMind is">
@@ -46,12 +46,25 @@ export default function TermsPage() {
             model may be inaccurate — verify anything important before relying on it.
           </Section>
 
-          <Section title="5. Changes">
+          <Section title="5. Helen membership">
+            Helen runs on its own sign-in system, separate from your main OmniMind account. Joining costs a
+            one-time €1 fee and grants a permanent, non-transferable Member ID — non-refundable except
+            where required by law. Your creature and any cosmetic shop items are virtual goods with no cash
+            value, exist only within Helen, and can&apos;t be exchanged, transferred, or redeemed for
+            money. A share of membership fees and shop revenue goes to a shared Impact Fund; members vote
+            each cycle on which listed organizations receive it, and Helen doesn&apos;t guarantee any
+            specific outcome, timeline, or amount for any organization. One Member ID per person; we may
+            suspend accounts used to abuse or manipulate votes, leaderboards, or the shop. Any username or
+            creature name you choose must not be abusive, impersonating, or unlawful — we may remove
+            content that violates this.
+          </Section>
+
+          <Section title="6. Changes">
             Features, pricing, and these terms may change as the product develops. Material changes will
             be reflected on this page.
           </Section>
 
-          <Section title="6. Contact">
+          <Section title="7. Contact">
             Questions about these terms can be sent to the account listed as the service&apos;s
             administrator.
           </Section>
