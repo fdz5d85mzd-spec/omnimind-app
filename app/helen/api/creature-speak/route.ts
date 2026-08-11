@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import { synthesizeVoice } from "@/lib/helen/elevenlabs";
+import { synthesizeVoice, VOICE_HELEN } from "@/lib/elevenlabs";
 
 /**
  * Generates a short, in-character line from the user's creature — either an
@@ -121,7 +121,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Empty response" }, { status: 502 });
     }
 
-    const audio = body.skipAudio ? null : await synthesizeVoice(text);
+    const audio = body.skipAudio ? null : await synthesizeVoice(text, VOICE_HELEN);
     return NextResponse.json({ message: text, audio });
   } catch (err) {
     console.error("creature-speak failed:", err instanceof Error ? err.message : err);

@@ -61,15 +61,56 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Whether the message currently being composed came in via the mic --
+  // true from a voice transcript, cleared the moment the user types
+  // (keyboard edits mean they've switched out of a spoken exchange).
+  // Drives whether the reply gets spoken back, for a real back-and-forth
+  // voice conversation instead of a one-off dictation.
+  const voiceTurnRef = useRef(false);
 
   const handleVoiceText = useCallback((text: string) => {
     setInput((prev) => (prev ? `${prev} ${text}` : text));
+    voiceTurnRef.current = true;
     requestAnimationFrame(() => textareaRef.current?.focus());
   }, []);
   const speech = useSpeechRecognition(handleVoiceText);
+
+  function onComposerChange(v: string) {
+    voiceTurnRef.current = false;
+    setInput(v);
+    autoGrow();
+  }
+
+  function stopSpeaking() {
+    audioRef.current?.pause();
+    if (audioRef.current) audioRef.current.currentTime = 0;
+    setSpeakingId(null);
+  }
+
+  async function speakReply(assistantId: string, text: string) {
+    if (!text.trim()) return;
+    try {
+      const res = await fetch("/api/chat/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.audio || !audioRef.current) return;
+      audioRef.current.src = `data:audio/mpeg;base64,${body.audio}`;
+      setSpeakingId(assistantId);
+      audioRef.current.onended = () => setSpeakingId(null);
+      await audioRef.current.play().catch(() => setSpeakingId(null));
+    } catch {
+      // no voice this turn -- the text reply already stands on its own
+    }
+  }
 
   useEffect(() => {
     setConversations(loadConversations());
@@ -102,6 +143,10 @@ export default function Home() {
   async function send(text?: string) {
     const q = (text ?? input).trim();
     if (!q || isStreaming) return;
+
+    const spokenTurn = voiceTurnRef.current;
+    voiceTurnRef.current = false;
+    stopSpeaking();
 
     let convoId = activeId;
     const userMsg: ChatMessage = { id: newId(), role: "user", content: q, status: "done" };
@@ -142,11 +187,13 @@ export default function Home() {
     }
 
     let waking = false;
+    let fullText = "";
 
     await streamAgent(
       q,
       {
         onDelta: (text) => {
+          fullText = waking ? text : fullText + text;
           updateConversation(id!, (c) => ({
             ...c,
             messages: c.messages.map((m) =>
@@ -157,6 +204,7 @@ export default function Home() {
         },
         onDone: () => {
           patchAssistant({ status: "done" });
+          if (spokenTurn) speakReply(assistantId, fullText);
           // The gated route deducts credits just after the stream closes
           // server-side — a short delay avoids fetching the balance a
           // beat before that write lands.
@@ -179,6 +227,7 @@ export default function Home() {
   function stop() {
     abortRef.current?.abort();
     setIsStreaming(false);
+    stopSpeaking();
     if (activeId) {
       updateConversation(activeId, (c) => ({
         ...c,
@@ -259,10 +308,7 @@ export default function Home() {
               <div className="w-full">
                 <Composer
                   value={input}
-                  onChange={(v) => {
-                    setInput(v);
-                    autoGrow();
-                  }}
+                  onChange={onComposerChange}
                   onSubmit={() => send()}
                   disabled={isStreaming}
                   textareaRef={textareaRef}
@@ -289,7 +335,7 @@ export default function Home() {
             <section className="flex-1 overflow-y-auto px-4 sm:px-0">
               <div className="min-h-full flex flex-col justify-end max-w-3xl mx-auto w-full py-8 space-y-7">
                 {messages.map((m) => (
-                  <MessageRow key={m.id} message={m} />
+                  <MessageRow key={m.id} message={m} speaking={speakingId === m.id} />
                 ))}
                 <div ref={bottomRef} />
               </div>
@@ -299,10 +345,7 @@ export default function Home() {
               <div className="max-w-3xl mx-auto w-full">
                 <Composer
                   value={input}
-                  onChange={(v) => {
-                    setInput(v);
-                    autoGrow();
-                  }}
+                  onChange={onComposerChange}
                   onSubmit={() => send()}
                   disabled={isStreaming}
                   textareaRef={textareaRef}
@@ -315,11 +358,12 @@ export default function Home() {
           </>
         )}
       </main>
+      <audio ref={audioRef} className="hidden" />
     </div>
   );
 }
 
-function MessageRow({ message }: { message: ChatMessage }) {
+function MessageRow({ message, speaking }: { message: ChatMessage; speaking?: boolean }) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end animate-fadeIn">
@@ -332,8 +376,14 @@ function MessageRow({ message }: { message: ChatMessage }) {
 
   return (
     <div className="flex gap-3 items-start animate-fadeIn">
-      <div className="shrink-0 mt-0.5">
+      <div className={`shrink-0 mt-0.5 relative ${speaking ? "animate-pulse" : ""}`}>
         <LogoMark size={26} />
+        {speaking && (
+          <span
+            className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full bg-cyan shadow-[0_0_0_3px_rgba(6,7,26,1)]"
+            title="Speaking"
+          />
+        )}
       </div>
       <div
         className={`flex-1 min-w-0 text-sm sm:text-base leading-relaxed whitespace-pre-wrap pt-0.5 ${
