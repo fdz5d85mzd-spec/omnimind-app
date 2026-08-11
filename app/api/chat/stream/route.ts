@@ -7,13 +7,14 @@ import { getUserWithRefill } from "@/lib/creditsServer";
 import { prisma } from "@/lib/prisma";
 import { getUserProviderKey } from "@/lib/connectorLookup";
 
-// Gated version of POST /agent/run/stream for signed-in users: checks
-// credits/cooldown BEFORE the request reaches the LLM (the browser never
-// talks to the backend directly here, so this can't be bypassed the way a
-// client-side-only check could), streams the real backend response through
-// unmodified, then deducts credits proportional to the real answer length
-// once the stream completes. Guests are unaffected — they keep using the
-// existing direct-to-backend path, ungated, exactly as before.
+// Gated proxy for POST /agent/run/stream -- the only path the chat UI ever
+// calls (see lib/api.ts's streamAgent and app/chat/page.tsx's send(), which
+// requires a session before it even reaches here). Checks credits/cooldown
+// BEFORE the request reaches the LLM (the browser never talks to the
+// backend directly, so this can't be bypassed the way a client-side-only
+// check could), streams the real backend response through unmodified, then
+// deducts credits proportional to the real answer length once the stream
+// completes.
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

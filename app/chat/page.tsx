@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { streamAgent, type BlockedReason } from "@/lib/api";
 import {
@@ -53,7 +54,8 @@ function MicIcon() {
 }
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [input, setInput] = useState("");
@@ -143,6 +145,15 @@ export default function Home() {
   async function send(text?: string) {
     const q = (text ?? input).trim();
     if (!q || isStreaming) return;
+    // Every real turn needs an account -- guests used to go straight to the
+    // backend with no credit gate at all (see lib/api.ts's gated param).
+    // Defense in depth: the empty-state screen already hides the composer
+    // for guests, but this still needs to hold up on its own (e.g. a
+    // session expiring mid-conversation).
+    if (sessionStatus !== "loading" && !session?.user) {
+      router.push("/login?next=/chat");
+      return;
+    }
 
     const spokenTurn = voiceTurnRef.current;
     voiceTurnRef.current = false;
@@ -205,10 +216,10 @@ export default function Home() {
         onDone: () => {
           patchAssistant({ status: "done" });
           if (spokenTurn) speakReply(assistantId, fullText);
-          // The gated route deducts credits just after the stream closes
-          // server-side — a short delay avoids fetching the balance a
-          // beat before that write lands.
-          if (session?.user) setTimeout(() => notifyCreditsChanged(), 600);
+          // Credits deduct just after the stream closes server-side — a
+          // short delay avoids fetching the balance a beat before that
+          // write lands.
+          setTimeout(() => notifyCreditsChanged(), 600);
         },
         onError: (message) => patchAssistant({ content: message, status: "error" }),
         onBlocked: (info) => patchAssistant({ content: describeBlocked(info), status: "error" }),
@@ -217,8 +228,7 @@ export default function Home() {
           patchAssistant({ content: "Waking up the OmniMind backend — this can take up to a minute…" });
         },
       },
-      controller.signal,
-      !!session?.user
+      controller.signal
     );
 
     setIsStreaming(false);
@@ -305,29 +315,41 @@ export default function Home() {
                 A real OmniMind agent — policy-checked, orchestrated, remembered — goes to work and answers.
               </p>
 
-              <div className="w-full">
-                <Composer
-                  value={input}
-                  onChange={onComposerChange}
-                  onSubmit={() => send()}
-                  disabled={isStreaming}
-                  textareaRef={textareaRef}
-                  autoFocus
-                  speech={speech}
-                />
-              </div>
+              {sessionStatus !== "loading" && !session?.user ? (
+                <button
+                  type="button"
+                  onClick={() => router.push("/login?next=/chat")}
+                  className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
+                >
+                  Sign in to start — free credits included
+                </button>
+              ) : (
+                <>
+                  <div className="w-full">
+                    <Composer
+                      value={input}
+                      onChange={onComposerChange}
+                      onSubmit={() => send()}
+                      disabled={isStreaming}
+                      textareaRef={textareaRef}
+                      autoFocus
+                      speech={speech}
+                    />
+                  </div>
 
-              <div className="flex flex-wrap gap-2 justify-center mt-6 max-w-2xl">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="text-xs text-muted bg-white/[0.03] hover:bg-white/[0.07] hover:text-white border border-white/[0.07] hover:border-accent/40 rounded-full px-4 py-2 transition-all hover:-translate-y-0.5"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+                  <div className="flex flex-wrap gap-2 justify-center mt-6 max-w-2xl">
+                    {SUGGESTIONS.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => send(s)}
+                        className="text-xs text-muted bg-white/[0.03] hover:bg-white/[0.07] hover:text-white border border-white/[0.07] hover:border-accent/40 rounded-full px-4 py-2 transition-all hover:-translate-y-0.5"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </section>
         ) : (
