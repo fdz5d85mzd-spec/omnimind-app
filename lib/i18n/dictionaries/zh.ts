@@ -86,6 +86,7 @@ const zh: Dictionary = {
   chatMicSpeakTitle: "说出你的消息",
   chatStopButton: "停止",
   chatAskButton: "提问",
+  chatVoiceFailed: "语音回复失败",
 
   pricingTitle: "价格",
   pricingSub: "免费开始使用。费用是与智能体实际写回内容成正比的额度——而不是每条消息的固定费用。",

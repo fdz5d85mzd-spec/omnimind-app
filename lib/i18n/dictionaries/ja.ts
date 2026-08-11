@@ -87,6 +87,7 @@ const ja: Dictionary = {
   chatMicSpeakTitle: "メッセージを話す",
   chatStopButton: "停止",
   chatAskButton: "質問する",
+  chatVoiceFailed: "音声返信に失敗しました",
 
   pricingTitle: "料金",
   pricingSub: "無料で始められます。料金はエージェントが実際に書き返す内容に比例したクレジットで、メッセージごとの定額料金ではありません。",

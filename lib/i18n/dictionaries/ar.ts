@@ -87,6 +87,7 @@ const ar: Dictionary = {
   chatMicSpeakTitle: "قل رسالتك",
   chatStopButton: "إيقاف",
   chatAskButton: "اسأل",
+  chatVoiceFailed: "فشل الرد الصوتي",
 
   pricingTitle: "الأسعار",
   pricingSub: "مجاني للبدء. التكلفة أرصدة تتناسب مع ما يكتبه الوكيل فعليًا — وليست رسومًا ثابتة لكل رسالة.",

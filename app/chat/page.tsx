@@ -87,6 +87,7 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
 
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [voiceFailedId, setVoiceFailedId] = useState<string | null>(null);
   // null = not a guest concern yet (still resolving session, or signed in);
   // a number once we know -- ms left in the 5-minute trial, ticked down
   // client-side for display only. The real check happens server-side on
@@ -124,7 +125,16 @@ export default function Home() {
     audioRef.current?.pause();
     if (audioRef.current) audioRef.current.currentTime = 0;
     setSpeakingId(null);
+    setVoiceFailedId(null);
   }
+
+  // 100ms of real (silent) 8kHz/8-bit PCM, used only to give unlockAudio()
+  // a genuine source to play -- calling play() on an <audio> with no src,
+  // or a WAV with a zero-length data chunk, throws/rejects as "no
+  // supported source" in some engines instead of registering as a real
+  // playback attempt, which would defeat the whole unlock.
+  const SILENT_AUDIO_SRC =
+    "data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==";
 
   // Strict autoplay policies (mobile Safari especially) only allow an
   // <audio> element to play if the call happens inside a real user
@@ -138,6 +148,7 @@ export default function Home() {
     const el = audioRef.current;
     if (!el) return;
     el.muted = true;
+    el.src = SILENT_AUDIO_SRC;
     const playPromise = el.play();
     if (playPromise && typeof playPromise.then === "function") {
       playPromise
@@ -163,13 +174,32 @@ export default function Home() {
         body: JSON.stringify({ text }),
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.audio || !audioRef.current) return;
-      audioRef.current.src = `data:audio/mpeg;base64,${body.audio}`;
+      if (!res.ok || !body.audio || !audioRef.current) {
+        setVoiceFailedId(assistantId);
+        return;
+      }
+      // A Blob/object URL plays far more reliably across browsers than a
+      // raw data: URI on <audio> -- notably on Safari, which has had
+      // spotty data-URI support for media elements.
+      const bytes = atob(body.audio as string);
+      const buf = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([buf], { type: "audio/mpeg" }));
+      audioRef.current.muted = false;
+      audioRef.current.src = url;
       setSpeakingId(assistantId);
-      audioRef.current.onended = () => setSpeakingId(null);
-      await audioRef.current.play().catch(() => setSpeakingId(null));
+      setVoiceFailedId(null);
+      audioRef.current.onended = () => {
+        setSpeakingId(null);
+        URL.revokeObjectURL(url);
+      };
+      await audioRef.current.play().catch(() => {
+        setSpeakingId(null);
+        setVoiceFailedId(assistantId);
+        URL.revokeObjectURL(url);
+      });
     } catch {
-      // no voice this turn -- the text reply already stands on its own
+      setVoiceFailedId(assistantId);
     }
   }
 
@@ -445,7 +475,7 @@ export default function Home() {
             <section className="flex-1 overflow-y-auto px-4 sm:px-0">
               <div className="min-h-full flex flex-col justify-end max-w-3xl mx-auto w-full py-8 space-y-7">
                 {messages.map((m) => (
-                  <MessageRow key={m.id} message={m} speaking={speakingId === m.id} />
+                  <MessageRow key={m.id} message={m} speaking={speakingId === m.id} voiceFailed={voiceFailedId === m.id} />
                 ))}
                 <div ref={bottomRef} />
               </div>
@@ -485,7 +515,16 @@ export default function Home() {
   );
 }
 
-function MessageRow({ message, speaking }: { message: ChatMessage; speaking?: boolean }) {
+function MessageRow({
+  message,
+  speaking,
+  voiceFailed,
+}: {
+  message: ChatMessage;
+  speaking?: boolean;
+  voiceFailed?: boolean;
+}) {
+  const { t } = useLanguage();
   if (message.role === "user") {
     return (
       <div className="flex justify-end animate-fadeIn">
@@ -504,6 +543,12 @@ function MessageRow({ message, speaking }: { message: ChatMessage; speaking?: bo
           <span
             className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full bg-cyan shadow-[0_0_0_3px_rgba(6,7,26,1)]"
             title="Speaking"
+          />
+        )}
+        {voiceFailed && !speaking && (
+          <span
+            className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full bg-crimson/80 shadow-[0_0_0_3px_rgba(6,7,26,1)]"
+            title={t.chatVoiceFailed}
           />
         )}
       </div>

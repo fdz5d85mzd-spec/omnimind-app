@@ -88,6 +88,7 @@ const el: Dictionary = {
   chatMicSpeakTitle: "Πες το μήνυμά σου",
   chatStopButton: "Διακοπή",
   chatAskButton: "Ρώτα",
+  chatVoiceFailed: "Η φωνητική απάντηση απέτυχε",
 
   pricingTitle: "Τιμές",
   pricingSub: "Δωρεάν για να ξεκινήσεις. Το κόστος είναι credits ανάλογα με το τι γράφει πραγματικά ο agent — όχι πάγια χρέωση ανά μήνυμα.",

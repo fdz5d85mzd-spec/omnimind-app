@@ -88,6 +88,7 @@ const es: Dictionary = {
   chatMicSpeakTitle: "Di tu mensaje",
   chatStopButton: "Detener",
   chatAskButton: "Preguntar",
+  chatVoiceFailed: "La respuesta de voz falló",
 
   pricingTitle: "Precios",
   pricingSub: "Gratis para empezar. El costo son créditos proporcionales a lo que el agente realmente escribe — no una tarifa fija por mensaje.",

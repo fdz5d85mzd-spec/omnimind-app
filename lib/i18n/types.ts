@@ -84,6 +84,7 @@ export interface Dictionary {
   chatMicSpeakTitle: string;
   chatStopButton: string;
   chatAskButton: string;
+  chatVoiceFailed: string;
 
   pricingTitle: string;
   pricingSub: string;
