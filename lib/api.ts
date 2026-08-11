@@ -3,17 +3,6 @@ export const API_BASE =
 
 export const WS_BASE = API_BASE.replace(/^http/, "ws");
 
-export function sessionId(): string {
-  if (typeof window === "undefined") return "server";
-  const KEY = "omnimind_session_id";
-  let id = window.localStorage.getItem(KEY);
-  if (!id) {
-    id = "sess_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    window.localStorage.setItem(KEY, id);
-  }
-  return id;
-}
-
 type StreamEvent =
   | { type: "delta"; text: string }
   | { type: "done"; run_id: string; answer: string; duration_ms: number }
@@ -87,23 +76,19 @@ export async function streamAgent(
     onBlocked?: (info: BlockedReason) => void;
     onWaking?: () => void;
   },
-  signal?: AbortSignal,
-  // Signed-in users go through the server-side gated proxy (credits
-  // enforced, can't be bypassed from the client); guests go straight to
-  // the backend, exactly as before — nothing changes for them.
-  gated = false
+  signal?: AbortSignal
 ): Promise<void> {
-  const url = gated ? "/api/chat/stream" : `${API_BASE}/agent/run/stream`;
-  const body = gated ? { prompt } : { prompt, session_id: sessionId() };
-
+  // Always the server-side gated proxy (credits enforced, can't be bypassed
+  // from the client) -- every caller requires a signed-in session before
+  // reaching this point (see app/chat/page.tsx's send()), no anonymous path.
   let res: Response;
   try {
     res = await fetchWithWakeRetry(
-      url,
+      "/api/chat/stream",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ prompt }),
         signal,
       },
       signal,
