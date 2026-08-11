@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import NeuralField from "@/components/NeuralField";
 import { LogoMark } from "@/components/Logo";
 import AnimatedCounter from "@/components/AnimatedCounter";
 import { getFleetStatus, getOrchestratorReport, getTwinSubscribers } from "@/lib/telemetry";
@@ -60,7 +59,7 @@ export default function Landing() {
       <TopNav />
 
       {/* ---------------------------------------------------------- HERO */}
-      <section className="relative h-[92vh] min-h-[640px] flex flex-col items-center justify-center overflow-hidden px-6">
+      <section className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden px-6 pt-24 pb-16">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
             className="absolute -bottom-[30%] -left-[15%] w-[780px] h-[780px] rounded-full opacity-60 blur-[130px] animate-breathe"
@@ -75,17 +74,21 @@ export default function Landing() {
             style={{ background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)" }}
           />
         </div>
-        <div className="absolute inset-0">
-          <NeuralField density={70} linkDistance={160} />
-        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg pointer-events-none" />
 
         <div className="relative flex flex-col items-center text-center animate-rise">
-          <div className="relative mb-8">
-            <div className="absolute inset-0 blur-2xl opacity-70 animate-breathe">
-              <LogoMark size={72} />
-            </div>
-            <LogoMark size={72} />
+          <div className="relative mb-2 h-[200px] w-[200px] sm:h-[240px] sm:w-[240px]">
+            <div className="absolute inset-0 blur-3xl opacity-60 animate-breathe" style={{ background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)" }} />
+            <video
+              className="relative h-full w-full object-contain"
+              src="/mascot-hero.mp4"
+              poster="/mascot-hero-poster.jpg"
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-hidden
+            />
           </div>
 
           <span className="inline-flex items-center gap-2 text-cyan text-[11px] font-bold tracking-[0.22em] mb-6 px-3.5 py-1.5 rounded-full border border-cyan/25 bg-cyan/[0.06]">
@@ -186,8 +189,11 @@ export default function Landing() {
 
       {/* --------------------------------------------------------- CTA */}
       <section className="relative border-t border-white/[0.06] py-24 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 opacity-40">
-          <NeuralField density={30} linkDistance={130} />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] rounded-full opacity-25 blur-[130px]"
+            style={{ background: "radial-gradient(circle, #5B6EF5 0%, transparent 70%)" }}
+          />
         </div>
         <div className="relative">
           <h2 className="font-head text-3xl sm:text-4xl font-semibold mb-5 text-gradient">{t.ctaTitle}</h2>
