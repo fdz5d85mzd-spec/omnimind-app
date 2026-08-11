@@ -48,7 +48,8 @@ export async function POST(request: Request) {
     options: { redirectTo: `${origin}/helen/auth/callback?next=${encodeURIComponent("/helen/home")}` },
   });
   if (linkError || !linkData?.user?.id || !linkData?.properties?.action_link) {
-    return NextResponse.json({ error: linkError?.message || "Could not bridge account" }, { status: 500 });
+    console.error("helen join: generateLink failed", linkError);
+    return NextResponse.json({ error: "Helen isn't reachable right now. Please try again in a moment." }, { status: 500 });
   }
   const supabaseUserId = linkData.user.id;
   const bridgeUrl = linkData.properties.action_link;
@@ -114,7 +115,8 @@ export async function POST(request: Request) {
 
   const membership = await createHelenMembership(supabaseUserId, username);
   if ("error" in membership) {
-    return NextResponse.json({ error: membership.error }, { status: 500 });
+    console.error("helen join: createHelenMembership failed", membership.error);
+    return NextResponse.json({ error: "Helen isn't set up correctly yet. Please try again in a moment." }, { status: 500 });
   }
 
   if (!isPrivileged) {
