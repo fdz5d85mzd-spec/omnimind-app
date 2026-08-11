@@ -39,6 +39,12 @@ export default async function RevenuePage() {
               because there&apos;s nothing to read from yet.
             </p>
           )}
+          {snapshot.stripeError && (
+            <p className="mt-3 text-xs text-crimson">
+              Couldn&apos;t reach Stripe just now (bad/expired key, missing permission, or a transient error
+              — check the server logs) — figures below are zero, not a real reading. Reload to retry.
+            </p>
+          )}
         </div>
 
         <section>

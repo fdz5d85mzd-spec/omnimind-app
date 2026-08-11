@@ -8,6 +8,7 @@ export type PeriodSplit = { helen: Totals; other: Totals };
 
 export type RevenueSnapshot = {
   stripeConfigured: boolean;
+  stripeError: boolean;
   today: PeriodSplit;
   month: PeriodSplit;
   allTime: PeriodSplit;
@@ -69,6 +70,7 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
   if (!isStripeConfigured()) {
     return {
       stripeConfigured: false,
+      stripeError: false,
       today: ZERO_SPLIT,
       month: ZERO_SPLIT,
       allTime: ZERO_SPLIT,
@@ -79,12 +81,31 @@ export async function getRevenueSnapshot(): Promise<RevenueSnapshot> {
     };
   }
 
-  const stripe = getStripeClient();
-  const [today, month, allTime] = await Promise.all([
-    sumSucceededByPeriod(stripe, startOfToday),
-    sumSucceededByPeriod(stripe, startOfMonth),
-    sumSucceededByPeriod(stripe, 0),
-  ]);
-
-  return { stripeConfigured: true, today, month, allTime, users, newToday, new7d, voxProjects };
+  // A bad/expired key, a restricted key missing PaymentIntent read
+  // permission, or a transient Stripe API error must never crash this
+  // whole page -- Prisma's reads two lines up already get this same
+  // treatment. Real revenue figures are worth waiting for, not worth an
+  // "Application error" screen over.
+  try {
+    const stripe = getStripeClient();
+    const [today, month, allTime] = await Promise.all([
+      sumSucceededByPeriod(stripe, startOfToday),
+      sumSucceededByPeriod(stripe, startOfMonth),
+      sumSucceededByPeriod(stripe, 0),
+    ]);
+    return { stripeConfigured: true, stripeError: false, today, month, allTime, users, newToday, new7d, voxProjects };
+  } catch (err) {
+    console.error("getRevenueSnapshot: Stripe read failed", err);
+    return {
+      stripeConfigured: true,
+      stripeError: true,
+      today: ZERO_SPLIT,
+      month: ZERO_SPLIT,
+      allTime: ZERO_SPLIT,
+      users,
+      newToday,
+      new7d,
+      voxProjects,
+    };
+  }
 }
