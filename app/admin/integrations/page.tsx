@@ -7,6 +7,8 @@ export default async function IntegrationsPage() {
   const status = await getIntegrationsStatus();
   const githubConfigured = !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET);
   const higgsfieldConfigured = isHiggsfieldConfigured();
+  const elevenlabsConfigured = !!process.env.ELEVENLABS_API_KEY;
+  const resendConfigured = !!(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL);
 
   return (
     <div className="min-h-screen">
@@ -60,6 +62,24 @@ export default async function IntegrationsPage() {
               higgsfieldConfigured
                 ? "Active — powering VoxStudio's real image and video generation."
                 : "Set HF_CREDENTIALS (\"KEY_ID:KEY_SECRET\" from cloud.higgsfield.ai) to enable VoxStudio image/video generation."
+            }
+          />
+          <Row
+            name="ElevenLabs (Voice)"
+            connected={elevenlabsConfigured}
+            detail={
+              elevenlabsConfigured
+                ? "Active — powering spoken replies in /chat and Helen."
+                : "Set ELEVENLABS_API_KEY to enable spoken replies — without it, voice-asked questions still get a written reply, just never a spoken one (silently, by design, so a missing key never breaks the chat itself)."
+            }
+          />
+          <Row
+            name="Resend (Email)"
+            connected={resendConfigured}
+            detail={
+              resendConfigured
+                ? "Active — powering password-reset email and the Help widget's contact form."
+                : "Set RESEND_API_KEY and RESEND_FROM_EMAIL to enable password-reset email and the Help widget's \"still need a person?\" form."
             }
           />
         </div>

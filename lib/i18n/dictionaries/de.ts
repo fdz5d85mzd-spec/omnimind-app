@@ -88,6 +88,7 @@ const de: Dictionary = {
   chatMicSpeakTitle: "Sag deine Nachricht",
   chatStopButton: "Stopp",
   chatAskButton: "Fragen",
+  chatVoiceFailed: "Sprachantwort fehlgeschlagen",
 
   pricingTitle: "Preise",
   pricingSub: "Kostenlos starten. Die Kosten sind Credits, proportional zu dem, was der Agent tatsächlich zurückschreibt — keine Pauschalgebühr pro Nachricht.",

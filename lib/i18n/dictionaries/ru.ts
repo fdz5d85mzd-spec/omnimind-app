@@ -88,6 +88,7 @@ const ru: Dictionary = {
   chatMicSpeakTitle: "Произнесите сообщение",
   chatStopButton: "Стоп",
   chatAskButton: "Спросить",
+  chatVoiceFailed: "Голосовой ответ не удался",
 
   pricingTitle: "Цены",
   pricingSub: "Бесплатно для начала. Стоимость — кредиты, пропорциональные тому, что агент реально пишет в ответ — не фиксированная плата за сообщение.",

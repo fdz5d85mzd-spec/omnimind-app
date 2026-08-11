@@ -88,6 +88,7 @@ const tr: Dictionary = {
   chatMicSpeakTitle: "Mesajını söyle",
   chatStopButton: "Durdur",
   chatAskButton: "Sor",
+  chatVoiceFailed: "Sesli yanıt başarısız oldu",
 
   pricingTitle: "Fiyatlandırma",
   pricingSub: "Başlamak ücretsiz. Maliyet, ajanın gerçekte yazdığı içerikle orantılı kredidir — mesaj başına sabit ücret değil.",
