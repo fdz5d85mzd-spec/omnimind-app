@@ -53,7 +53,8 @@ export async function POST(request: Request) {
     description: description ?? null,
   });
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("helen apply-charity: Supabase insert failed", error);
+    return NextResponse.json({ error: "Could not submit your application — try again in a moment" }, { status: 500 });
   }
 
   // Best-effort notification — never blocks the applicant's response.

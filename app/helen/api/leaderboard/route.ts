@@ -21,10 +21,8 @@ export async function GET() {
   ]);
 
   if (membersError || purchasesError) {
-    return NextResponse.json(
-      { error: (membersError ?? purchasesError)?.message ?? "Unknown error" },
-      { status: 500 },
-    );
+    console.error("helen leaderboard: Supabase read failed", membersError ?? purchasesError);
+    return NextResponse.json({ error: "Leaderboard isn't available right now" }, { status: 500 });
   }
 
   const contributionByMember = new Map<number, number>();
