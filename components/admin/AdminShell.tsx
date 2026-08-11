@@ -72,9 +72,20 @@ function RadarIcon() {
   );
 }
 
+function ClapperIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8.5 20.5 5l.8 4-17.5 3.5z" />
+      <rect x="3" y="10" width="18" height="10" rx="1.5" />
+      <path d="m6 8 3-3.5M11 7l3-3.5M16 6.2l3-3.5" />
+    </svg>
+  );
+}
+
 const NAV = [
   { href: "/admin", label: "Overview", icon: GridIcon },
   { href: "/admin/revenue", label: "Revenue", icon: CoinsIcon },
+  { href: "/admin/social", label: "Social", icon: ClapperIcon },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: TagIcon },
   { href: "/admin/partners", label: "Partners", icon: HandshakeIcon },
   { href: "/admin/pricing", label: "Pricing", icon: CalcIcon },
