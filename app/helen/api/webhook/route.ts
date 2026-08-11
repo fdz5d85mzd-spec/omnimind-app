@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
-import { SHOP_ITEMS, tierFor } from "@/lib/helen/domain";
-import {
-  adminPurchaseNotificationHtml,
-  adminSignupNotificationHtml,
-  sendEmail,
-  welcomeEmailHtml,
-} from "@/lib/helen/resend";
+import { SHOP_ITEMS } from "@/lib/helen/domain";
+import { adminPurchaseNotificationHtml, sendEmail } from "@/lib/helen/resend";
 
 const TEAM_NOTIFICATION_EMAIL = "helpdesk@omnimindai.app";
 import { getStripeClient, isStripeConfigured } from "@/lib/helen/stripe/server";
 import { getSupabaseServerClient } from "@/lib/helen/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { PLANS } from "@/lib/billing";
+import { createHelenMembership } from "@/lib/helen/membership";
 
 interface CheckoutSessionPayload {
   client_reference_id?: string | null;
@@ -130,39 +126,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
-    // Membership signup: `id` is intentionally omitted — its column default
-    // (nextval('member_id_seq'), see supabase/schema.sql) is what makes
-    // assignment race-safe under concurrent webhook deliveries. `tier` still
-    // needs a value, so insert with a placeholder tier and fix it up in the
-    // same round trip once Postgres has assigned the id.
-    const { data: inserted, error: insertError } = await supabase
-      .from("members")
-      .insert({ user_id: userId, tier: tierFor(0), username: session.metadata?.username ?? null })
-      .select("id")
-      .single();
-    if (insertError) {
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    // Membership signup (card payment). Credits-payment signup goes through
+    // the same createHelenMembership() helper directly in
+    // app/helen/api/join/route.ts, without a Stripe round trip.
+    const membership = await createHelenMembership(userId, session.metadata?.username ?? null);
+    if ("error" in membership) {
+      return NextResponse.json({ error: membership.error }, { status: 500 });
     }
-
-    const { error: tierError } = await supabase
-      .from("members")
-      .update({ tier: tierFor(inserted.id) })
-      .eq("id", inserted.id);
-    if (tierError) {
-      return NextResponse.json({ error: tierError.message }, { status: 500 });
-    }
-
-    // Best-effort welcome + team notification emails — never block the
-    // response on failure.
-    const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-    if (authUser?.user?.email) {
-      sendEmail(authUser.user.email, "Welcome to HELEN 🌍", welcomeEmailHtml(inserted.id)).catch(() => {});
-    }
-    sendEmail(
-      TEAM_NOTIFICATION_EMAIL,
-      `New HELEN member #${String(inserted.id).padStart(6, "0")}`,
-      adminSignupNotificationHtml(inserted.id, authUser?.user?.email ?? null),
-    ).catch(() => {});
   }
 
   // Subscription renewal: grants the plan's monthly credits again each

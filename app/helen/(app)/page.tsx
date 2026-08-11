@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Globe } from "@/components/helen/Globe";
 import { useAuth } from "@/lib/helen/auth/AuthProvider";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
@@ -11,6 +12,7 @@ export default function JoinPage() {
   const { t } = useLanguage();
   const { profile, ready } = useProfile();
   const { user, configured } = useAuth();
+  const { data: omniSession } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -18,7 +20,9 @@ export default function JoinPage() {
   }, [ready, profile, router]);
 
   function handleJoin() {
-    if (configured && !user) {
+    // Already signed into OmniMind -- /helen/checkout offers a direct
+    // card/credits join for that session instead of a separate signup.
+    if (configured && !user && !omniSession?.user) {
       router.push("/helen/signin?next=/helen/checkout");
     } else {
       router.push("/helen/checkout");

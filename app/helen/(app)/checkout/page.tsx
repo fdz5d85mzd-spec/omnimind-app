@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useAuth } from "@/lib/helen/auth/AuthProvider";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { useProfile } from "@/lib/helen/ProfileProvider";
@@ -11,14 +12,24 @@ export default function CheckoutPage() {
   const { t } = useLanguage();
   const { join } = useProfile();
   const { user, ready: authReady, configured } = useAuth();
+  const { data: omniSession, status: omniStatus } = useSession();
   const router = useRouter();
   const [processing, setProcessing] = useState(false);
+  const [bridging, setBridging] = useState<"card" | "credits" | null>(null);
+  const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const trimmedUsername = username.trim();
 
+  // Already signed into OmniMind, but not yet a Helen member: skip Helen's
+  // own sign-in entirely and offer to join directly against that session
+  // (card or credits) instead of a second, separate signup.
+  const bridged = Boolean(omniSession?.user) && configured && authReady && !user;
+
   useEffect(() => {
-    if (configured && authReady && !user) router.replace("/helen/signin?next=/helen/checkout");
-  }, [configured, authReady, user, router]);
+    if (configured && authReady && !user && omniStatus !== "loading" && !omniSession?.user) {
+      router.replace("/helen/signin?next=/helen/checkout");
+    }
+  }, [configured, authReady, user, omniStatus, omniSession, router]);
 
   /**
    * Tries the real Stripe Checkout Session (POST /api/checkout) first — this
@@ -75,6 +86,33 @@ export default function CheckoutPage() {
     router.push("/helen/card");
   }
 
+  async function handleBridgedJoin(method: "card" | "credits") {
+    if (!trimmedUsername || bridging) return;
+    setBridging(method);
+    setBridgeError(null);
+    try {
+      const res = await fetch("/helen/api/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method, username: trimmedUsername, refCode: getReferralCode() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setBridgeError(
+          data.error === "blocked"
+            ? `Not enough credits — needs ${data.need}, you have ${data.have}.`
+            : data.error || "Something went wrong",
+        );
+        setBridging(null);
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setBridgeError("Could not reach the server");
+      setBridging(null);
+    }
+  }
+
   return (
     <>
       <h1 className="mt-6 mb-5 text-[20px] font-helen-display font-semibold">{t.checkoutTitle}</h1>
@@ -102,21 +140,59 @@ export default function CheckoutPage() {
       </div>
 
       <div className="flex-1" />
-      <button
-        type="button"
-        disabled={processing || !trimmedUsername || (configured && !authReady)}
-        onClick={handlePay}
-        className="flex w-full items-center justify-center rounded-xl bg-helen-coral py-[15px] text-[14.5px] font-bold text-helen-ink disabled:opacity-70"
-      >
-        {processing ? (
-          <>
-            <span className="mr-2 inline-block h-[18px] w-[18px] animate-helen-spin-fast rounded-full border-2 border-helen-ink/30 border-t-ink" />
-            {t.processingLabel}
-          </>
-        ) : (
-          t.payBtn
-        )}
-      </button>
+
+      {bridged ? (
+        <div className="space-y-2.5">
+          {bridgeError && <p className="text-center text-[11px] text-helen-coral">{bridgeError}</p>}
+          <button
+            type="button"
+            disabled={bridging !== null || !trimmedUsername}
+            onClick={() => handleBridgedJoin("card")}
+            className="flex w-full items-center justify-center rounded-xl bg-helen-coral py-[15px] text-[14.5px] font-bold text-helen-ink disabled:opacity-70"
+          >
+            {bridging === "card" ? (
+              <>
+                <span className="mr-2 inline-block h-[18px] w-[18px] animate-helen-spin-fast rounded-full border-2 border-helen-ink/30 border-t-ink" />
+                {t.processingLabel}
+              </>
+            ) : (
+              "Pay with card — 1,00 €"
+            )}
+          </button>
+          <button
+            type="button"
+            disabled={bridging !== null || !trimmedUsername}
+            onClick={() => handleBridgedJoin("credits")}
+            className="flex w-full items-center justify-center rounded-xl border border-white/15 bg-white/5 py-[15px] text-[14.5px] font-bold text-helen-paper disabled:opacity-70"
+          >
+            {bridging === "credits" ? (
+              <>
+                <span className="mr-2 inline-block h-[18px] w-[18px] animate-helen-spin-fast rounded-full border-2 border-white/30 border-t-white" />
+                {t.processingLabel}
+              </>
+            ) : (
+              "Pay with 100 OmniMind credits"
+            )}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={processing || !trimmedUsername || (configured && !authReady)}
+          onClick={handlePay}
+          className="flex w-full items-center justify-center rounded-xl bg-helen-coral py-[15px] text-[14.5px] font-bold text-helen-ink disabled:opacity-70"
+        >
+          {processing ? (
+            <>
+              <span className="mr-2 inline-block h-[18px] w-[18px] animate-helen-spin-fast rounded-full border-2 border-helen-ink/30 border-t-ink" />
+              {t.processingLabel}
+            </>
+          ) : (
+            t.payBtn
+          )}
+        </button>
+      )}
+
       <p className="mt-2.5 text-center text-[11px] text-helen-dim">
         {t.legalFooterNote}{" "}
         <a href="/helen/terms" className="font-semibold text-helen-gold underline">
