@@ -13,27 +13,24 @@ import {
   saveConversations,
 } from "@/lib/conversations";
 import Sidebar from "@/components/Sidebar";
+import CreditsBadge from "@/components/CreditsBadge";
 import { Logo, LogoMark } from "@/components/Logo";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 import { notifyCreditsChanged } from "@/lib/useCredits";
+import { GUEST_TRIAL_MINUTES } from "@/lib/guestTrial";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { Dictionary } from "@/lib/i18n/types";
 
-function describeBlocked(info: BlockedReason): string {
+function describeBlocked(info: BlockedReason, t: Dictionary): string {
   if (info.reason === "cooldown") {
     const mins = Math.max(1, Math.round((new Date(info.retryAt).getTime() - Date.now()) / 60000));
     const hrs = Math.floor(mins / 60);
     const rem = mins % 60;
     const wait = hrs > 0 ? `${hrs}h ${rem}m` : `${rem}m`;
-    return `Out of free credits — more arrive automatically in about ${wait}.`;
+    return t.chatOutOfCreditsCooldown.replace("{wait}", wait);
   }
-  return "Out of credits. Add more from a paid plan to keep going.";
+  return t.chatOutOfCreditsGeneric;
 }
-
-const SUGGESTIONS = [
-  "Explain how a leader election algorithm works",
-  "Draft a launch announcement for an AI operating system",
-  "Plan a 3-step rollout for a new feature",
-  "Summarize the tradeoffs of microservices vs a monolith",
-];
 
 function MenuIcon() {
   return (
@@ -53,8 +50,34 @@ function MicIcon() {
   );
 }
 
+const GUEST_TRIAL_MS = GUEST_TRIAL_MINUTES * 60_000;
+
+function TrialBadge({ remainingMs, className = "" }: { remainingMs: number | null; className?: string }) {
+  const { t } = useLanguage();
+  const ms = remainingMs ?? GUEST_TRIAL_MS;
+  const totalSeconds = Math.ceil(ms / 1000);
+  const mm = Math.floor(totalSeconds / 60);
+  const ss = String(totalSeconds % 60).padStart(2, "0");
+  const pct = Math.max(0, Math.min(100, (ms / GUEST_TRIAL_MS) * 100));
+
+  return (
+    <div className={`flex items-center gap-2.5 text-xs text-muted ${className}`}>
+      <span className="whitespace-nowrap">
+        {t.chatTrialLabel} — <span className="font-semibold text-white tabular-nums">{mm}:{ss}</span> {t.chatTrialLeftSuffix}
+      </span>
+      <div className="h-1 flex-1 rounded-full bg-white/[0.08] overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-[width] duration-1000 ${pct <= 20 ? "bg-crimson" : "bg-accent"}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { data: session, status: sessionStatus } = useSession();
+  const { t } = useLanguage();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -64,6 +87,14 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
 
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  // null = not a guest concern yet (still resolving session, or signed in);
+  // a number once we know -- ms left in the 5-minute trial, ticked down
+  // client-side for display only. The real check happens server-side on
+  // every send (see /api/chat/stream reading the httpOnly trial cookie),
+  // so a manipulated display value here can't buy extra real usage.
+  const [guestTrialMs, setGuestTrialMs] = useState<number | null>(null);
+  const isGuest = sessionStatus !== "loading" && !session?.user;
+  const guestTrialExpired = isGuest && guestTrialMs !== null && guestTrialMs <= 0;
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -124,6 +155,34 @@ export default function Home() {
     if (hydrated) saveConversations(conversations);
   }, [conversations, hydrated]);
 
+  // Starts (or re-syncs, on a page refresh) the guest trial the moment we
+  // know there's no session -- the server sets/reads the actual httpOnly
+  // cookie; this just mirrors the remaining time for display and ticks it
+  // down locally so the countdown doesn't need a network call every second.
+  useEffect(() => {
+    if (!isGuest) return;
+    let cancelled = false;
+    fetch("/api/chat/guest-trial", { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setGuestTrialMs(typeof data.remainingMs === "number" ? data.remainingMs : 0);
+      })
+      .catch(() => {
+        if (!cancelled) setGuestTrialMs(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isGuest]);
+
+  useEffect(() => {
+    if (guestTrialMs === null || guestTrialMs <= 0) return;
+    const interval = setInterval(() => {
+      setGuestTrialMs((ms) => (ms === null ? null : Math.max(0, ms - 1000)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [guestTrialMs !== null && guestTrialMs > 0]);
+
   const active = conversations.find((c) => c.id === activeId) || null;
   const messages = active?.messages ?? [];
 
@@ -145,17 +204,16 @@ export default function Home() {
   async function send(text?: string) {
     const q = (text ?? input).trim();
     if (!q || isStreaming) return;
-    // Every real turn needs an account -- guests used to go straight to the
-    // backend with no credit gate at all (see lib/api.ts's gated param).
-    // Defense in depth: the empty-state screen already hides the composer
-    // for guests, but this still needs to hold up on its own (e.g. a
-    // session expiring mid-conversation).
-    if (sessionStatus !== "loading" && !session?.user) {
+    // Guests get a real 5-minute trial (see /api/chat/guest-trial), not
+    // unlimited free usage -- the server re-checks the actual elapsed time
+    // from an httpOnly cookie on every send regardless of what this client
+    // thinks the countdown says, so this is a UX guard, not the real gate.
+    if (guestTrialExpired) {
       router.push("/login?next=/chat");
       return;
     }
 
-    const spokenTurn = voiceTurnRef.current;
+    const spokenTurn = !isGuest && voiceTurnRef.current;
     voiceTurnRef.current = false;
     stopSpeaking();
 
@@ -222,10 +280,10 @@ export default function Home() {
           setTimeout(() => notifyCreditsChanged(), 600);
         },
         onError: (message) => patchAssistant({ content: message, status: "error" }),
-        onBlocked: (info) => patchAssistant({ content: describeBlocked(info), status: "error" }),
+        onBlocked: (info) => patchAssistant({ content: describeBlocked(info, t), status: "error" }),
         onWaking: () => {
           waking = true;
-          patchAssistant({ content: "Waking up the OmniMind backend — this can take up to a minute…" });
+          patchAssistant({ content: t.chatWaking });
         },
       },
       controller.signal
@@ -297,6 +355,7 @@ export default function Home() {
             <MenuIcon />
           </button>
           <Logo size={18} />
+          <CreditsBadge className="ml-auto" />
         </header>
 
         {empty ? (
@@ -306,25 +365,24 @@ export default function Home() {
                 <LogoMark size={44} />
               </div>
               <span className="inline-block text-cyan text-[11px] font-bold tracking-[0.2em] mb-5 px-3 py-1 rounded-full border border-cyan/25 bg-cyan/[0.06]">
-                THE AUTONOMOUS AI OPERATING SYSTEM
+                {t.heroBadge}
               </span>
               <h1 className="font-head text-4xl sm:text-5xl font-bold mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-                Ask anything.
+                {t.heroLine1}
               </h1>
-              <p className="text-muted max-w-xl mb-10 mx-auto leading-relaxed">
-                A real OmniMind agent — policy-checked, orchestrated, remembered — goes to work and answers.
-              </p>
+              <p className="text-muted max-w-xl mb-10 mx-auto leading-relaxed">{t.chatHeroSub}</p>
 
-              {sessionStatus !== "loading" && !session?.user ? (
+              {guestTrialExpired ? (
                 <button
                   type="button"
                   onClick={() => router.push("/login?next=/chat")}
                   className="glass rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all hover:-translate-y-0.5"
                 >
-                  Sign in to start — free credits included
+                  {t.chatTrialEnded}
                 </button>
               ) : (
                 <>
+                  {isGuest && <TrialBadge remainingMs={guestTrialMs} className="mb-3" />}
                   <div className="w-full">
                     <Composer
                       value={input}
@@ -333,12 +391,12 @@ export default function Home() {
                       disabled={isStreaming}
                       textareaRef={textareaRef}
                       autoFocus
-                      speech={speech}
+                      speech={isGuest ? undefined : speech}
                     />
                   </div>
 
                   <div className="flex flex-wrap gap-2 justify-center mt-6 max-w-2xl">
-                    {SUGGESTIONS.map((s) => (
+                    {[t.chatSuggestion1, t.chatSuggestion2, t.chatSuggestion3, t.chatSuggestion4].map((s) => (
                       <button
                         key={s}
                         onClick={() => send(s)}
@@ -365,16 +423,27 @@ export default function Home() {
 
             <div className="border-t border-white/[0.06] bg-bg/80 backdrop-blur-xl px-4 sm:px-0 py-4">
               <div className="max-w-3xl mx-auto w-full">
-                <Composer
-                  value={input}
-                  onChange={onComposerChange}
-                  onSubmit={() => send()}
-                  disabled={isStreaming}
-                  textareaRef={textareaRef}
-                  streaming={isStreaming}
-                  onStop={stop}
-                  speech={speech}
-                />
+                {isGuest && <TrialBadge remainingMs={guestTrialMs} className="mb-3" />}
+                {guestTrialExpired ? (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/login?next=/chat")}
+                    className="w-full rounded-2xl px-7 py-3.5 text-sm font-bold text-white bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 shadow-glow transition-all"
+                  >
+                    {t.chatTrialEnded}
+                  </button>
+                ) : (
+                  <Composer
+                    value={input}
+                    onChange={onComposerChange}
+                    onSubmit={() => send()}
+                    disabled={isStreaming}
+                    textareaRef={textareaRef}
+                    streaming={isStreaming}
+                    onStop={stop}
+                    speech={isGuest ? undefined : speech}
+                  />
+                )}
               </div>
             </div>
           </>
@@ -466,6 +535,7 @@ function Composer({
   onStop?: () => void;
   speech?: ReturnType<typeof useSpeechRecognition>;
 }) {
+  const { t } = useLanguage();
   return (
     <form
       onSubmit={(e) => {
@@ -487,14 +557,14 @@ function Composer({
               onSubmit();
             }
           }}
-          placeholder={speech?.listening ? "Listening…" : "Ask OmniMind anything…"}
+          placeholder={speech?.listening ? t.chatComposerListening : t.chatComposerPlaceholder}
           className="flex-1 min-w-0 bg-transparent outline-none resize-none placeholder:text-mutedDark text-sm sm:text-base py-2 max-h-[200px]"
         />
         {speech?.supported && (
           <button
             type="button"
             onClick={() => (speech.listening ? speech.stop() : speech.start())}
-            title={speech.listening ? "Stop listening" : "Speak your message"}
+            title={speech.listening ? t.chatMicStopTitle : t.chatMicSpeakTitle}
             className={`shrink-0 h-9 w-9 flex items-center justify-center rounded-xl transition-colors ${
               speech.listening
                 ? "bg-crimson/20 text-crimson animate-pulse"
@@ -511,7 +581,7 @@ function Composer({
             className="shrink-0 flex items-center gap-1.5 bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
           >
             <span className="h-2 w-2 rounded-sm bg-white" />
-            Stop
+            {t.chatStopButton}
           </button>
         ) : (
           <button
@@ -519,7 +589,7 @@ function Composer({
             disabled={disabled || !value.trim()}
             className="shrink-0 bg-gradient-to-br from-accent to-accent/90 hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity text-white text-sm font-bold px-5 py-2.5 rounded-xl"
           >
-            Ask
+            {t.chatAskButton}
           </button>
         )}
       </div>

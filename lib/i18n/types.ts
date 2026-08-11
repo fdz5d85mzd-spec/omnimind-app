@@ -66,6 +66,43 @@ export interface Dictionary {
   settingsSignInPrompt: string;
   settingsSignInLink: string;
   settingsGuestNote: string;
+
+  chatHeroSub: string;
+  chatSuggestion1: string;
+  chatSuggestion2: string;
+  chatSuggestion3: string;
+  chatSuggestion4: string;
+  chatTrialLabel: string;
+  chatTrialLeftSuffix: string;
+  chatTrialEnded: string;
+  chatWaking: string;
+  chatOutOfCreditsCooldown: string;
+  chatOutOfCreditsGeneric: string;
+  chatComposerListening: string;
+  chatComposerPlaceholder: string;
+  chatMicStopTitle: string;
+  chatMicSpeakTitle: string;
+  chatStopButton: string;
+  chatAskButton: string;
+
+  pricingTitle: string;
+  pricingSub: string;
+  pricingFreeTitle: string;
+  pricingFreeSub: string;
+  pricingForever: string;
+  pricingTryButton: string;
+  pricingFeature1: string;
+  pricingFeature2: string;
+  pricingFeature3: string;
+  pricingFeature4: string;
+  pricingFeature5: string;
+  pricingHowCreditsWork: string;
+  pricingQuestions: string;
+  pricingAskDirectly: string;
+  pricingOr: string;
+
+  creditsUnlimited: string;
+  creditsRefillsIn: string;
 }
 
 export type LangCode = "en" | "el" | "es" | "fr" | "de" | "it" | "pt" | "ru" | "zh" | "ja" | "ar" | "tr";

@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import type { Conversation } from "@/lib/conversations";
 import { Logo } from "@/components/Logo";
 import { useCredits } from "@/lib/useCredits";
+import CreditsBadge from "@/components/CreditsBadge";
 
 function BoltIcon() {
   return (
@@ -295,6 +296,7 @@ export default function Sidebar({
             )}
           </div>
         )}
+        <CreditsBadge className="w-full mb-1.5" />
         <button
           onClick={() => setAccountOpen((v) => !v)}
           className="w-full flex items-center gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-white/[0.04] transition-colors"

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { CORRUPTED_API_KEY_MESSAGE, isCorruptedApiKeyError } from "@/lib/anthropicKeyError";
 import { prisma } from "@/lib/prisma";
 import { DirectorError, DirectorNotConfigured, generateCreativeBrief } from "@/lib/voxstudio/director";
 
@@ -20,6 +21,10 @@ export async function POST(request: Request) {
   } catch (err) {
     if (err instanceof DirectorNotConfigured) {
       return NextResponse.json({ error: "Director Agent is not configured" }, { status: 501 });
+    }
+    if (isCorruptedApiKeyError(err)) {
+      console.error("Director Agent: corrupted ANTHROPIC_API_KEY", err);
+      return NextResponse.json({ error: CORRUPTED_API_KEY_MESSAGE }, { status: 502 });
     }
     const message = err instanceof DirectorError ? err.message : "Director Agent call failed";
     console.error("voxstudio brief generation failed:", err instanceof Error ? err.message : err);

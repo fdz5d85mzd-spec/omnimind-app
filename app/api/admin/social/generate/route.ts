@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminOrMaster } from "@/lib/adminApi";
+import { CORRUPTED_API_KEY_MESSAGE, isCorruptedApiKeyError } from "@/lib/anthropicKeyError";
 import { generateDailyPosts, ScriptWriterNotConfigured } from "@/lib/social/scriptWriter";
 
 export async function POST() {
@@ -12,6 +13,10 @@ export async function POST() {
   } catch (err) {
     if (err instanceof ScriptWriterNotConfigured) {
       return NextResponse.json({ error: "ANTHROPIC_API_KEY is not set" }, { status: 501 });
+    }
+    if (isCorruptedApiKeyError(err)) {
+      console.error("Social script generation: corrupted ANTHROPIC_API_KEY", err);
+      return NextResponse.json({ error: CORRUPTED_API_KEY_MESSAGE }, { status: 502 });
     }
     return NextResponse.json({ error: err instanceof Error ? err.message : "Generation failed" }, { status: 500 });
   }
