@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+import { IMAGE_GENERATION_CREDITS, VIDEO_GENERATION_CREDITS } from "@/lib/billing";
 
 interface Shot {
   camera: string;
@@ -41,6 +42,12 @@ interface SceneMedia {
 function scenePrompt(scene: Scene): string {
   const shotBits = scene.shots.map((s) => `${s.camera}: ${s.action}`).join("; ");
   return `${scene.heading}. ${scene.description}${shotBits ? ` Shots: ${shotBits}.` : ""} Cinematic film still, dramatic lighting.`;
+}
+
+function describeGenError(status: number, data: { error?: string; need?: number; have?: number }): string {
+  if (status === 401) return "Sign in to generate images and videos.";
+  if (status === 402) return `Not enough credits — needs ${data.need}, you have ${data.have}. Buy more on Pricing.`;
+  return data.error || "Generation failed";
 }
 
 export default function VoxStudioPage() {
@@ -106,7 +113,7 @@ export default function VoxStudioPage() {
         ...prev,
         [i]: res.ok
           ? { ...prev[i], imageLoading: false, imageUrl: data.url }
-          : { ...prev[i], imageLoading: false, error: data.error || "Generation failed" },
+          : { ...prev[i], imageLoading: false, error: describeGenError(res.status, data) },
       }));
     } catch {
       setSceneMedia((prev) => ({ ...prev, [i]: { ...prev[i], imageLoading: false, error: "Could not reach VoxStudio" } }));
@@ -133,7 +140,7 @@ export default function VoxStudioPage() {
         ...prev,
         [i]: res.ok
           ? { ...prev[i], videoLoading: false, videoUrl: data.url }
-          : { ...prev[i], videoLoading: false, error: data.error || "Generation failed" },
+          : { ...prev[i], videoLoading: false, error: describeGenError(res.status, data) },
       }));
     } catch {
       setSceneMedia((prev) => ({ ...prev, [i]: { ...prev[i], videoLoading: false, error: "Could not reach VoxStudio" } }));
@@ -261,7 +268,7 @@ export default function VoxStudioPage() {
                               disabled={media.imageLoading}
                               className="text-xs font-semibold text-cyan hover:text-white disabled:opacity-50 transition-colors"
                             >
-                              {media.imageLoading ? "Generating image…" : "Generate image ✨"}
+                              {media.imageLoading ? "Generating image…" : `Generate image — ${IMAGE_GENERATION_CREDITS} credits ✨`}
                             </button>
                           )}
 
@@ -279,7 +286,7 @@ export default function VoxStudioPage() {
                                   disabled={media.videoLoading}
                                   className="text-xs font-semibold text-cyan hover:text-white disabled:opacity-50 transition-colors"
                                 >
-                                  {media.videoLoading ? "Animating…" : "Generate video from this image ✨"}
+                                  {media.videoLoading ? "Animating…" : `Generate video — ${VIDEO_GENERATION_CREDITS} credits ✨`}
                                 </button>
                               )}
                               {media.videoUrl && (

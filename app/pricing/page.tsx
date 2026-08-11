@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
 import { CHARS_PER_CREDIT, FREE_COOLDOWN_HOURS, FREE_REFILL_CREDITS, FREE_STARTING_CREDITS } from "@/lib/credits";
+import { IMAGE_GENERATION_CREDITS, VIDEO_GENERATION_CREDITS } from "@/lib/billing";
+import PricingClient from "./PricingClient";
 
 export const metadata = { title: "Pricing — OmniMind" };
 
@@ -15,7 +17,7 @@ const FREE_FEATURES = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen px-6 py-16">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <Link href="/" className="flex items-center gap-2 mb-10 w-fit">
           <LogoMark size={22} />
           <span className="font-head font-semibold text-white">OmniMind</span>
@@ -24,19 +26,19 @@ export default function PricingPage() {
         <div className="text-center mb-12">
           <h1 className="font-head text-4xl font-semibold text-gradient mb-3">Pricing</h1>
           <p className="text-muted text-sm max-w-md mx-auto leading-relaxed">
-            One plan, honestly priced: free. Cost is credits proportional to what the agent actually
-            writes back — not a flat fee per message.
+            Free to start. Cost is credits proportional to what the agent actually writes back — not a
+            flat fee per message.
           </p>
         </div>
 
-        <div className="glass rounded-3xl p-8 max-w-sm mx-auto">
+        <div className="glass rounded-3xl p-8 max-w-sm mx-auto mb-14">
           <div className="h-11 w-11 rounded-2xl bg-accent/10 border border-accent/25 flex items-center justify-center mb-5">
             <LogoMark size={20} />
           </div>
           <h2 className="font-head text-2xl font-semibold text-white mb-1">Free</h2>
           <p className="text-sm text-mutedDark mb-5">Everything OmniMind can do, today</p>
           <p className="font-head text-4xl font-semibold text-white mb-1">
-            $0<span className="text-base font-normal text-mutedDark"> forever</span>
+            €0<span className="text-base font-normal text-mutedDark"> forever</span>
           </p>
           <Link
             href="/login"
@@ -55,12 +57,15 @@ export default function PricingPage() {
           </ul>
         </div>
 
-        <div className="max-w-sm mx-auto mt-6 glass rounded-2xl p-5">
+        <PricingClient />
+
+        <div className="max-w-2xl mx-auto mt-14 glass rounded-2xl p-5">
           <p className="text-xs text-mutedDark leading-relaxed">
-            How credits work: 1 credit ≈ {CHARS_PER_CREDIT} characters of the actual answer you receive.
-            Short answers cost less, long ones cost more — never a flat per-message charge. There is no
-            paid tier to buy more credits yet; when your balance hits zero, it refills on the cooldown
-            above.
+            How credits work: 1 credit ≈ {CHARS_PER_CREDIT} characters of the actual answer you receive
+            in chat — short answers cost less, long ones more, never a flat per-message charge. VoxStudio
+            generation is charged separately since it calls a paid image/video provider on your behalf:{" "}
+            {IMAGE_GENERATION_CREDITS} credits per generated image, {VIDEO_GENERATION_CREDITS} credits to
+            animate one into a short video clip.
           </p>
         </div>
 

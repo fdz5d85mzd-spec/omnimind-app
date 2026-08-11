@@ -10,10 +10,13 @@ import {
 const TEAM_NOTIFICATION_EMAIL = "helpdesk@omnimindai.app";
 import { getStripeClient, isStripeConfigured } from "@/lib/helen/stripe/server";
 import { getSupabaseServerClient } from "@/lib/helen/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { PLANS } from "@/lib/billing";
 
 interface CheckoutSessionPayload {
   client_reference_id?: string | null;
-  metadata?: { type?: string; item_id?: string; username?: string } | null;
+  subscription?: string | null;
+  metadata?: { type?: string; item_id?: string; username?: string; userId?: string; credits?: string; plan?: string } | null;
 }
 
 /**
@@ -49,6 +52,39 @@ export async function POST(request: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as CheckoutSessionPayload;
+
+    // OmniMind's own credit/plan purchases: identified by metadata.userId
+    // (a Prisma User id, distinct from Helen's client_reference_id which is
+    // a Supabase auth id) -- handled entirely separately from Helen below.
+    if (session.metadata?.type === "omnimind_credits") {
+      const omniUserId = session.metadata.userId;
+      const credits = parseInt(session.metadata.credits ?? "0", 10);
+      if (!omniUserId || !credits) {
+        return NextResponse.json({ error: "Missing userId or credits in metadata" }, { status: 400 });
+      }
+      await prisma.user.update({
+        where: { id: omniUserId },
+        data: { creditBalance: { increment: credits }, cooldownUntil: null },
+      });
+      console.log("omnimind credits webhook: granted", { omniUserId, credits });
+      return NextResponse.json({ received: true });
+    }
+
+    if (session.metadata?.type === "omnimind_plan") {
+      const omniUserId = session.metadata.userId;
+      const planId = session.metadata.plan;
+      const plan = PLANS.find((p) => p.id === planId);
+      if (!omniUserId || !plan) {
+        return NextResponse.json({ error: "Missing userId or unknown plan in metadata" }, { status: 400 });
+      }
+      await prisma.user.update({
+        where: { id: omniUserId },
+        data: { plan: plan.id, creditBalance: { increment: plan.monthlyCredits }, cooldownUntil: null },
+      });
+      console.log("omnimind plan webhook: granted", { omniUserId, plan: plan.id, credits: plan.monthlyCredits });
+      return NextResponse.json({ received: true });
+    }
+
     const userId = session.client_reference_id;
     if (!userId) {
       // No authenticated user attached to this session — see the note in
@@ -127,6 +163,31 @@ export async function POST(request: Request) {
       `New HELEN member #${String(inserted.id).padStart(6, "0")}`,
       adminSignupNotificationHtml(inserted.id, authUser?.user?.email ?? null),
     ).catch(() => {});
+  }
+
+  // Subscription renewal: grants the plan's monthly credits again each
+  // billing cycle. Skips "subscription_create" (the very first invoice,
+  // already covered by checkout.session.completed above) so a new
+  // subscriber isn't credited twice on day one.
+  if (event.type === "invoice.paid") {
+    const invoice = event.data.object as {
+      billing_reason?: string;
+      subscription?: string | { id: string } | null;
+    };
+    if (invoice.billing_reason === "subscription_cycle" && invoice.subscription) {
+      const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription.id;
+      const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
+      const omniUserId = subscription.metadata?.userId;
+      const planId = subscription.metadata?.plan;
+      const plan = PLANS.find((p) => p.id === planId);
+      if (omniUserId && plan) {
+        await prisma.user.update({
+          where: { id: omniUserId },
+          data: { creditBalance: { increment: plan.monthlyCredits }, cooldownUntil: null },
+        });
+        console.log("omnimind plan renewal webhook: granted", { omniUserId, plan: plan.id, credits: plan.monthlyCredits });
+      }
+    }
   }
 
   return NextResponse.json({ received: true });
