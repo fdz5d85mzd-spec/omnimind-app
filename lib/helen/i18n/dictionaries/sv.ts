@@ -9,6 +9,8 @@ const sv: Dictionary = {
   joinBtn: "Gå med — 1,00 €",
   charityNote:
     "0,15 € från varje medlem går till en global Impact Fund som fördelas genom medlemsomröstning",
+  charityPopupTitle: "Varje euro räknas",
+  charityPopupDismiss: "Uppfattat",
   memberCaption: "Medlem sedan idag",
   cardCaption: "Ditt nummer är unikt och ditt för alltid.",
   toEggBtn: "Fortsätt till ditt ägg",

@@ -56,8 +56,9 @@ export async function POST(request: Request) {
     client_reference_id: clientReferenceId,
     metadata: { type: "shop_item", item_id: item.id },
     // Lands on the PaymentIntent, which is what lib/adminPartners.ts scans
-    // for commission attribution -- see app/helen/api/checkout for why.
-    payment_intent_data: partnerCode ? { metadata: { ref_code: partnerCode } } : undefined,
+    // for commission attribution -- see app/helen/api/checkout for why. Same
+    // spot lib/adminRevenue.ts reads `source` from for the Helen revenue split.
+    payment_intent_data: { metadata: { source: "helen", ...(partnerCode ? { ref_code: partnerCode } : {}) } },
     managed_payments: { enabled: false },
     allow_promotion_codes: true,
     success_url: `${origin}/helen/home/shop?session_id={CHECKOUT_SESSION_ID}&item=${item.id}`,

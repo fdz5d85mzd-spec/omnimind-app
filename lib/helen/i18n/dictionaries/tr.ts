@@ -9,6 +9,8 @@ const tr: Dictionary = {
   joinBtn: "Katıl — 1,00 €",
   charityNote:
     "Her üyeden 0,15 €, üyelerin oyuyla dağıtılan küresel bir Etki Fonu'na gidiyor",
+  charityPopupTitle: "Her euro bir fark yaratır",
+  charityPopupDismiss: "Anladım",
   memberCaption: "Bugünden itibaren üye",
   cardCaption: "Numaran benzersiz ve sonsuza kadar senin.",
   toEggBtn: "Yumurtana devam et",

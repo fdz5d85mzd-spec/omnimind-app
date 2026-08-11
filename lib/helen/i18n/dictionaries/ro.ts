@@ -9,6 +9,8 @@ const ro: Dictionary = {
   joinBtn: "Alătură-te — 1,00 €",
   charityNote:
     "0,15 € de la fiecare membru merg într-un Fond de Impact global, distribuit prin votul membrilor",
+  charityPopupTitle: "Fiecare euro contează",
+  charityPopupDismiss: "Am înțeles",
   memberCaption: "Membru de azi",
   cardCaption: "Numărul tău este unic și al tău pentru totdeauna.",
   toEggBtn: "Continuă spre oul tău",

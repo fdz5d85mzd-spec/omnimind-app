@@ -9,6 +9,8 @@ const es: Dictionary = {
   joinBtn: "Únete — 1,00 €",
   charityNote:
     "0,15 € de cada miembro van a un Fondo de Impacto global, repartido por votación de los miembros",
+  charityPopupTitle: "Cada euro cuenta",
+  charityPopupDismiss: "Entendido",
   memberCaption: "Miembro desde hoy",
   cardCaption: "Tu número es único y tuyo para siempre.",
   toEggBtn: "Continuar a tu huevo",

@@ -1,3 +1,5 @@
+import { IMPACT_SHARE } from "@/lib/helen/domain";
+
 // Real cost basis (checked against provider list pricing, not guessed):
 //   - Claude Sonnet 5: $3/M input, $15/M output tokens (the rate from
 //     2026-09-01 on -- the $2/$10 promo rate expires within weeks of this
@@ -22,6 +24,11 @@ export const CREDIT_PRICE_EUR = 0.01;
 // generation is profitable on its own, not just on average.
 export const IMAGE_GENERATION_CREDITS = 30; // ~EUR 0.30 face value vs ~$0.15 real cost
 export const VIDEO_GENERATION_CREDITS = 180; // ~EUR 1.80 face value vs ~$0.90 real cost
+
+// Same 0.15 that funds Helen's in-app "Impact Fund" (lib/helen/domain.ts) --
+// admins split what's left after this cut (see lib/adminRevenue.ts /
+// app/admin/revenue), not the gross. One constant, not two that could drift.
+export const HELEN_CHARITY_PERCENT = IMPACT_SHARE;
 
 export interface CreditPack {
   id: string;

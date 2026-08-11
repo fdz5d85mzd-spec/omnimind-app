@@ -4,6 +4,7 @@ import { track } from "@vercel/analytics";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CharityPopup } from "@/components/helen/CharityPopup";
 import { CreatureChat } from "@/components/helen/CreatureChat";
 import { CreatureImage } from "@/components/helen/CreatureImage";
 import { CreatureReaction, type Reaction } from "@/components/helen/CreatureReaction";
@@ -15,6 +16,7 @@ import { RenameCreatureModal } from "@/components/helen/RenameCreatureModal";
 import { RewardPopup } from "@/components/helen/RewardPopup";
 import { ShareCardModal } from "@/components/helen/ShareCardModal";
 import { StreakBar } from "@/components/helen/StreakBar";
+import { hasShownCharityPopup, markCharityPopupShown } from "@/lib/helen/data/charityPopupRepo";
 import { getLastGreetedDate, setLastGreetedDate } from "@/lib/helen/data/greetingRepo";
 import {
   getLastSpinAt,
@@ -65,6 +67,7 @@ export default function HomeTab() {
   const [wheelOpen, setWheelOpen] = useState(false);
   const [wheelFirstTime, setWheelFirstTime] = useState(false);
   const [wheelReady, setWheelReady] = useState(false);
+  const [charityPopupOpen, setCharityPopupOpen] = useState(false);
   const [listening, setListening] = useState(false);
   const lastLevel = useRef<number | null>(null);
   const pendingGreetingRef = useRef<{ message: string; audio: string | null } | null>(null);
@@ -103,6 +106,17 @@ export default function HomeTab() {
       setWheelFirstTime(true);
       setWheelOpen(true);
     }, delayMs);
+    return () => clearTimeout(timeout);
+  }, [profile]);
+
+  // "Where your euro goes" popup, once per device, well before the 45s
+  // wheel nudge above so the two never compete for attention.
+  useEffect(() => {
+    if (!profile || hasShownCharityPopup()) return;
+    const timeout = setTimeout(() => {
+      markCharityPopupShown();
+      setCharityPopupOpen(true);
+    }, 3000);
     return () => clearTimeout(timeout);
   }, [profile]);
 
@@ -519,6 +533,7 @@ export default function HomeTab() {
         }}
         firstTime={wheelFirstTime}
       />
+      <CharityPopup open={charityPopupOpen} onClose={() => setCharityPopupOpen(false)} />
       {pendingDailyReward && (
         <RewardPopup
           open

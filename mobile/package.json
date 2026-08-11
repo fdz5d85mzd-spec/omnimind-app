@@ -1,0 +1,24 @@
+{
+  "name": "omnimind-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native iOS/Android shell for OmniMind, loading the live web app.",
+  "scripts": {
+    "sync": "npx cap sync",
+    "assets": "npx @capacitor/assets generate",
+    "open:ios": "npx cap open ios",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
+    "@capacitor/splash-screen": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.0"
+  }
+}

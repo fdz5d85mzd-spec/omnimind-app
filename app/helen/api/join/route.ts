@@ -80,7 +80,9 @@ export async function POST(request: Request) {
       ],
       client_reference_id: supabaseUserId,
       metadata: username ? { username } : undefined,
-      payment_intent_data: partnerCode ? { metadata: { ref_code: partnerCode } } : undefined,
+      // `source: "helen"` is what lib/adminRevenue.ts reads to split Helen
+      // revenue (and its 15% charity cut) out from the rest of the account.
+      payment_intent_data: { metadata: { source: "helen", ...(partnerCode ? { ref_code: partnerCode } : {}) } },
       managed_payments: { enabled: false },
       allow_promotion_codes: true,
       // Bridges the browser's Supabase session, then lands on the existing

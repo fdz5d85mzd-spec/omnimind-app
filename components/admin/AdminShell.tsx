@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/Logo";
@@ -73,18 +72,12 @@ function RadarIcon() {
   );
 }
 
-function MenuIcon() {
+function ClapperIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 6l12 12M18 6 6 18" />
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8.5 20.5 5l.8 4-17.5 3.5z" />
+      <rect x="3" y="10" width="18" height="10" rx="1.5" />
+      <path d="m6 8 3-3.5M11 7l3-3.5M16 6.2l3-3.5" />
     </svg>
   );
 }
@@ -92,6 +85,7 @@ function CloseIcon() {
 const NAV = [
   { href: "/admin", label: "Overview", icon: GridIcon },
   { href: "/admin/revenue", label: "Revenue", icon: CoinsIcon },
+  { href: "/admin/social", label: "Social", icon: ClapperIcon },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: TagIcon },
   { href: "/admin/partners", label: "Partners", icon: HandshakeIcon },
   { href: "/admin/pricing", label: "Pricing", icon: CalcIcon },
@@ -123,6 +117,33 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   );
 }
 
+// Mobile nav: a horizontally scrollable tab strip instead of a hamburger +
+// slide-out drawer. Always visible, nothing to open/close or get stuck --
+// swipe to reach a tab that's off-screen, same as any native tab bar.
+function NavTabs({ pathname }: { pathname: string }) {
+  return (
+    <nav className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {NAV.map(({ href, label, icon: Icon }) => {
+        const active = pathname === href;
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] whitespace-nowrap transition-colors ${
+              active
+                ? "bg-accent/[0.18] text-white font-semibold shadow-[inset_0_0_0_1px_rgba(91,110,245,0.45)]"
+                : "text-muted bg-white/[0.04] hover:text-white hover:bg-white/[0.08]"
+            }`}
+          >
+            <Icon />
+            {label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 export default function AdminShell({
   email,
   children,
@@ -131,7 +152,6 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -159,59 +179,23 @@ export default function AdminShell({
         </div>
       </aside>
 
-      {/* Mobile top bar */}
-      <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-card/60 backdrop-blur-xl">
-        <Link href="/" className="flex items-center gap-2">
-          <LogoMark size={20} />
-          <span className="font-head font-semibold text-sm text-white">OmniMind</span>
-          <span className="text-[10px] tracking-wide text-mutedDark uppercase ml-1">Admin</span>
-        </Link>
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Open admin menu"
-          className="text-white glass rounded-lg p-2 hover:bg-white/[0.08] transition-colors"
-        >
-          <MenuIcon />
-        </button>
-      </header>
-
-      {/* Mobile drawer */}
-      {open && (
-        <div className="lg:hidden fixed inset-0 z-40">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-bg border-r border-white/[0.08] px-4 py-5 flex flex-col">
-            <div className="flex items-center justify-between mb-5">
-              <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                <LogoMark size={20} />
-                <span className="font-head font-semibold text-sm text-white">OmniMind</span>
-              </Link>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Close admin menu"
-                className="text-muted hover:text-white p-1"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-
-            <NavLinks pathname={pathname} onNavigate={() => setOpen(false)} />
-
-            <div className="mt-auto pt-4 border-t border-white/[0.06] space-y-1">
-              <Link
-                href="/mission-control"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-muted hover:text-white hover:bg-white/[0.05] transition-colors"
-              >
-                <RadarIcon />
-                Mission Control
-              </Link>
-              <div className="px-3 pt-2 text-[11px] text-mutedDark truncate" title={email}>
-                {email}
-              </div>
-            </div>
-          </div>
+      {/* Mobile top bar + always-visible scrollable tab strip */}
+      <header className="lg:hidden sticky top-0 z-30 border-b border-white/[0.06] bg-card/60 backdrop-blur-xl">
+        <div className="flex items-center justify-between px-4 py-3">
+          <Link href="/" className="flex items-center gap-2">
+            <LogoMark size={20} />
+            <span className="font-head font-semibold text-sm text-white">OmniMind</span>
+            <span className="text-[10px] tracking-wide text-mutedDark uppercase ml-1">Admin</span>
+          </Link>
+          <Link
+            href="/mission-control"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <RadarIcon />
+          </Link>
         </div>
-      )}
+        <NavTabs pathname={pathname} />
+      </header>
 
       <div className="lg:pl-64">{children}</div>
     </div>

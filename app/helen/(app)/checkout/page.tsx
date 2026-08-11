@@ -24,6 +24,11 @@ export default function CheckoutPage() {
   // own sign-in entirely and offer to join directly against that session
   // (card or credits) instead of a second, separate signup.
   const bridged = Boolean(omniSession?.user) && configured && authReady && !user;
+  // Admin/master accounts get in free (server already skips the charge for
+  // the credits method -- see /helen/api/join) -- show that plainly instead
+  // of two paid-looking buttons an admin could accidentally click into a
+  // real card charge.
+  const isPrivileged = Boolean(omniSession?.user?.isMaster || omniSession?.user?.isAdmin);
 
   useEffect(() => {
     if (configured && authReady && !user && omniStatus !== "loading" && !omniSession?.user) {
@@ -141,7 +146,26 @@ export default function CheckoutPage() {
 
       <div className="flex-1" />
 
-      {bridged ? (
+      {bridged && isPrivileged ? (
+        <div className="space-y-2.5">
+          {bridgeError && <p className="text-center text-[11px] text-helen-coral">{bridgeError}</p>}
+          <button
+            type="button"
+            disabled={bridging !== null || !trimmedUsername}
+            onClick={() => handleBridgedJoin("credits")}
+            className="flex w-full items-center justify-center rounded-xl bg-helen-coral py-[15px] text-[14.5px] font-bold text-helen-ink disabled:opacity-70"
+          >
+            {bridging === "credits" ? (
+              <>
+                <span className="mr-2 inline-block h-[18px] w-[18px] animate-helen-spin-fast rounded-full border-2 border-helen-ink/30 border-t-ink" />
+                {t.processingLabel}
+              </>
+            ) : (
+              "Continue free — Admin access"
+            )}
+          </button>
+        </div>
+      ) : bridged ? (
         <div className="space-y-2.5">
           {bridgeError && <p className="text-center text-[11px] text-helen-coral">{bridgeError}</p>}
           <button

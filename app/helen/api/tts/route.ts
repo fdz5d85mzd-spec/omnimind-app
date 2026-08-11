@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { synthesizeVoice } from "@/lib/helen/elevenlabs";
+import { synthesizeVoice, VOICE_HELEN } from "@/lib/elevenlabs";
 
 /**
  * Second phase of a creature reply: turns already-generated text into
@@ -12,6 +12,6 @@ export async function POST(request: Request) {
   if (!text || !text.trim()) {
     return NextResponse.json({ error: "Missing text" }, { status: 400 });
   }
-  const audio = await synthesizeVoice(text);
+  const audio = await synthesizeVoice(text, VOICE_HELEN);
   return NextResponse.json({ audio });
 }

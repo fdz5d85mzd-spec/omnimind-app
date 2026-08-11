@@ -9,6 +9,8 @@ const ja: Dictionary = {
   joinBtn: "参加する — 1.00 €",
   charityNote:
     "メンバー1人につき0.15€が、メンバーの投票で分配されるグローバル・インパクト基金に入ります",
+  charityPopupTitle: "1ユーロの力",
+  charityPopupDismiss: "了解",
   memberCaption: "本日よりメンバー",
   cardCaption: "あなたの番号は唯一無二、永遠にあなたのもの。",
   toEggBtn: "卵に進む",

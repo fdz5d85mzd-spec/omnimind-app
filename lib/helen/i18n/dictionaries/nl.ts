@@ -9,6 +9,8 @@ const nl: Dictionary = {
   joinBtn: "Word lid — 1,00 €",
   charityNote:
     "0,15 € van elk lid gaat naar een wereldwijd Impact Fonds, verdeeld via stemming van de leden",
+  charityPopupTitle: "Elke euro telt",
+  charityPopupDismiss: "Begrepen",
   memberCaption: "Lid sinds vandaag",
   cardCaption: "Jouw nummer is uniek en voor altijd van jou.",
   toEggBtn: "Ga verder naar je ei",

@@ -5,6 +5,8 @@ export interface Dictionary {
   priceLabel: string;
   joinBtn: string;
   charityNote: string;
+  charityPopupTitle: string;
+  charityPopupDismiss: string;
   memberCaption: string;
   cardCaption: string;
   toEggBtn: string;
