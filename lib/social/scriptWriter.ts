@@ -62,27 +62,38 @@ export async function generateDailyPosts(date: Date = new Date()): Promise<Socia
 
   const categories = categoriesForDate(date);
   const client = new Anthropic({ apiKey });
-  const postsSchema = z.array(PostSchema).length(categories.length);
+  const format = zodOutputFormat(z.array(PostSchema).length(categories.length));
 
-  let response;
+  // 4096 (up from an earlier 1500) -- 3 full scripts plus JSON structure
+  // occasionally ran past 1500 and got cut off mid-string, which surfaced
+  // as a confusing "invalid JSON" error instead of the truncation it
+  // actually was. Checking stop_reason below catches it either way.
+  const response = await client.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 4096,
+    system: SYSTEM_PROMPT,
+    output_config: { format },
+    messages: [
+      { role: "user", content: `Categories: ${categories.map((c) => CATEGORY_LABEL[c]).join(", ")}` },
+    ],
+  });
+
+  const text = response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("");
+
+  if (response.stop_reason === "max_tokens") {
+    throw new ScriptWriterError(
+      `Script writer's response was cut off before finishing (hit the ${4096}-token limit). Raw start: ${text.slice(0, 220)}…`
+    );
+  }
+
   try {
-    response = await client.messages.parse({
-      model: "claude-sonnet-5",
-      max_tokens: 1500,
-      system: SYSTEM_PROMPT,
-      output_config: { format: zodOutputFormat(postsSchema) },
-      messages: [
-        { role: "user", content: `Categories: ${categories.map((c) => CATEGORY_LABEL[c]).join(", ")}` },
-      ],
-    });
+    return format.parse(text) as SocialPost[];
   } catch (err) {
     throw new ScriptWriterError(
       `Script writer returned a response that couldn't be parsed as ${categories.length} posts. ${err instanceof Error ? err.message : String(err)}`
     );
   }
-
-  if (!response.parsed_output) {
-    throw new ScriptWriterError("Script writer returned an empty response.");
-  }
-  return response.parsed_output as SocialPost[];
 }
