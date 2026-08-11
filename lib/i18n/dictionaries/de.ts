@@ -125,6 +125,27 @@ const de: Dictionary = {
   helpContactPlaceholder: "Deine Nachricht…",
   helpContactSend: "Senden",
   helpContactSent: "Gesendet — wir antworten per E-Mail.",
+
+  guideTitle: "So funktioniert OmniMind",
+  guideSub:
+    "Ein Konto, ein Ort. Alles Folgende lebt innerhalb von OmniMind — nichts davon ist eine separate App mit eigener Anmeldung oder eigener Rechnung.",
+  guideCoreEyebrow: "Der Kern",
+  guideCoreCta: "Frag OmniMind alles",
+  guideCoreBody1:
+    "OmniMind ist das autonome KI-Betriebssystem, auf dem diese ganze App aufbaut. Frag es irgendetwas, und eine echte Anfrage durchläuft eine Policy Engine (prüft, ob sie erlaubt ist), einen Meta-Orchestrator (weist sie einem von 40 benannten Fleet-Agenten zu — einem Code Agent, einem Research Agent, einem Writer Agent und so weiter — je nachdem, was die Anfrage tatsächlich braucht) und ein versioniertes Gedächtnis (jeder Austausch wird aufgezeichnet, nichts wird verworfen).",
+  guideCoreTrackPre: "Verfolge es live in",
+  guideCoreTrackMid: ", und stelle deine Sprache ein und prüfe deine Credits in den",
+  guideCoreTrackEnd: ".",
+  guidePartOfEyebrow: "Teil von OmniMind",
+  guideHelenCta: "Helen öffnen",
+  guideHelenBody:
+    "Helen ist eine globale Mitgliedschaft für 1 €: Du bekommst einen virtuellen Kreaturen-Begleiter, der wächst, während du dich um ihn kümmerst, und jede Mitgliedschaft speist einen gemeinsamen, echten Impact Fund. Sie hat ihren eigenen Look und ihre eigene Welt, ist aber ein Bereich von OmniMind, kein eigenes Produkt — gleiches Konto, gleiche Zahlungen (Stripe auf demselben OmniMind-Deployment, kein separater Händler), und ein kleiner ← OmniMind-Button in der Ecke jedes Helen-Bildschirms bringt dich direkt hierher zurück.",
+  guideVoxCta: "VoxStudio öffnen",
+  guideVoxBody1:
+    "VoxStudio ist KI-Filmvorproduktion, nativ in OmniMind eingebaut: Beschreib eine Idee in einem Satz, und der Director Agent zerlegt sie in Titel, Logline, Charaktere, Szenen und eine Shotlist — läuft auf demselben OmniMind-Konto, keine separate Anmeldung.",
+  guideVoxBody2:
+    "Heute ist dieser Planungsschritt voll funktionsfähig. Ein Brief in echtes Video, Bilder oder eine Charakterstimme zu verwandeln ist die nächste Ebene, die hinzukommt, sobald diese Generierungs-Anbieter angebunden sind — die Seite selbst zeigt immer ehrlich, was schon live ist und was noch nicht.",
+  guideFooterDirectly: "direkt.",
 };
 
 export default de;

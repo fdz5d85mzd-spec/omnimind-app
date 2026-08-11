@@ -120,6 +120,22 @@ export interface Dictionary {
   helpContactPlaceholder: string;
   helpContactSend: string;
   helpContactSent: string;
+
+  guideTitle: string;
+  guideSub: string;
+  guideCoreEyebrow: string;
+  guideCoreCta: string;
+  guideCoreBody1: string;
+  guideCoreTrackPre: string;
+  guideCoreTrackMid: string;
+  guideCoreTrackEnd: string;
+  guidePartOfEyebrow: string;
+  guideHelenCta: string;
+  guideHelenBody: string;
+  guideVoxCta: string;
+  guideVoxBody1: string;
+  guideVoxBody2: string;
+  guideFooterDirectly: string;
 }
 
 export type LangCode = "en" | "el" | "es" | "fr" | "de" | "it" | "pt" | "ru" | "zh" | "ja" | "ar" | "tr";

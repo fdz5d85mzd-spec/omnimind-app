@@ -125,6 +125,27 @@ const it: Dictionary = {
   helpContactPlaceholder: "Il tuo messaggio…",
   helpContactSend: "Invia",
   helpContactSent: "Inviato — ti risponderemo via email.",
+
+  guideTitle: "Come funziona OmniMind",
+  guideSub:
+    "Un account, un solo posto. Tutto ciò che segue vive dentro OmniMind — niente qui è un'app separata con una propria registrazione o una propria fattura.",
+  guideCoreEyebrow: "Il nucleo",
+  guideCoreCta: "Chiedi qualsiasi cosa a OmniMind",
+  guideCoreBody1:
+    "OmniMind è il sistema operativo IA autonomo su cui è costruita tutta questa app. Chiedigli qualsiasi cosa e una richiesta reale passa attraverso un Policy Engine (controlla che sia consentita), un Meta-Orchestrator (la assegna a uno dei 40 agenti nominati della flotta — un Code Agent, un Research Agent, un Writer Agent e così via — in base a ciò di cui la richiesta ha davvero bisogno), e una Memoria Versionata (ogni scambio viene registrato, niente viene scartato).",
+  guideCoreTrackPre: "Seguilo dal vivo in",
+  guideCoreTrackMid: ", e imposta la tua lingua e controlla i tuoi crediti nelle",
+  guideCoreTrackEnd: ".",
+  guidePartOfEyebrow: "Parte di OmniMind",
+  guideHelenCta: "Apri Helen",
+  guideHelenBody:
+    "Helen è un abbonamento globale da 1 €: ottieni una creatura virtuale compagna che cresce mentre te ne prendi cura, e ogni abbonamento alimenta un Impact Fund condiviso e reale. Ha un proprio look e un proprio mondo, ma è una sezione di OmniMind, non un prodotto separato — stesso account, stessi pagamenti (Stripe sullo stesso deployment OmniMind, non un merchant separato), e un piccolo pulsante ← OmniMind nell'angolo di ogni schermata di Helen ti riporta direttamente qui.",
+  guideVoxCta: "Apri VoxStudio",
+  guideVoxBody1:
+    "VoxStudio è pre-produzione cinematografica con IA, integrata nativamente in OmniMind: descrivi un'idea in una riga e il Director Agent la scompone in titolo, logline, personaggi, scene e una lista di inquadrature — funziona sullo stesso account OmniMind, senza registrazione separata.",
+  guideVoxBody2:
+    "Oggi quella fase di pianificazione è pienamente attiva. Trasformare un brief in video, immagini o voce del personaggio reali è il livello successivo, aggiunto man mano che questi provider di generazione vengono collegati — la pagina stessa mostra sempre onestamente cosa è attivo e cosa non lo è ancora.",
+  guideFooterDirectly: "direttamente.",
 };
 
 export default it;

@@ -125,6 +125,27 @@ const en: Dictionary = {
   helpContactPlaceholder: "Your message…",
   helpContactSend: "Send",
   helpContactSent: "Sent — we'll reply by email.",
+
+  guideTitle: "How OmniMind works",
+  guideSub:
+    "One account, one place. Everything below lives inside OmniMind — nothing here is a separate app with its own sign-up or its own bill.",
+  guideCoreEyebrow: "The core",
+  guideCoreCta: "Ask OmniMind anything",
+  guideCoreBody1:
+    "OmniMind is the autonomous AI operating system this whole app is built on. Ask it anything and a real request goes through a Policy Engine (checks it's allowed), a Meta-Orchestrator (assigns it to one of 40 named fleet agents — a Code Agent, a Research Agent, a Writer Agent, and so on — by what the request actually needs), and Versioned Memory (every exchange is recorded, nothing is thrown away).",
+  guideCoreTrackPre: "Track it live in",
+  guideCoreTrackMid: ", and set your language and check your credits in",
+  guideCoreTrackEnd: ".",
+  guidePartOfEyebrow: "Part of OmniMind",
+  guideHelenCta: "Open Helen",
+  guideHelenBody:
+    "Helen is a €1 global membership: you get a virtual creature companion that grows as you care for it, and every membership feeds a shared, real-world Impact Fund. It has its own look and its own world, but it's a section of OmniMind, not a separate product — same account, same payments (Stripe on this same OmniMind deployment, not a separate merchant), and a small ← OmniMind button in the corner of every Helen screen brings you straight back here.",
+  guideVoxCta: "Open VoxStudio",
+  guideVoxBody1:
+    "VoxStudio is AI film pre-production, built natively into OmniMind: describe an idea in one line and the Director Agent breaks it into a title, logline, characters, scenes, and a shot list — running on the same OmniMind account, no separate sign-up.",
+  guideVoxBody2:
+    "Today that planning step is fully live. Turning a brief into actual video, images, or character voice is the next layer, added as those generation providers get connected — the page itself always shows honestly what's live and what isn't yet.",
+  guideFooterDirectly: "directly.",
 };
 
 export default en;

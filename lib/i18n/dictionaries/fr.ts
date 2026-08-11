@@ -125,6 +125,27 @@ const fr: Dictionary = {
   helpContactPlaceholder: "Votre message…",
   helpContactSend: "Envoyer",
   helpContactSent: "Envoyé — nous répondrons par email.",
+
+  guideTitle: "Comment fonctionne OmniMind",
+  guideSub:
+    "Un compte, un seul endroit. Tout ce qui suit vit à l'intérieur d'OmniMind — rien ici n'est une appli séparée avec sa propre inscription ou sa propre facture.",
+  guideCoreEyebrow: "Le cœur",
+  guideCoreCta: "Demandez n'importe quoi à OmniMind",
+  guideCoreBody1:
+    "OmniMind est le système d'exploitation IA autonome sur lequel toute cette application est construite. Demandez-lui n'importe quoi et une véritable requête passe par un Policy Engine (vérifie qu'elle est autorisée), un Meta-Orchestrator (l'assigne à l'un des 40 agents nommés de la flotte — un Code Agent, un Research Agent, un Writer Agent, etc. — selon ce dont la requête a réellement besoin), et une Mémoire Versionnée (chaque échange est enregistré, rien n'est jeté).",
+  guideCoreTrackPre: "Suivez-le en direct dans",
+  guideCoreTrackMid: ", et réglez votre langue et vérifiez vos crédits dans",
+  guideCoreTrackEnd: ".",
+  guidePartOfEyebrow: "Fait partie d'OmniMind",
+  guideHelenCta: "Ouvrir Helen",
+  guideHelenBody:
+    "Helen est un abonnement mondial à 1 € : vous obtenez une créature virtuelle compagnon qui grandit à mesure que vous en prenez soin, et chaque abonnement alimente un Impact Fund partagé et bien réel. Elle a son propre look et son propre univers, mais c'est une section d'OmniMind, pas un produit séparé — même compte, mêmes paiements (Stripe sur ce même déploiement OmniMind, pas un marchand distinct), et un petit bouton ← OmniMind dans le coin de chaque écran Helen vous ramène directement ici.",
+  guideVoxCta: "Ouvrir VoxStudio",
+  guideVoxBody1:
+    "VoxStudio est de la préproduction de film par IA, intégrée nativement à OmniMind : décrivez une idée en une ligne et le Director Agent la découpe en titre, logline, personnages, scènes et une liste de plans — fonctionne sur le même compte OmniMind, sans inscription séparée.",
+  guideVoxBody2:
+    "Aujourd'hui, cette étape de planification est entièrement en service. Transformer un brief en vraie vidéo, images ou voix de personnage est la couche suivante, ajoutée au fur et à mesure que ces fournisseurs de génération sont connectés — la page elle-même indique toujours honnêtement ce qui est en service et ce qui ne l'est pas encore.",
+  guideFooterDirectly: "directement.",
 };
 
 export default fr;

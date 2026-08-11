@@ -124,6 +124,26 @@ const ja: Dictionary = {
   helpContactPlaceholder: "メッセージ…",
   helpContactSend: "送信",
   helpContactSent: "送信しました — メールで返信します。",
+
+  guideTitle: "OmniMindの仕組み",
+  guideSub: "1つのアカウント、1つの場所。以下はすべてOmniMindの中にあります — 別途登録や別途請求が必要な独立したアプリはここにはありません。",
+  guideCoreEyebrow: "コア",
+  guideCoreCta: "OmniMindに何でも聞く",
+  guideCoreBody1:
+    "OmniMindは、このアプリ全体の基盤となる自律型AIオペレーティングシステムです。何でも聞いてみてください。実際のリクエストはPolicy Engine（許可されているか確認）、Meta-Orchestrator（Code Agent、Research Agent、Writer Agentなど、40の名前付きフリートエージェントの中からリクエストに実際に必要なものへ割り当て）、そしてVersioned Memory（すべてのやり取りが記録され、何も捨てられません）を通過します。",
+  guideCoreTrackPre: "",
+  guideCoreTrackMid: "でリアルタイムに確認でき、言語の設定やクレジットの確認は",
+  guideCoreTrackEnd: "でできます。",
+  guidePartOfEyebrow: "OmniMindの一部",
+  guideHelenCta: "Helenを開く",
+  guideHelenBody:
+    "Helenは1€のグローバルメンバーシップです。お世話をするたびに成長する仮想クリーチャーのパートナーが手に入り、すべてのメンバーシップが共有の実世界インパクトファンドに貢献します。独自の見た目と世界を持っていますが、別製品ではなくOmniMindの一部です — 同じアカウント、同じ決済（別の加盟店ではなく、同じOmniMindデプロイ上のStripe）、そしてHelenの各画面の隅にある小さな ← OmniMind ボタンでいつでもここに戻れます。",
+  guideVoxCta: "VoxStudioを開く",
+  guideVoxBody1:
+    "VoxStudioはOmniMindにネイティブに組み込まれたAI映画プリプロダクションです。一行でアイデアを説明するだけで、Director Agentがタイトル、ログライン、キャラクター、シーン、ショットリストに分解します — 同じOmniMindアカウントで動作し、別途登録は不要です。",
+  guideVoxBody2:
+    "現在、この企画段階は完全に稼働しています。ブリーフを実際の動画、画像、キャラクターの声に変えるのは次のレイヤーで、それらの生成プロバイダーが接続され次第追加されます — ページ自体が、何がすでに稼働していて何がまだかを常に正直に表示します。",
+  guideFooterDirectly: "。",
 };
 
 export default ja;
