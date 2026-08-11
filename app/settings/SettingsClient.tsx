@@ -24,7 +24,15 @@ export function SettingsSignInGate() {
   );
 }
 
-export default function SettingsClient({ name, email }: { name: string | null; email: string | null }) {
+export default function SettingsClient({
+  name,
+  email,
+  privileged,
+}: {
+  name: string | null;
+  email: string | null;
+  privileged: boolean;
+}) {
   const { t, lang, setLang } = useLanguage();
   const credits = useCredits();
 
@@ -78,7 +86,12 @@ export default function SettingsClient({ name, email }: { name: string | null; e
 
         <section className="glass rounded-2xl p-5">
           <h2 className="text-sm font-semibold text-white mb-4">{t.settingsPlanTitle}</h2>
-          {credits ? (
+          {privileged ? (
+            <div className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3.5 py-3 mb-4">
+              <span className="text-sm text-amber font-semibold">Unlimited</span>
+              <span className="text-[11px] text-cyan uppercase">Admin</span>
+            </div>
+          ) : credits ? (
             <div className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3.5 py-3 mb-4">
               <span className="text-sm text-amber font-semibold">
                 {credits.creditBalance} {t.settingsCreditsLabel}

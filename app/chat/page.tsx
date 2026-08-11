@@ -194,6 +194,18 @@ export default function Home() {
     if (window.innerWidth < 1024) setSidebarCollapsed(true);
   }
 
+  function deleteConversation(id: string) {
+    if (id === activeId && isStreaming) stop();
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+    if (id === activeId) setActiveId(null);
+  }
+
+  function clearAllConversations() {
+    if (isStreaming) stop();
+    setConversations([]);
+    setActiveId(null);
+  }
+
   function selectConversation(id: string) {
     if (isStreaming) stop();
     setActiveId(id);
@@ -203,12 +215,16 @@ export default function Home() {
   const empty = messages.length === 0;
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="relative isolate flex h-screen overflow-hidden">
+      <div className="bg-mesh -z-10" aria-hidden />
+      <div className="bg-grid -z-10" aria-hidden />
       <Sidebar
         conversations={conversations}
         activeId={activeId}
         onSelect={selectConversation}
         onNew={newChat}
+        onDelete={deleteConversation}
+        onClearAll={clearAllConversations}
         collapsed={sidebarCollapsed}
         onCloseMobile={() => setSidebarCollapsed(true)}
       />

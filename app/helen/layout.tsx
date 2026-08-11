@@ -52,14 +52,20 @@ export default function HelenLayout({ children }: { children: React.ReactNode })
                 top corners (sound/help + HELEN wordmark on the left,
                 language toggle on the right) on several pages, and the
                 bottom is generally clear of fixed overlays (ProgressDots
-                and the home tab bar are laid out inline, not fixed). */}
+                and the home tab bar are laid out inline, not fixed).
+                Icon-only and in Helen's own palette (not a black OmniMind
+                pill) so it reads as part of this screen, not a foreign
+                patch dropped on top of it. */}
             <Link
               href="/"
               aria-label="Back to OmniMind"
-              className="fixed bottom-3 left-3 z-50 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-white/90 shadow-[0_2px_6px_rgba(0,0,0,0.3)] transition hover:bg-black/60"
+              title="Back to OmniMind"
+              className="group fixed bottom-3 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-helen-ink/70 backdrop-blur-sm border border-helen-gold/25 text-helen-paper/90 shadow-[0_2px_10px_rgba(0,0,0,0.35)] transition hover:bg-helen-ink/90 hover:border-helen-gold/50"
               style={{ marginBottom: "env(safe-area-inset-bottom)" }}
             >
-              ← OmniMind
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5M11 18l-6-6 6-6" />
+              </svg>
             </Link>
           </ProfileProvider>
         </AuthProvider>

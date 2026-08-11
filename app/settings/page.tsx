@@ -9,5 +9,11 @@ export default async function SettingsPage() {
 
   if (!session?.user) return <SettingsSignInGate />;
 
-  return <SettingsClient name={session.user.name ?? null} email={session.user.email ?? null} />;
+  return (
+    <SettingsClient
+      name={session.user.name ?? null}
+      email={session.user.email ?? null}
+      privileged={Boolean(session.user.isMaster || session.user.isAdmin)}
+    />
+  );
 }
