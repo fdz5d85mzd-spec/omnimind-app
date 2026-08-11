@@ -22,26 +22,41 @@ Reply with ONLY a JSON object, no prose before or after it, no markdown fences:
  "scenes": [{"heading": string, "description": string,
              "shots": [{"camera": string, "action": string}]}]}`;
 
-function extractBrief(raw: string): CreativeBrief | null {
-  let text = raw.trim();
-  if (text.startsWith("```")) {
-    text = text.replace(/^```(json)?/, "").replace(/```$/, "").trim();
-  }
-  let parsed: unknown;
+function tryParseObject(text: string): Record<string, unknown> | null {
   try {
-    parsed = JSON.parse(text);
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null;
   } catch {
     return null;
   }
+}
+
+function extractBrief(raw: string): CreativeBrief | null {
+  const text = raw.trim();
+  // Try the raw text, a code-fenced version, and whatever's between the
+  // first "{" and the last "}" -- covers the model adding ```json fences
+  // or a leading/trailing sentence despite being told not to.
+  const candidates = [text];
+  if (text.includes("```")) {
+    candidates.push(text.replace(/^[\s\S]*?```(?:json)?/, "").replace(/```[\s\S]*$/, "").trim());
+  }
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first !== -1 && last > first) candidates.push(text.slice(first, last + 1));
+
+  let parsed: Record<string, unknown> | null = null;
+  for (const candidate of candidates) {
+    parsed = tryParseObject(candidate);
+    if (parsed) break;
+  }
   if (
     parsed &&
-    typeof parsed === "object" &&
-    typeof (parsed as CreativeBrief).title === "string" &&
-    typeof (parsed as CreativeBrief).logline === "string" &&
-    Array.isArray((parsed as CreativeBrief).scenes) &&
-    Array.isArray((parsed as CreativeBrief).characters)
+    typeof parsed.title === "string" &&
+    typeof parsed.logline === "string" &&
+    Array.isArray(parsed.scenes) &&
+    Array.isArray(parsed.characters)
   ) {
-    return parsed as CreativeBrief;
+    return parsed as unknown as CreativeBrief;
   }
   return null;
 }
@@ -62,16 +77,29 @@ export async function generateCreativeBrief(idea: string): Promise<CreativeBrief
     model: "claude-sonnet-5",
     max_tokens: 1500,
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: idea }],
+    messages: [
+      { role: "user", content: idea },
+      // Forces the continuation straight into JSON instead of a
+      // conversational preamble -- sturdier than instructions alone.
+      // The model's continuation doesn't repeat this prefill text, so
+      // it's re-added below.
+      { role: "assistant", content: "{" },
+    ],
   });
 
-  const raw = response.content
+  const continuation = response.content
     .filter((block): block is Anthropic.TextBlock => block.type === "text")
     .map((block) => block.text)
     .join("\n")
     .trim();
+  const raw = "{" + continuation;
 
   const brief = extractBrief(raw);
-  if (!brief) throw new DirectorError("Director Agent returned a response that couldn't be parsed as a brief");
+  if (!brief) {
+    const snippet = raw.slice(0, 220).replace(/\s+/g, " ");
+    throw new DirectorError(
+      `Director Agent returned a response that couldn't be parsed as a brief. Raw start: ${snippet}${raw.length > 220 ? "…" : ""}`
+    );
+  }
   return brief;
 }
