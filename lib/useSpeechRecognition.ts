@@ -17,7 +17,13 @@ type SpeechRecognitionLike = {
   stop: () => void;
 };
 
-export function useSpeechRecognition(onFinalText: (text: string) => void) {
+// `lang` should be a real BCP-47 locale (e.g. "el-GR"), not left to
+// navigator.language -- the browser/OS locale frequently doesn't match
+// what the person is actually speaking (an English-locale phone with a
+// Greek speaker, for instance), and recognition accuracy falls apart
+// when it's parsing the wrong language's phonemes. Pass the app's own
+// selected language instead, which is a real, explicit signal.
+export function useSpeechRecognition(onFinalText: (text: string) => void, lang?: string) {
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +38,7 @@ export function useSpeechRecognition(onFinalText: (text: string) => void) {
     const recognition = new Ctor();
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.lang = navigator.language || "en-US";
+    recognition.lang = lang || navigator.language || "en-US";
 
     recognition.onresult = (event: unknown) => {
       const e = event as { results: { transcript: string }[][] };
@@ -48,7 +54,7 @@ export function useSpeechRecognition(onFinalText: (text: string) => void) {
 
     recognitionRef.current = recognition;
     setSupported(true);
-  }, [onFinalText]);
+  }, [onFinalText, lang]);
 
   const start = useCallback(() => {
     if (!recognitionRef.current || listening) return;
