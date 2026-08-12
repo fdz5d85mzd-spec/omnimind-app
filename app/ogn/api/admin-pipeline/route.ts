@@ -20,6 +20,7 @@ export async function POST() {
     return NextResponse.json({ result });
   } catch (err) {
     console.error("OGN pipeline run failed", err);
-    return NextResponse.json({ error: "Pipeline run failed — check server logs" }, { status: 500 });
+    const detail = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: "Pipeline run failed", detail }, { status: 500 });
   }
 }
