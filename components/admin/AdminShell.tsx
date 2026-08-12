@@ -16,6 +16,16 @@ function GridIcon() {
   );
 }
 
+function NewspaperIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h13a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V4Z" />
+      <path d="M19 8h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1" />
+      <path d="M8 8h6M8 12h6M8 16h4" />
+    </svg>
+  );
+}
+
 function UsersIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -97,6 +107,7 @@ function ClapperIcon() {
 const NAV = [
   { href: "/admin", label: "Overview", icon: GridIcon },
   { href: "/admin/users", label: "Users", icon: UsersIcon },
+  { href: "/admin/ogn", label: "OGN", icon: NewspaperIcon },
   { href: "/admin/revenue", label: "Revenue", icon: CoinsIcon },
   { href: "/admin/social", label: "Social", icon: ClapperIcon },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: TagIcon },
