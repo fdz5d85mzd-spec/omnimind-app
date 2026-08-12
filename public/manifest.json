@@ -2,7 +2,7 @@
   "name": "OmniMind — Ask Anything",
   "short_name": "OmniMind",
   "description": "The autonomous AI operating system. Policy-checked, orchestrated, remembered — streamed live.",
-  "start_url": "/chat",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#06071a",

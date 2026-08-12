@@ -170,6 +170,10 @@ export default function Sidebar({
           <HeartIcon />
           Helen
         </Link>
+        <Link href="/atlas" className="mt-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:bg-white/[0.04] hover:text-white transition-colors">
+          <RadarIcon />
+          Atlas
+        </Link>
         <Link
           href="/voxstudio"
           className="mt-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:text-white hover:bg-white/[0.04] transition-colors"

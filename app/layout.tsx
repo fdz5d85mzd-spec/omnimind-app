@@ -7,6 +7,7 @@ import HelpWidget from "@/components/HelpWidget";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import MobileDock from "@/components/MobileDock";
+import MascotPulse from "@/components/MascotPulse";
 
 export const metadata: Metadata = {
   title: "OmniMind — Ask Anything",
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ImpersonationBanner />
             {children}
             <MobileDock />
+            <MascotPulse />
           </AuthSessionProvider>
         </LanguageProvider>
       </body>

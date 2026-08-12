@@ -16,11 +16,11 @@ import CreditsBadge from "@/components/CreditsBadge";
 // had nothing but a bare logo, with no way back into the menu at all.
 export default function TopNav({ overlay = false }: { overlay?: boolean }) {
   const { data: session, status } = useSession();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLElement>(null);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
 
   // Tapping anywhere outside the open mobile menu (not just its own links
   // or the X button) closes it -- it had no way to dismiss itself otherwise.
@@ -36,12 +36,11 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
   }, [menuOpen]);
 
   const links = [
-    { href: "/helen", label: t.navHelen },
     { href: "/voxstudio", label: t.navVoxStudio },
     { href: "/aria-go", label: t.navAriaGo },
     { href: "/ogn", label: t.navOgn },
-    { href: "/orpheus", label: "Orpheus" },
-    { href: "/contests", label: "Contests" },
+    { href: "/orpheus", label: lang === "el" ? "Αποστολή" : "Orpheus" },
+    { href: "/contests", label: lang === "el" ? "Διαγωνισμοί" : "Contests" },
     { href: "/mission-control", label: t.navMissionControl },
     { href: "/pricing", label: t.navPricing },
     ...(status !== "loading" && !session?.user ? [{ href: "/login", label: t.navSignIn }] : []),
@@ -72,6 +71,13 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
           className="hidden sm:flex min-w-0 flex-1 items-center gap-1 overflow-x-auto scroll-smooth px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Main navigation"
         >
+          <details className="group relative shrink-0">
+            <summary className={`list-none cursor-pointer rounded-xl px-3 py-2 text-sm transition-all ${pathname.startsWith("/helen")||pathname.startsWith("/atlas")?"bg-white/[0.09] text-white shadow-[inset_0_-2px_0_#22d3ee]":"text-muted hover:bg-white/[0.05] hover:text-white"}`}>{lang === "el" ? "Κόσμοι" : "Worlds"} ▾</summary>
+            <div className="absolute left-0 top-full z-50 mt-2 w-48 rounded-2xl border border-white/10 bg-card2/95 p-2 shadow-panel backdrop-blur-xl">
+              <Link href="/helen" className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[.06] hover:text-white">Helen</Link>
+              <Link href="/atlas" className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[.06] hover:text-white">Atlas</Link>
+            </div>
+          </details>
           {links.map((l) => (
             <Link
               key={l.href}
@@ -114,6 +120,10 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
 
       {menuOpen && (
         <nav className="sm:hidden mt-3 glass rounded-2xl p-2 flex flex-col animate-fadeIn">
+          <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[.16em] text-cyan">{lang === "el" ? "Κόσμοι" : "Worlds"}</p>
+          <Link href="/helen" onClick={()=>setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm text-muted hover:bg-white/[.05] hover:text-white">Helen</Link>
+          <Link href="/atlas" onClick={()=>setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm text-muted hover:bg-white/[.05] hover:text-white">Atlas</Link>
+          <div className="my-1 border-t border-white/[.06]" />
           {links.map((l) => (
             <Link
               key={l.href}

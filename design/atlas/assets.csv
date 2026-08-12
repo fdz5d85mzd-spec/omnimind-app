@@ -1,0 +1,5 @@
+id,role,type,description,size/ratio,style line ref,source
+atlas_world,canvas_world,procedural,"Layered star map, orbital paths, energy gates and constellation nodes",responsive 16:9,ATLAS_STYLE,reference_media[0]
+atlas_hero,player_avatar,procedural,"OmniMind aperture mascot rendered as a luminous explorer orb",1 hero-unit,ATLAS_STYLE,reference_media[0]
+atlas_signals,collectibles,procedural,"Cyan knowledge shards, amber hope signals and coral hazards",0.18 hero-unit,ATLAS_STYLE,reference_media[0]
+atlas_ui,hud,procedural,"Glass status panels, mission prompts, touch controls and result card",responsive overlay,ATLAS_STYLE,reference_media[0]
