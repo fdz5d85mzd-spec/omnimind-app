@@ -75,7 +75,7 @@ export async function seedOgn(): Promise<{ adminEmail: string; adminPassword: st
       summary: "Costa Rica has run on 99% renewable energy for five straight years, powered by hydroelectric, geothermal, wind, and solar.",
       content: "Costa Rica continues to lead the world in renewable energy, achieving 99% clean electricity for the fifth consecutive year.",
       sourceUrl: "https://www.bbc.com",
-      sourceName: "BBC News",
+      sourceName: "BBC News — World",
       imageUrl: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800",
       categorySlug: "environment",
       sentimentScore: 0.90,
