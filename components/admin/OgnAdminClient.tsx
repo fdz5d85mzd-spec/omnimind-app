@@ -15,7 +15,7 @@ export default function OgnAdminClient() {
     setSeedResult(null);
     const res = await fetch("/ogn/api/seed", { method: "POST" });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) setError(body.error || "Seed failed");
+    if (!res.ok) setError(`${body.error || "Seed failed"}${body.detail ? ` — ${body.detail}` : ""}`);
     else setSeedResult(body);
     setSeeding(false);
   }
@@ -26,7 +26,7 @@ export default function OgnAdminClient() {
     setPipelineResult(null);
     const res = await fetch("/ogn/api/admin-pipeline", { method: "POST" });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) setError(body.error || "Pipeline run failed");
+    if (!res.ok) setError(`${body.error || "Pipeline run failed"}${body.detail ? ` — ${body.detail}` : ""}`);
     else setPipelineResult(body.result);
     setRunning(false);
   }

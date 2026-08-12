@@ -17,6 +17,11 @@ export async function POST() {
     return NextResponse.json(result);
   } catch (err) {
     console.error("OGN seed failed", err);
-    return NextResponse.json({ error: "Seed failed — check server logs" }, { status: 500 });
+    // This is an admin-only diagnostic tool (not a public-facing page), so
+    // the actual error is safe -- and far more useful -- to show directly
+    // instead of a generic message, since there's no other way to see it
+    // without Vercel log access.
+    const detail = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: "Seed failed", detail }, { status: 500 });
   }
 }
