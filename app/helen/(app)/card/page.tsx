@@ -7,7 +7,10 @@ import { useAuth } from "@/lib/helen/auth/AuthProvider";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { useProfile } from "@/lib/helen/ProfileProvider";
 import { RewardPopup } from "@/components/helen/RewardPopup";
-import { hasShownWelcomeBonus, markWelcomeBonusShown } from "@/lib/helen/data/welcomeBonusRepo";
+import {
+  hasShownWelcomeBonus,
+  markWelcomeBonusShown,
+} from "@/lib/helen/data/welcomeBonusRepo";
 
 function CardContent() {
   const { t } = useLanguage();
@@ -27,7 +30,9 @@ function CardContent() {
   // Tracks which session_id we've already attempted hydration for, so a
   // successful hydrateFromRemote (which changes `profile`, a dependency
   // below) can't retrigger this effect and loop forever.
-  const [hydratedForSession, setHydratedForSession] = useState<string | null>(null);
+  const [hydratedForSession, setHydratedForSession] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!ready) return;
@@ -54,7 +59,15 @@ function CardContent() {
     }
 
     if (!profile) router.replace("/helen");
-  }, [ready, profile, sessionId, user, hydrateFromRemote, router, hydratedForSession]);
+  }, [
+    ready,
+    profile,
+    sessionId,
+    user,
+    hydrateFromRemote,
+    router,
+    hydratedForSession,
+  ]);
 
   useEffect(() => {
     if (!profile || bonusShown) return;
@@ -99,7 +112,13 @@ function CardContent() {
     );
   }
 
-  if (!profile) return null;
+  if (!profile)
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+        <span className="h-7 w-7 animate-helen-spin-fast rounded-full border-2 border-helen-dim/30 border-t-helen-gold" />
+        <p className="text-sm text-helen-dim">{t.finalizingNote}</p>
+      </div>
+    );
 
   return (
     <>
@@ -113,12 +132,18 @@ function CardContent() {
               {profile.tier}
             </div>
             <div>
-              <div className="font-helen-num text-[28px] font-bold text-helen-paper">{padId(profile.memberId)}</div>
-              <div className="text-[11px] text-helen-dim">{t.memberCaption}</div>
+              <div className="font-helen-num text-[28px] font-bold text-helen-paper">
+                {padId(profile.memberId)}
+              </div>
+              <div className="text-[11px] text-helen-dim">
+                {t.memberCaption}
+              </div>
             </div>
           </div>
         </div>
-        <p className="mt-5 text-center text-[13px] text-helen-dim">{t.cardCaption}</p>
+        <p className="mt-5 text-center text-[13px] text-helen-dim">
+          {t.cardCaption}
+        </p>
       </div>
       <button
         type="button"

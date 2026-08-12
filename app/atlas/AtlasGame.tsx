@@ -1,6 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Compass, Play, RotateCcw, Sparkles } from "lucide-react";
+import {
+  Compass,
+  Play,
+  RotateCcw,
+  Sparkles,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { atlasCopy } from "@/lib/atlasStrings";
 import Image from "next/image";
@@ -15,7 +22,9 @@ export default function AtlasGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mode, setMode] = useState<Mode>("idle"),
     [score, setScore] = useState(0),
-    [time, setTime] = useState(DURATION);
+    [time, setTime] = useState(DURATION),
+    [muted, setMuted] = useState(false);
+  const audio = useRef<Record<string, HTMLAudioElement>>({});
   const game = useRef({
     hero: { x: 0.5, y: 0.72 },
     shards: [] as Point[],
@@ -45,6 +54,16 @@ export default function AtlasGame() {
     setScore(0);
     setTime(DURATION);
     setMode("playing");
+    if (!audio.current.pickup) {
+      audio.current = {
+        pickup: new Audio("/atlas/audio/pickup.wav"),
+        hazard: new Audio("/atlas/audio/hazard.wav"),
+        success: new Audio("/atlas/audio/success.wav"),
+      };
+      Object.values(audio.current).forEach((sound) => {
+        sound.volume = 0.24;
+      });
+    }
   }
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -123,6 +142,13 @@ export default function AtlasGame() {
           if (Math.hypot(p.x - g.hero.x, p.y - g.hero.y) < 0.045) {
             g.score++;
             setScore(g.score);
+            if (!muted) {
+              const sound = audio.current.pickup;
+              if (sound) {
+                sound.currentTime = 0;
+                void sound.play().catch(() => undefined);
+              }
+            }
             return false;
           }
           return true;
@@ -131,6 +157,13 @@ export default function AtlasGame() {
           if (Math.hypot(p.x - g.hero.x, p.y - g.hero.y) < 0.055) {
             g.hero = { x: 0.5, y: 0.72 };
             g.started -= 3000;
+            if (!muted) {
+              const sound = audio.current.hazard;
+              if (sound) {
+                sound.currentTime = 0;
+                void sound.play().catch(() => undefined);
+              }
+            }
             break;
           }
         const left = Math.max(0, DURATION - (now - g.started) / 1000);
@@ -138,6 +171,13 @@ export default function AtlasGame() {
         if (g.score >= TARGET) {
           g.mode = "won";
           setMode("won");
+          if (!muted) {
+            const sound = audio.current.success;
+            if (sound) {
+              sound.currentTime = 0;
+              void sound.play().catch(() => undefined);
+            }
+          }
         } else if (left <= 0) {
           g.mode = "lost";
           setMode("lost");
@@ -202,7 +242,7 @@ export default function AtlasGame() {
       cancelAnimationFrame(raf);
       removeEventListener("resize", resize);
     };
-  }, []);
+  }, [muted]);
   function pointer(e: React.PointerEvent<HTMLCanvasElement>) {
     const r = e.currentTarget.getBoundingClientRect();
     game.current.pointer = {
@@ -224,13 +264,26 @@ export default function AtlasGame() {
           <p className="mt-2 text-sm text-muted">{s.sub}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Image src="/helen/creatures/v2/stage-2.png" alt="Atlas companion" width={44} height={44} className="h-11 w-11 object-contain" />
+          <Image
+            src="/helen/creatures/v2/stage-2.png"
+            alt="Atlas companion"
+            width={44}
+            height={44}
+            className="h-11 w-11 object-contain"
+          />
           <span className="glass rounded-xl px-4 py-2 text-sm">
             <b className="text-cyan">{score}</b>/{TARGET} {s.score}
           </span>
           <span className="glass rounded-xl px-4 py-2 text-sm">
             <b className="text-amber">{time}</b>s
           </span>
+          <button
+            onClick={() => setMuted((value) => !value)}
+            className="glass rounded-xl p-2.5 text-muted hover:text-white"
+            aria-label={muted ? "Enable sound" : "Mute sound"}
+          >
+            {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
+          </button>
         </div>
       </section>
       <div className="relative overflow-hidden rounded-[28px] border border-cyan/20 bg-black shadow-[0_25px_100px_rgba(34,211,238,.12)]">

@@ -1,11 +1,16 @@
+"use client";
+
+import Link from "next/link";
 import { AmbientNature } from "./AmbientNature";
 import { BackgroundMusic } from "./BackgroundMusic";
 import { HelpButton } from "./HelpButton";
 import { LanguageToggle } from "./LanguageToggle";
 import { ProgressDots } from "./ProgressDots";
 import { SoundToggle } from "./SoundToggle";
+import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 
 export function PhoneFrame({ children }: { children: React.ReactNode }) {
+  const { lang } = useLanguage();
   return (
     <div className="helen-phone-frame relative mx-auto flex min-h-screen w-full max-w-[560px] flex-col overflow-hidden bg-helen-ink md:min-h-[calc(100dvh-2rem)] md:rounded-[2rem] md:border md:border-white/10">
       <BackgroundMusic />
@@ -23,9 +28,14 @@ export function PhoneFrame({ children }: { children: React.ReactNode }) {
           <SoundToggle />
           <HelpButton />
         </div>
-        <div className="font-helen-display text-[15px] font-semibold tracking-[0.14em] text-helen-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
-          HELEN
-        </div>
+        <Link
+          href="/"
+          className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-helen-gold/30 bg-helen-ink/65 px-3 py-2 text-[11px] font-bold text-helen-paper shadow-lg backdrop-blur-md transition active:scale-95"
+          aria-label="Back to OmniMind home"
+        >
+          <span aria-hidden>←</span>
+          <span>{lang === "el" ? "Αρχική OmniMind" : "OmniMind Home"}</span>
+        </Link>
       </div>
       <LanguageToggle />
       <div

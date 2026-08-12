@@ -27,7 +27,13 @@ export default function EggPage() {
     if (profile?.hatched) setHatched(true);
   }, [profile?.hatched]);
 
-  if (!profile) return null;
+  if (!profile)
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+        <span className="h-7 w-7 animate-helen-spin-fast rounded-full border-2 border-helen-dim/30 border-t-helen-gold" />
+        <p className="text-sm text-helen-dim">{t.finalizingNote}</p>
+      </div>
+    );
 
   function handleTap() {
     if (hatched || shaking || cracked) return;
@@ -48,7 +54,10 @@ export default function EggPage() {
     <>
       <div className="flex flex-1 flex-col items-center justify-center gap-6">
         {hatched ? (
-          <div className="animate-helen-pop-in rounded-full p-2" style={{ boxShadow: `0 0 60px 20px ${HATCH_GLOW}` }}>
+          <div
+            className="animate-helen-pop-in rounded-full p-2"
+            style={{ boxShadow: `0 0 60px 20px ${HATCH_GLOW}` }}
+          >
             <CreatureImage stage={1} height={180} priority />
           </div>
         ) : (
@@ -59,7 +68,11 @@ export default function EggPage() {
             className={`cursor-pointer drop-shadow-[0_15px_30px_rgba(0,0,0,0.4)] ${shaking ? "animate-helen-egg-shake" : ""} ${cracked ? "animate-helen-pop-in" : ""}`}
           >
             <Image
-              src={cracked ? "/helen/egg/egg-cracked.png" : "/helen/creatures/v2/egg-whole.png"}
+              src={
+                cracked
+                  ? "/helen/egg/egg-cracked.png"
+                  : "/helen/creatures/v2/egg-whole.png"
+              }
               alt=""
               width={140}
               height={190}
@@ -69,10 +82,14 @@ export default function EggPage() {
             />
           </button>
         )}
-        {!hatched && !cracked && <p className="text-xs text-helen-dim">{t.eggHint}</p>}
+        {!hatched && !cracked && (
+          <p className="text-xs text-helen-dim">{t.eggHint}</p>
+        )}
         {hatched && (
           <div className="w-full">
-            <div className="mb-1.5 text-center text-xs text-helen-dim">{t.nameYourCreature}</div>
+            <div className="mb-1.5 text-center text-xs text-helen-dim">
+              {t.nameYourCreature}
+            </div>
             <input
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
