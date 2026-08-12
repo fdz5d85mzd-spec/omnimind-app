@@ -27,8 +27,90 @@ model User {
   usageEvents UsageEvent[]
   voxProjects VoxProject[]
   connections UserConnection[]
+  contestEntries ContestEntry[]
+  contestVotes ContestVote[]
+  contestAwards ContestAward[]
 
   @@map("users")
+}
+
+model ContestChallenge {
+  id          String   @id @default(cuid())
+  title       String
+  prompt      String   @db.Text
+  mediaType   String   @map("media_type") // photo | reel
+  status      String   @default("active") // active | ended
+  startsAt    DateTime @map("starts_at")
+  endsAt      DateTime @map("ends_at")
+  entryCost   Int      @default(15) @map("entry_cost")
+  prizeFirst  Int      @map("prize_first")
+  prizeSecond Int      @map("prize_second")
+  prizeThird  Int      @map("prize_third")
+  createdAt   DateTime @default(now()) @map("created_at")
+  entries     ContestEntry[]
+  awards      ContestAward[]
+
+  @@index([status, endsAt])
+  @@map("contest_challenges")
+}
+
+model ContestEntry {
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  userId      String   @map("user_id")
+  mediaKey    String   @map("media_key")
+  mediaType   String   @map("media_type")
+  caption     String   @default("") @db.VarChar(280)
+  hidden      Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  challenge   ContestChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes       ContestVote[]
+  reports     ContestReport[]
+
+  @@unique([challengeId, userId])
+  @@index([challengeId, createdAt])
+  @@map("contest_entries")
+}
+
+model ContestReport {
+  id        String   @id @default(cuid())
+  entryId   String   @map("entry_id")
+  reporterId String  @map("reporter_id")
+  reason    String   @db.VarChar(120)
+  createdAt DateTime @default(now()) @map("created_at")
+  entry     ContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, reporterId])
+  @@map("contest_reports")
+}
+
+model ContestVote {
+  id        String   @id @default(cuid())
+  entryId   String   @map("entry_id")
+  voterId   String   @map("voter_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  entry     ContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  voter     User     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, voterId])
+  @@index([voterId, createdAt])
+  @@map("contest_votes")
+}
+
+model ContestAward {
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  userId      String   @map("user_id")
+  entryId     String   @map("entry_id")
+  rank        Int
+  credits     Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  challenge   ContestChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, rank])
+  @@map("contest_awards")
 }
 
 // A user's own API key for another provider ("bring your own key") --

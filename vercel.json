@@ -7,6 +7,10 @@
     {
       "path": "/api/credits/refill",
       "schedule": "15 3 * * *"
+    },
+    {
+      "path": "/api/contests/settle",
+      "schedule": "30 3 * * *"
     }
   ]
 }

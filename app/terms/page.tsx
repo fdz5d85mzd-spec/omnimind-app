@@ -13,7 +13,7 @@ export default function TermsPage() {
 
         <div className="prose-sm space-y-6 text-sm text-muted leading-relaxed">
           <p>
-            OmniMind — including Mission Control, VoxStudio, and Helen, all one product — is an
+            OmniMind — including Mission Control, VoxStudio, Orpheus, Contests, and Helen, all one product — is an
             early-stage product, actively changing. These terms cover the basics of using it; they are not
             a substitute for advice from a lawyer, and we&apos;ll update them as the product grows.
           </p>
@@ -55,12 +55,24 @@ export default function TermsPage() {
             content that violates this.
           </Section>
 
-          <Section title="6. Changes">
+          <Section title="6. Creator Contests">
+            Contest entries must be your original work or media you are authorized to publish. You keep
+            ownership and grant OmniMind a limited license to display the entry inside the service and in
+            promotional showcases relating to that contest. AI-assisted work is allowed when disclosed in
+            the caption. Each account may submit once per challenge and may not vote for itself, coordinate
+            fake votes, automate engagement, or use multiple accounts. Reported or infringing entries may
+            be hidden or disqualified. Credit rewards have no cash value, require the participation and
+            unique-voter thresholds shown in the challenge, and are awarded from the final eligible ranking.
+            Ties are resolved by the earliest eligible submission. Entry credits are non-refundable once an
+            upload is successfully published, except where required by law.
+          </Section>
+
+          <Section title="7. Changes">
             Features, pricing, and these terms may change as the product develops. Material changes will
             be reflected on this page.
           </Section>
 
-          <Section title="7. Contact">
+          <Section title="8. Contact">
             Questions about these terms can be sent to the account listed as the service&apos;s
             administrator.
           </Section>

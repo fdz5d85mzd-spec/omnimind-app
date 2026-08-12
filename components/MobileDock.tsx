@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MessageCircle, Send, Heart, Settings } from "lucide-react";
+import { Home, MessageCircle, Send, Trophy, Settings } from "lucide-react";
 
 const ITEMS = [
   { href: "/", label: "Home", Icon: Home },
   { href: "/chat", label: "Ask", Icon: MessageCircle },
   { href: "/orpheus", label: "Send", Icon: Send },
-  { href: "/helen", label: "Helen", Icon: Heart },
+  { href: "/contests", label: "Win", Icon: Trophy },
   { href: "/settings", label: "Settings", Icon: Settings },
 ];
 

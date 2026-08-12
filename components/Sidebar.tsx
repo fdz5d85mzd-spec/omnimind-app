@@ -60,6 +60,10 @@ function TransferIcon() {
   );
 }
 
+function TrophyIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></svg>;
+}
+
 function BookIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -179,6 +183,10 @@ export default function Sidebar({
         >
           <TransferIcon />
           Orpheus
+        </Link>
+        <Link href="/contests" className="mt-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:text-white hover:bg-white/[0.04] transition-colors">
+          <TrophyIcon />
+          Contests
         </Link>
         <Link
           href="/guide"
