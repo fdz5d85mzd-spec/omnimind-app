@@ -266,7 +266,7 @@ export default function AtlasGame() {
         <div className="flex items-center gap-2">
           <Image
             src="/helen/creatures/v2/stage-2.png"
-            alt="Atlas companion"
+            alt="Orpheus companion"
             width={44}
             height={44}
             className="h-11 w-11 object-contain"

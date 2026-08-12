@@ -13,7 +13,9 @@ let cached: Stripe | null = null;
 /** Throws until STRIPE_SECRET_KEY is set — see supabase/schema.sql and docs/GOING-LIVE.md. */
 export function getStripeClient(): Stripe {
   if (cached) return cached;
-  const key = process.env.STRIPE_SECRET_KEY?.trim();
+  const key = process.env.STRIPE_SECRET_KEY?.trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\s+/g, "");
   if (!key) {
     throw new Error("Stripe is not configured: set STRIPE_SECRET_KEY");
   }
@@ -22,5 +24,5 @@ export function getStripeClient(): Stripe {
 }
 
 export function isStripeConfigured(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+  return Boolean(process.env.STRIPE_SECRET_KEY?.replace(/\s+/g, ""));
 }

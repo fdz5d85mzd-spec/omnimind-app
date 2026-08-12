@@ -20,12 +20,12 @@ export default async function handler(req, res) {
       WHERE id = ${entitlementId} AND stripe_checkout_session_id = ${session.id}`;
     res.statusCode = 302;
     res.setHeader('Set-Cookie', `orpheus_entitlement=${encodeURIComponent(accessToken)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`);
-    res.setHeader('Location', `${origin}/orpheus?billing=success#pricing`);
+    res.setHeader('Location', `${origin}/atlas?billing=success#pricing`);
     return res.end();
   } catch (error) {
     console.error('activation_error', error);
     res.statusCode = 302;
-    res.setHeader('Location', `${origin}/orpheus?billing=failed#pricing`);
+    res.setHeader('Location', `${origin}/atlas?billing=failed#pricing`);
     return res.end();
   }
 }

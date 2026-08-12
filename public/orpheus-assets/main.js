@@ -224,7 +224,7 @@ transferButton.addEventListener('click', async () => {
     const finalizeResult = await finalizeResponse.json();
     if (!finalizeResponse.ok) throw new Error(finalizeResult.error || 'Could not finalize transfer.');
 
-    const shareUrl = `${window.location.origin}/orpheus?t=${transfer.code}`;
+    const shareUrl = `${window.location.origin}/atlas?t=${transfer.code}`;
     copyLinkButton.dataset.url = shareUrl;
     const history = readHistory();
     localStorage.setItem(HISTORY_KEY, JSON.stringify([{ url: shareUrl, expiresAt: transfer.expiresAt, fileCount: files.length }, ...history.filter((item) => item.url !== shareUrl)].slice(0, 8)));
@@ -264,7 +264,7 @@ async function loadDownload() {
     const response = await fetch(`/api/orpheus/transfers?code=${encodeURIComponent(code)}`);
     const transfer = await response.json();
     if (!response.ok) throw new Error(transfer.error || 'Transfer not found.');
-    root.querySelector('#download-message').textContent = transfer.message || 'Files are ready for you.';
+    root.querySelector('#download-message').textContent = transfer.message || `${transfer.senderEmail || 'Someone'} sent you files securely through Atlas.`;
     root.querySelector('#download-expiry').textContent = `This transfer expires ${new Date(transfer.expiresAt).toLocaleString()}.`;
     const list = root.querySelector('#download-files');
     transfer.files.forEach((file) => {
@@ -328,11 +328,11 @@ root.querySelector('#buy-once').addEventListener('click', () => startCheckout({ 
 
 if (new URLSearchParams(window.location.search).get('billing') === 'success') {
   showToast('Payment confirmed. Your transfer allowance is active.');
-  history.replaceState({}, '', '/orpheus#pricing');
+  history.replaceState({}, '', '/atlas#pricing');
 }
 if (new URLSearchParams(window.location.search).get('billing') === 'failed') {
   showToast('Payment could not be confirmed. Please try again.');
-  history.replaceState({}, '', '/orpheus#pricing');
+  history.replaceState({}, '', '/atlas#pricing');
 }
 
 }

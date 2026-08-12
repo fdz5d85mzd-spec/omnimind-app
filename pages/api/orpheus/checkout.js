@@ -19,7 +19,7 @@ export default async function handler(req, res) {
       config = PLANS[plan];
       kind = 'subscription';
     } else if (Number.isInteger(requestedGb) && requestedGb >= 1 && requestedGb <= 1024) {
-      config = { name: `Orpheus ${requestedGb === 1024 ? '1 TB' : `${requestedGb} GB`} transfer`, price: oneTimePrice(requestedGb), maxTransfer: requestedGb * GB, monthlyQuota: requestedGb * GB };
+      config = { name: `Atlas ${requestedGb === 1024 ? '1 TB' : `${requestedGb} GB`} transfer`, price: oneTimePrice(requestedGb), maxTransfer: requestedGb * GB, monthlyQuota: requestedGb * GB };
       kind = 'one_time';
     } else {
       return json(res, 400, { error: 'Invalid plan or transfer size.' });
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       payment_intent_data: kind === 'one_time' ? { metadata: { source: 'orpheus' } } : undefined,
       managed_payments: { enabled: false },
       success_url: `${origin}/api/orpheus/activate?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/orpheus#pricing`,
+      cancel_url: `${origin}/atlas#pricing`,
       allow_promotion_codes: kind === 'subscription',
     });
     await sql`UPDATE entitlements SET stripe_checkout_session_id = ${session.id} WHERE id = ${id}`;

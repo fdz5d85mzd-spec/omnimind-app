@@ -39,13 +39,20 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
     { href: "/voxstudio", label: t.navVoxStudio },
     { href: "/aria-go", label: t.navAriaGo },
     { href: "/ogn", label: t.navOgn },
-    { href: "/orpheus", label: lang === "el" ? "Αποστολή" : "Orpheus" },
+    {
+      href: "/atlas",
+      label: lang === "el" ? "Atlas · Αποστολή" : "Atlas · Send",
+    },
     { href: "/contests", label: lang === "el" ? "Διαγωνισμοί" : "Contests" },
     { href: "/mission-control", label: t.navMissionControl },
     { href: "/pricing", label: t.navPricing },
-    ...(status !== "loading" && !session?.user ? [{ href: "/login", label: t.navSignIn }] : []),
+    ...(status !== "loading" && !session?.user
+      ? [{ href: "/login", label: t.navSignIn }]
+      : []),
     ...(session?.user ? [{ href: "/settings", label: t.navSettings }] : []),
-    ...(session?.user?.isMaster || session?.user?.isAdmin ? [{ href: "/admin", label: t.navAdmin }] : []),
+    ...(session?.user?.isMaster || session?.user?.isAdmin
+      ? [{ href: "/admin", label: t.navAdmin }]
+      : []),
   ];
 
   return (
@@ -60,22 +67,42 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
       <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2">
           <LogoMark size={22} />
-          <span className="font-head font-semibold text-[15px] tracking-tight text-white">OmniMind</span>
+          <span className="font-head font-semibold text-[15px] tracking-tight text-white">
+            OmniMind
+          </span>
         </Link>
 
         <nav
           ref={railRef}
           onWheel={(event) => {
-            if (Math.abs(event.deltaY) > Math.abs(event.deltaX) && railRef.current) railRef.current.scrollLeft += event.deltaY;
+            if (
+              Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
+              railRef.current
+            )
+              railRef.current.scrollLeft += event.deltaY;
           }}
           className="hidden sm:flex min-w-0 flex-1 items-center gap-1 overflow-x-auto scroll-smooth px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Main navigation"
         >
           <details className="group relative shrink-0">
-            <summary className={`list-none cursor-pointer rounded-xl px-3 py-2 text-sm transition-all ${pathname.startsWith("/helen")||pathname.startsWith("/atlas")?"bg-white/[0.09] text-white shadow-[inset_0_-2px_0_#22d3ee]":"text-muted hover:bg-white/[0.05] hover:text-white"}`}>{lang === "el" ? "Κόσμοι" : "Worlds"} ▾</summary>
+            <summary
+              className={`list-none cursor-pointer rounded-xl px-3 py-2 text-sm transition-all ${pathname.startsWith("/helen") || pathname.startsWith("/orpheus") ? "bg-white/[0.09] text-white shadow-[inset_0_-2px_0_#22d3ee]" : "text-muted hover:bg-white/[0.05] hover:text-white"}`}
+            >
+              {lang === "el" ? "Κόσμοι" : "Worlds"} ▾
+            </summary>
             <div className="absolute left-0 top-full z-50 mt-2 w-48 rounded-2xl border border-white/10 bg-card2/95 p-2 shadow-panel backdrop-blur-xl">
-              <Link href="/helen" className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[.06] hover:text-white">Helen</Link>
-              <Link href="/atlas" className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[.06] hover:text-white">Atlas</Link>
+              <Link
+                href="/helen"
+                className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[.06] hover:text-white"
+              >
+                Helen
+              </Link>
+              <Link
+                href="/orpheus"
+                className="block rounded-xl px-3 py-2.5 text-sm text-muted hover:bg-white/[.06] hover:text-white"
+              >
+                Orpheus
+              </Link>
             </div>
           </details>
           {links.map((l) => (
@@ -120,9 +147,23 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
 
       {menuOpen && (
         <nav className="sm:hidden mt-3 glass rounded-2xl p-2 flex flex-col animate-fadeIn">
-          <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[.16em] text-cyan">{lang === "el" ? "Κόσμοι" : "Worlds"}</p>
-          <Link href="/helen" onClick={()=>setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm text-muted hover:bg-white/[.05] hover:text-white">Helen</Link>
-          <Link href="/atlas" onClick={()=>setMenuOpen(false)} className="rounded-xl px-4 py-3 text-sm text-muted hover:bg-white/[.05] hover:text-white">Atlas</Link>
+          <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-[.16em] text-cyan">
+            {lang === "el" ? "Κόσμοι" : "Worlds"}
+          </p>
+          <Link
+            href="/helen"
+            onClick={() => setMenuOpen(false)}
+            className="rounded-xl px-4 py-3 text-sm text-muted hover:bg-white/[.05] hover:text-white"
+          >
+            Helen
+          </Link>
+          <Link
+            href="/orpheus"
+            onClick={() => setMenuOpen(false)}
+            className="rounded-xl px-4 py-3 text-sm text-muted hover:bg-white/[.05] hover:text-white"
+          >
+            Orpheus
+          </Link>
           <div className="my-1 border-t border-white/[.06]" />
           {links.map((l) => (
             <Link
@@ -155,12 +196,20 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
   );
 }
 
-export function LanguageSwitcher({ full = false, compact = false }: { full?: boolean; compact?: boolean }) {
+export function LanguageSwitcher({
+  full = false,
+  compact = false,
+}: {
+  full?: boolean;
+  compact?: boolean;
+}) {
   const { lang, setLang } = useLanguage();
   return (
     <select
       value={lang}
-      onChange={(e) => setLang(e.target.value as (typeof LANGUAGES)[number]["code"])}
+      onChange={(e) =>
+        setLang(e.target.value as (typeof LANGUAGES)[number]["code"])
+      }
       aria-label="Language"
       className={`text-sm text-muted hover:text-white bg-transparent border border-white/[0.08] rounded-xl px-3 py-2 outline-none cursor-pointer transition-colors ${
         full ? "w-full" : ""
@@ -177,14 +226,30 @@ export function LanguageSwitcher({ full = false, compact = false }: { full?: boo
 
 function MenuIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
       <path d="M4 7h16M4 12h16M4 17h16" />
     </svg>
   );
 }
 function CloseIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
       <path d="M6 6l12 12M18 6 6 18" />
     </svg>
   );

@@ -70,13 +70,13 @@ async function createTransfer(req, res) {
 
 async function readTransfer(req, res) {
   const code = String(req.query.code || '');
-  const rows = await sql`SELECT id, message, expires_at, status FROM transfers WHERE code = ${code} LIMIT 1`;
+  const rows = await sql`SELECT id, sender_email, message, expires_at, status FROM transfers WHERE code = ${code} LIMIT 1`;
   const transfer = rows[0];
   if (!transfer || transfer.status !== 'ready' || new Date(transfer.expires_at) <= new Date()) {
     return json(res, 404, { error: 'This transfer has expired or does not exist.' });
   }
   const files = await sql`SELECT id, name, size, content_type FROM transfer_files WHERE transfer_id = ${transfer.id} AND uploaded_at IS NOT NULL ORDER BY created_at`;
-  return json(res, 200, { message: transfer.message, expiresAt: transfer.expires_at, files: files.map((file) => ({ ...file, size: Number(file.size) })) });
+  return json(res, 200, { senderEmail: transfer.sender_email, message: transfer.message, expiresAt: transfer.expires_at, files: files.map((file) => ({ ...file, size: Number(file.size) })) });
 }
 
 async function finalizeTransfer(req, res) {
@@ -98,13 +98,12 @@ async function finalizeTransfer(req, res) {
   await sql`UPDATE transfers SET status = 'ready' WHERE id = ${id}`;
   let emailSent = null;
   if (transfers[0].mode === 'email' && transfers[0].recipient_email) {
-    const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
-    const origin = `${protocol}://${req.headers.host}`;
+    const origin = (process.env.NEXT_PUBLIC_APP_URL || 'https://www.omnimindai.app').replace(/\/$/, '');
     emailSent = await sendTransferEmail({
       to: transfers[0].recipient_email,
       fromEmail: transfers[0].sender_email,
       message: transfers[0].message,
-      shareUrl: `${origin}/orpheus?t=${encodeURIComponent(transfers[0].code)}`,
+      shareUrl: `${origin}/atlas?t=${encodeURIComponent(transfers[0].code)}`,
       expiresAt: transfers[0].expires_at,
       fileCount: expected.length,
     });
