@@ -41,12 +41,13 @@ export function LuckyWheelModal({ open, onClose, firstTime }: LuckyWheelModalPro
   }, [open]);
 
   useEffect(() => {
-    if (!open || remainingMs <= 0) return;
+    const countdownRunning = open && remainingMs > 0;
+    if (!countdownRunning) return;
     const id = setInterval(() => {
       setRemainingMs(msUntilNextSpin());
     }, 1000);
     return () => clearInterval(id);
-  }, [open, remainingMs > 0]);
+  }, [open, remainingMs]);
 
   if (!open) return null;
 

@@ -32,16 +32,16 @@ export default function JoinPage() {
   return (
     <>
       <Globe />
-      <h1 className="mb-2 text-center font-helen-display text-[26px] font-semibold leading-[1.25]">
+      <h1 className="helen-hero-title mb-3 text-center font-helen-display text-[clamp(29px,7.5vw,38px)] font-semibold leading-[1.12] tracking-[-0.025em]">
         {t.heroLine1}
         <br />
         {t.heroLine2}
       </h1>
-      <p className="mb-6 text-center text-[13px] leading-relaxed text-helen-dim">{t.heroSub}</p>
+      <p className="mx-auto mb-7 max-w-md text-center text-[14px] leading-relaxed text-helen-dim">{t.heroSub}</p>
 
-      <div className="mb-2 rounded-xl bg-helen-card px-4 py-3.5">
-        <div className="mb-1 font-helen-display text-[13px] font-semibold text-helen-gold">{t.purposeTitle}</div>
-        <p className="text-[12px] leading-relaxed text-helen-dim">{t.purposeBody}</p>
+      <div className="helen-glass-card mb-2 rounded-2xl px-5 py-4.5">
+        <div className="mb-1.5 font-helen-display text-[15px] font-semibold text-helen-gold">{t.purposeTitle}</div>
+        <p className="text-[13px] leading-[1.65] text-helen-dim">{t.purposeBody}</p>
       </div>
 
       <div className="flex-1" />
@@ -52,7 +52,7 @@ export default function JoinPage() {
       <button
         type="button"
         onClick={handleJoin}
-        className="w-full rounded-xl bg-helen-coral py-[15px] text-[14.5px] font-bold text-helen-ink"
+        className="helen-primary-cta w-full rounded-2xl bg-helen-coral py-[17px] text-[15px] font-extrabold text-helen-ink transition active:scale-[0.985]"
       >
         {t.joinBtn}
       </button>

@@ -7,7 +7,7 @@ import { useProfile } from "@/lib/helen/ProfileProvider";
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   const { profile, ready } = useProfile();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const router = useRouter();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
 
   // The home root renders its own floating copy of the nav icons directly
   // over its fullscreen scene — rendering it here too would duplicate it.
-  const isHomeRoot = pathname === "/home";
+  const isHomeRoot = pathname === "/helen/home";
 
   return (
     <>

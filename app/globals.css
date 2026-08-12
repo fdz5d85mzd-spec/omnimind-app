@@ -98,11 +98,65 @@ body {
    app's global body/select styling.
    ============================================================ */
 .helen-scope {
-  background: var(--helen-color-ink);
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 14% 10%, rgba(255, 128, 99, 0.18), transparent 32rem),
+    radial-gradient(circle at 88% 18%, rgba(168, 216, 141, 0.15), transparent 28rem),
+    radial-gradient(circle at 50% 92%, rgba(122, 92, 153, 0.3), transparent 36rem),
+    linear-gradient(145deg, #140d1e 0%, #21162e 48%, #171021 100%);
   color: var(--helen-color-paper);
-  --helen-color-ink: #241b2f;
-  --helen-color-ink-2: #2e2338;
-  --helen-color-paper: #f5efe6;
+  --helen-color-ink: #181122;
+  --helen-color-ink-2: #241932;
+  --helen-color-paper: #fff8ef;
+}
+.helen-scope::before,
+.helen-scope::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 38vmax;
+  height: 38vmax;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.18;
+  pointer-events: none;
+  animation: helen-aurora 16s ease-in-out infinite alternate;
+}
+.helen-scope::before {
+  left: -14vmax;
+  top: 5vh;
+  background: #ff8063;
+}
+.helen-scope::after {
+  right: -14vmax;
+  bottom: 0;
+  background: #a8d88d;
+  animation-delay: -8s;
+}
+.helen-phone-frame {
+  box-shadow: 0 30px 100px rgba(3, 2, 8, 0.62), inset 0 1px rgba(255,255,255,0.08);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.025), transparent 28%);
+}
+.helen-glass-card {
+  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(145deg, rgba(70,47,91,0.82), rgba(42,27,57,0.74));
+  box-shadow: inset 0 1px rgba(255,255,255,0.06), 0 18px 42px rgba(8,4,14,0.22);
+  backdrop-filter: blur(18px);
+}
+.helen-primary-cta {
+  background-image: linear-gradient(135deg, #ff977d, #ff7057 62%, #f05c4c);
+  box-shadow: 0 12px 30px rgba(255,112,87,0.28), inset 0 1px rgba(255,255,255,0.35);
+}
+.helen-hero-title {
+  text-shadow: 0 12px 42px rgba(0,0,0,0.32);
+}
+@keyframes helen-aurora {
+  to { transform: translate3d(4vmax, 5vmax, 0) scale(1.12); }
+}
+@media (min-width: 768px) {
+  .helen-scope { padding: 1rem; }
 }
 .helen-scope select option {
   background: var(--helen-color-ink-2);

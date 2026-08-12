@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#171714" />
+    <meta name="description" content="Orpheus — move files beautifully." />
+    <title>Orpheus — Move files beautifully</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet" />
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <div class="grain"></div>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Orpheus home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <span>ORPHEUS</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#security">Security</a>
+        <button class="login">Log in</button>
+        <button class="signup">Create account</button>
+      </nav>
+      <button class="menu" aria-label="Open menu"><span></span><span></span></button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="orb orb-one"></div>
+        <div class="orb orb-two"></div>
+        <div class="line-art" aria-hidden="true">
+          <svg viewBox="0 0 900 700" preserveAspectRatio="none">
+            <path d="M-40,490 C140,80 265,740 450,305 C590,-30 690,690 940,210" />
+            <path d="M-20,535 C170,135 280,770 485,340 C625,45 735,650 930,275" />
+            <path d="M30,585 C205,225 325,745 520,405 C680,120 785,610 945,350" />
+          </svg>
+        </div>
+
+        <div class="hero-copy">
+          <p class="kicker"><span></span> Private file transfer</p>
+          <h1>Move files.<br /><em>Keep the feeling.</em></h1>
+          <p class="intro">A quieter, more beautiful way to send the things that matter. Fast, private, and effortless.</p>
+          <div class="trust-row">
+            <div class="avatars"><span>O</span><span>R</span><span>P</span></div>
+            <p><strong>Trusted by creatives</strong><br />Files stay available for 7 days</p>
+          </div>
+        </div>
+
+        <section class="transfer-card" aria-labelledby="transfer-title">
+          <div class="card-head">
+            <div>
+              <p class="step-label">New transfer</p>
+              <h2 id="transfer-title">Share your files</h2>
+            </div>
+            <button class="round-button" aria-label="Transfer settings">•••</button>
+          </div>
+
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Add files or folders">
+            <input id="file-input" type="file" multiple hidden />
+            <div class="plus">+</div>
+            <div>
+              <strong>Add files or folders</strong>
+              <span>Drop them here or browse</span>
+            </div>
+            <span class="limit">Up to 1 TB</span>
+          </div>
+
+          <div class="file-list" id="file-list" aria-live="polite"></div>
+
+          <div class="delivery-tabs" role="tablist" aria-label="Delivery method">
+            <button class="tab active" data-mode="email" role="tab">Send email</button>
+            <button class="tab" data-mode="link" role="tab">Get a link</button>
+          </div>
+
+          <div class="email-fields" id="email-fields">
+            <label><span>Email to</span><input type="email" id="email-to" placeholder="name@example.com" /></label>
+            <label><span>Your email</span><input type="email" id="email-from" placeholder="you@example.com" /></label>
+            <label><span>Message <small>optional</small></span><textarea id="message" rows="2" placeholder="A little note…"></textarea></label>
+          </div>
+
+          <div class="link-note" id="link-note" hidden>
+            <span class="link-icon">↗</span>
+            <p><strong>Create a shareable link</strong><br />Anyone with the link can download your files.</p>
+          </div>
+
+          <button class="transfer-button" id="transfer-button" disabled>
+            <span>Choose files to begin</span><b>→</b>
+          </button>
+          <div class="upload-progress" id="upload-progress" hidden>
+            <div><span id="progress-label">Uploading…</span><b id="progress-percent">0%</b></div>
+            <div class="progress-track"><i id="progress-bar"></i></div>
+          </div>
+          <div class="transfer-result" id="transfer-result" hidden>
+            <span class="result-check">✓</span>
+            <div><strong>Your link is ready</strong><p id="result-expiry">Available for 7 days</p></div>
+            <button id="copy-link">Copy link</button>
+          </div>
+          <p class="legal">By continuing, you agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+        </section>
+
+        <div class="scroll-note"><span></span> Scroll to discover</div>
+      </section>
+
+      <section class="how" id="how">
+        <p class="section-number">01 / How it works</p>
+        <h2>From your hands<br />to theirs, <em>simply.</em></h2>
+        <div class="steps">
+          <article><span>01</span><h3>Choose</h3><p>Add the files you want to share. Big or small, they travel together.</p></article>
+          <article><span>02</span><h3>Send</h3><p>Choose an email delivery or create a private link in one click.</p></article>
+          <article><span>03</span><h3>Done</h3><p>Your recipient gets a clean, distraction-free download experience.</p></article>
+        </div>
+      </section>
+
+      <section class="security" id="security">
+        <div><p class="section-number">02 / Privacy first</p><h2>Your work is yours.<br /><em>Always.</em></h2></div>
+        <p>Every transfer is protected in transit. Links expire automatically, leaving less behind and giving you more peace of mind.</p>
+      </section>
+      <section class="pricing" id="pricing">
+        <div class="pricing-head">
+          <div><p class="section-number">03 / Simple pricing</p><h2>Choose your<br /><em>volume.</em></h2></div>
+          <p>Private transfers, seven-day availability, and no surprise upload fees. Paid plans require an account checkout.</p>
+        </div>
+        <div class="price-grid">
+          <article><p>Hobby</p><h3>€0</h3><span>forever</span><ul><li>50 GB per transfer</li><li>1 active transfer</li><li>7-day availability</li></ul><button data-plan="free">Current plan</button></article>
+          <article><p>Plus</p><h3>€6.90</h3><span>per month</span><ul><li>100 GB per transfer</li><li>250 GB monthly volume</li><li>Private links</li></ul><button data-plan="plus">Choose Plus</button></article>
+          <article class="featured"><small>Most popular</small><p>Pro</p><h3>€14.90</h3><span>per month</span><ul><li>250 GB per transfer</li><li>1 TB monthly volume</li><li>Transfer history</li></ul><button data-plan="pro">Choose Pro</button></article>
+          <article><p>Studio</p><h3>€39.90</h3><span>per month</span><ul><li>500 GB per transfer</li><li>5 TB monthly volume</li><li>Team-ready capacity</li></ul><button data-plan="studio">Choose Studio</button></article>
+          <article><p>Business</p><h3>€79.90</h3><span>per month</span><ul><li>1 TB per transfer</li><li>15 TB monthly volume</li><li>Large-file priority</li></ul><button data-plan="business">Choose Business</button></article>
+        </div>
+        <div class="one-time">
+          <div><p class="section-number">One-time transfer</p><h3>Pay only for this send.</h3><p>Choose between 1 GB and 1 TB. Your transfer remains available for seven days.</p></div>
+          <div class="calculator">
+            <label for="gb-range"><span>Transfer size</span><b id="gb-value">10 GB</b></label>
+            <input id="gb-range" type="range" min="1" max="1024" value="10" />
+            <div><span>One-time total</span><strong id="one-time-price">€1.49</strong></div>
+            <button id="buy-once">Continue to payment</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status"></div>
+    <section class="download-screen" id="download-screen" hidden aria-labelledby="download-title">
+      <a class="brand download-brand" href="/"><span class="brand-mark"><i></i><i></i><i></i><i></i><i></i></span><span>ORPHEUS</span></a>
+      <div class="download-card">
+        <p class="step-label">Private transfer</p>
+        <h2 id="download-title">Something beautiful<br />was sent to you.</h2>
+        <p class="download-message" id="download-message"></p>
+        <div class="download-files" id="download-files"></div>
+        <p class="download-expiry" id="download-expiry"></p>
+      </div>
+    </section>
+    <footer><a class="brand" href="#"><span class="brand-mark"><i></i><i></i><i></i><i></i><i></i></span><span>ORPHEUS</span></a><p>Move files beautifully.</p><p>© 2026 Orpheus</p></footer>
+  </body>
+</html>

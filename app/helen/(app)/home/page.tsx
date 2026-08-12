@@ -326,7 +326,7 @@ export default function HomeTab() {
 
   return (
     <>
-      <div className="relative -mx-4 mb-3.5 flex min-h-[78dvh] flex-1 flex-col overflow-hidden rounded-b-3xl bg-helen-ink-2">
+      <div className="relative -mx-4 mb-3.5 flex min-h-[78dvh] flex-1 flex-col overflow-hidden rounded-b-[2rem] bg-helen-ink-2 sm:-mx-5">
         <Image
           src="/helen/room-bg.png"
           alt=""
@@ -336,6 +336,7 @@ export default function HomeTab() {
           className="object-cover"
           style={{ objectPosition: "center 40%" }}
         />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,12,30,.24)_0%,transparent_24%,transparent_58%,rgba(18,12,30,.82)_100%)]" />
 
         {/* Everything below floats directly over the scene image, top to
             bottom, so the pet screen reads as one fullscreen game view. */}

@@ -7,11 +7,12 @@ import { formatDuration } from '@/components/ogn/VideoCard';
 
 export const revalidate = 60;
 
-export default async function RadioEpisodePage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function RadioEpisodePage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const episode = await prisma.podcastEpisode.findUnique({
     where: { id: params.id },
     include: {

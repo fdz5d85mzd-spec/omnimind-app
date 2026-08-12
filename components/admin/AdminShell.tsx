@@ -182,7 +182,7 @@ export default function AdminShell({
   email: string;
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <div className="min-h-screen">

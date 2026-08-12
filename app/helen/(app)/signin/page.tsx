@@ -10,7 +10,8 @@ function SignInForm() {
   const { user, ready, configured, signInWithEmail } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/helen/checkout";
+  const requestedNext = searchParams?.get("next") ?? "";
+  const next = requestedNext.startsWith("/helen") && !requestedNext.startsWith("//") ? requestedNext : "/helen/checkout";
 
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");

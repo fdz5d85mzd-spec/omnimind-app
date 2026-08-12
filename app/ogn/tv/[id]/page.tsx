@@ -7,11 +7,12 @@ import { formatDuration } from '@/components/ogn/VideoCard';
 
 export const revalidate = 60;
 
-export default async function VideoDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function VideoDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const video = await prisma.video.findUnique({
     where: { id: params.id },
     include: {

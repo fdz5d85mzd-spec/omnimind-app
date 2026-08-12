@@ -33,7 +33,7 @@ function fadeTo(audio: HTMLAudioElement, target: number, onDone?: () => void) {
 
 export function BackgroundMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   useEffect(() => {
     const audio = new Audio("/helen/audio/ambient.m4a");

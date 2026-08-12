@@ -33,14 +33,14 @@ const config: Config = {
         // Helen (/helen/*) has its own warm palette, distinct from the rest
         // of the app -- prefixed so it never collides with the tokens above
         // (e.g. "card" already means something else at the top level).
-        "helen-ink": "#241b2f",
-        "helen-ink-2": "#2e2338",
-        "helen-card": "#352842",
-        "helen-paper": "#f5efe6",
-        "helen-dim": "#b8a9c4",
-        "helen-coral": "#f2795c",
-        "helen-sage": "#8fae72",
-        "helen-gold": "#e8b54d",
+        "helen-ink": "#181122",
+        "helen-ink-2": "#241932",
+        "helen-card": "#30203f",
+        "helen-paper": "#fff8ef",
+        "helen-dim": "#cbbbd8",
+        "helen-coral": "#ff8063",
+        "helen-sage": "#a8d88d",
+        "helen-gold": "#ffd166",
       },
       fontFamily: {
         head: [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -16,6 +17,7 @@ const DISMISSED_KEY = "omnimind_install_dismissed";
 // gives it a visible, on-brand button instead of leaving the install
 // affordance buried in the browser's own address-bar icon.
 export default function InstallPrompt() {
+  const pathname = usePathname() ?? "";
   const { t } = useLanguage();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(true);
@@ -31,7 +33,7 @@ export default function InstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", onPrompt);
   }, []);
 
-  if (!deferred || dismissed) return null;
+  if (!deferred || dismissed || pathname.startsWith("/helen")) return null;
 
   async function install() {
     if (!deferred) return;

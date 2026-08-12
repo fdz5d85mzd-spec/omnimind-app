@@ -19,8 +19,8 @@ function ShopContent() {
   const [pendingItem, setPendingItem] = useState<string | null>(null);
 
   useEffect(() => {
-    const sessionId = searchParams.get("session_id");
-    const item = searchParams.get("item");
+    const sessionId = searchParams?.get("session_id");
+    const item = searchParams?.get("item");
     if (!sessionId || !item || !profile) return;
     setBuyingId(item);
     syncOwnedItems(item)

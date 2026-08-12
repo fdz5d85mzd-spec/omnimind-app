@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, type UnsafeUnwrappedCookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { isMasterEmail, isAdminEmail } from "@/lib/roles";
 import { IMPERSONATE_COOKIE } from "@/lib/impersonation";
@@ -79,7 +79,7 @@ export const authOptions: NextAuthOptions = {
         // any swap), so a forged/manually-set cookie on a non-admin session
         // does nothing. See lib/impersonation.ts + app/api/admin/impersonate.
         if (realIsMaster || realIsAdmin) {
-          const impersonateId = cookies().get(IMPERSONATE_COOKIE)?.value;
+          const impersonateId = (cookies() as unknown as UnsafeUnwrappedCookies).get(IMPERSONATE_COOKIE)?.value;
           if (impersonateId && impersonateId !== session.user.id) {
             const target = await prisma.user.findUnique({
               where: { id: impersonateId },

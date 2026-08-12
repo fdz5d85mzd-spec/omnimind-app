@@ -7,7 +7,7 @@ import { SoundToggle } from "./SoundToggle";
 
 export function PhoneFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col overflow-hidden bg-helen-ink">
+    <div className="helen-phone-frame relative mx-auto flex min-h-screen w-full max-w-[560px] flex-col overflow-hidden bg-helen-ink md:min-h-[calc(100dvh-2rem)] md:rounded-[2rem] md:border md:border-white/10">
       <BackgroundMusic />
       <AmbientNature />
       {/* paddingTop adds the device safe-area inset (notch/Dynamic Island)
@@ -16,7 +16,7 @@ export function PhoneFrame({ children }: { children: React.ReactNode }) {
           with the status bar inside a native app shell (Capacitor), which
           actually lets content draw under the notch (viewport-fit=cover). */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center gap-2 bg-gradient-to-b from-black/50 via-black/15 to-transparent px-4 pb-8"
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center gap-2 bg-gradient-to-b from-black/70 via-black/20 to-transparent px-5 pb-10"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
       >
         <div className="pointer-events-auto flex items-center gap-2">
@@ -29,7 +29,7 @@ export function PhoneFrame({ children }: { children: React.ReactNode }) {
       </div>
       <LanguageToggle />
       <div
-        className="flex flex-1 flex-col px-4 pb-4"
+        className="relative z-10 flex flex-1 flex-col px-4 pb-4 sm:px-5"
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)" }}
       >
         {children}

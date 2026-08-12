@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import ArticleList from '@/components/ogn/ArticleList';
 import type { Metadata } from 'next';
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const category = await prisma.category.findUnique({ where: { slug: params.slug } }).catch(() => null);
   if (!category) return { title: 'Category Not Found — OGN' };
   return {
@@ -12,7 +13,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
+export default async function CategoryPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const category = await prisma.category.findUnique({
     where: { slug: params.slug },
   }).catch(() => null);

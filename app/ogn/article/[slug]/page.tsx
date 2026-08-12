@@ -6,7 +6,8 @@ import { timeAgo, truncate } from '@/lib/ogn/utils';
 import ArticleCard from '@/components/ogn/ArticleCard';
 import type { Metadata } from 'next';
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const article = await prisma.article.findUnique({ where: { slug: params.slug } }).catch(() => null);
   if (!article) return { title: 'Article Not Found — OGN' };
   return {
@@ -21,7 +22,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const article = await prisma.article.findUnique({
     where: { slug: params.slug, isPublished: true },
     include: { category: true },

@@ -28,7 +28,7 @@ function fadeTo(audio: HTMLAudioElement, target: number, onDone?: () => void) {
 
 export function AmbientNature() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   useEffect(() => {
     const audio = new Audio("/helen/audio/garden-ambience.m4a");

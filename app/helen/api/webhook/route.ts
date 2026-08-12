@@ -8,11 +8,13 @@ import { getSupabaseServerClient } from "@/lib/helen/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { PLANS } from "@/lib/billing";
 import { createHelenMembership } from "@/lib/helen/membership";
+import { ensureSchema as ensureOrpheusSchema, sql as orpheusSql } from "@/lib/orpheus/_db.js";
 
 interface CheckoutSessionPayload {
   client_reference_id?: string | null;
+  customer?: string | null;
   subscription?: string | null;
-  metadata?: { type?: string; item_id?: string; username?: string; userId?: string; credits?: string; plan?: string } | null;
+  metadata?: { type?: string; item_id?: string; username?: string; userId?: string; credits?: string; plan?: string; entitlementId?: string } | null;
 }
 
 /**
@@ -48,6 +50,17 @@ export async function POST(request: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as CheckoutSessionPayload;
+
+    if (session.metadata?.type === "orpheus_entitlement") {
+      const entitlementId = session.metadata.entitlementId;
+      if (!entitlementId) {
+        return NextResponse.json({ error: "Missing Orpheus entitlementId" }, { status: 400 });
+      }
+      await ensureOrpheusSchema();
+      await orpheusSql`UPDATE entitlements SET status = 'active', stripe_customer_id = ${String(session.customer || "") || null}, stripe_subscription_id = ${String(session.subscription || "") || null} WHERE id = ${entitlementId}`;
+      console.log("orpheus entitlement webhook: activated", { entitlementId });
+      return NextResponse.json({ received: true });
+    }
 
     // OmniMind's own credit/plan purchases: identified by metadata.userId
     // (a Prisma User id, distinct from Helen's client_reference_id which is
@@ -135,6 +148,18 @@ export async function POST(request: Request) {
     }
   }
 
+  if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object;
+    if (subscription.metadata?.type === "orpheus_entitlement") {
+      await ensureOrpheusSchema();
+      const active = ["active", "trialing"].includes(subscription.status);
+      const periodEnd = subscription.items.data[0]?.current_period_end;
+      await orpheusSql`UPDATE entitlements SET status = ${active ? "active" : "inactive"}, current_period_end = ${periodEnd ? new Date(periodEnd * 1000) : null} WHERE stripe_subscription_id = ${subscription.id}`;
+      console.log("orpheus subscription webhook: updated", { subscriptionId: subscription.id, active });
+      return NextResponse.json({ received: true });
+    }
+  }
+
   // Subscription renewal: grants the plan's monthly credits again each
   // billing cycle. Skips "subscription_create" (the very first invoice,
   // already covered by checkout.session.completed above) so a new
@@ -147,6 +172,12 @@ export async function POST(request: Request) {
     if (invoice.billing_reason === "subscription_cycle" && invoice.subscription) {
       const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription.id;
       const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
+      if (subscription.metadata?.type === "orpheus_entitlement") {
+        await ensureOrpheusSchema();
+        await orpheusSql`UPDATE entitlements SET used_bytes = 0 WHERE stripe_subscription_id = ${subscription.id}`;
+        console.log("orpheus subscription webhook: quota reset", { subscriptionId: subscription.id });
+        return NextResponse.json({ received: true });
+      }
       const omniUserId = subscription.metadata?.userId;
       const planId = subscription.metadata?.plan;
       const plan = PLANS.find((p) => p.id === planId);

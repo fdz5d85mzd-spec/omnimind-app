@@ -9,7 +9,8 @@ function CallbackHandler() {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/helen/checkout";
+  const requestedNext = searchParams?.get("next") ?? "";
+  const next = requestedNext.startsWith("/helen") && !requestedNext.startsWith("//") ? requestedNext : "/helen/checkout";
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -19,7 +20,7 @@ function CallbackHandler() {
       // Supabase Auth uses PKCE (a `?code=` param) on newer projects, or the
       // older implicit flow (`#access_token=` in the hash, auto-detected by
       // the client on load) on older ones — handle both.
-      const code = searchParams.get("code");
+      const code = searchParams?.get("code");
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
         if (error) {

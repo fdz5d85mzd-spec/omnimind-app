@@ -5,10 +5,10 @@ import { generateCategoryRSS } from '@/lib/ogn/agents/rss';
 
 export async function GET(
   req: NextRequest,
-  context: { params: { category: string } | Promise<{ category: string }> }
+  context: { params: Promise<{ category: string } | Promise<{ category: string }>> }
 ) {
   try {
-    const resolvedParams = await Promise.resolve(context.params);
+    const resolvedParams = await Promise.resolve((await context.params));
     const category = resolvedParams.category;
 
     if (!category) {

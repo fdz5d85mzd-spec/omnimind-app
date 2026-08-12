@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  cookies().set(IMPERSONATE_COOKIE, target.id, {
+  (await cookies()).set(IMPERSONATE_COOKIE, target.id, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -34,6 +34,6 @@ export async function POST(request: NextRequest) {
 // the session callback re-checks the real JWT identity on every request
 // regardless -- there's nothing here for an unprivileged caller to gain.
 export async function DELETE() {
-  cookies().delete(IMPERSONATE_COOKIE);
+  (await cookies()).delete(IMPERSONATE_COOKIE);
   return NextResponse.json({ ok: true });
 }

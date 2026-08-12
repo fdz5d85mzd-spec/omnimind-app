@@ -13,7 +13,8 @@ type Shot = { camera: string; action: string };
  * join table, since a job's own record is already the source of truth for
  * what got generated.
  */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });

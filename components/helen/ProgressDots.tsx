@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 const STEPS = ["/", "/checkout", "/card", "/egg", "/home"];
 
 export function ProgressDots() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const activeIndex = STEPS.findIndex((step) =>
     step === "/home" ? pathname.startsWith("/home") : pathname === step,
   );

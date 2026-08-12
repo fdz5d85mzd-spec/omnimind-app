@@ -22,7 +22,7 @@ const HIDDEN_PREFIXES = ["/helen", "/chat"];
 // door. The "still need a person" escalation is a real inbox via Resend
 // (/api/help/contact), not a fabricated live chat.
 export default function HelpWidget() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);

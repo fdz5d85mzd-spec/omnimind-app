@@ -1,0 +1,28 @@
+.upload-progress { margin-top: 18px; }
+.upload-progress > div:first-child { display: flex; justify-content: space-between; font: 10px var(--mono); margin-bottom: 8px; }
+.progress-track { height: 4px; background: #ddd; }
+.progress-track i { display: block; width: 0; height: 100%; background: var(--acid); transition: width .2s; }
+.transfer-result { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 12px; background: var(--acid); padding: 14px; margin-top: 18px; }
+.transfer-result[hidden], .upload-progress[hidden] { display: none; }
+.result-check { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid rgba(0,0,0,.25); border-radius: 50%; }
+.transfer-result strong { font-size: 12px; }
+.transfer-result p { font: 9px var(--mono); margin: 4px 0 0; }
+.transfer-result button { border: 1px solid rgba(0,0,0,.25); background: transparent; padding: 9px 12px; font: 9px var(--mono); }
+.download-screen { min-height: 100vh; background: var(--ink); color: var(--cream); display: grid; place-items: center; padding: 100px 24px; position: relative; }
+.download-screen[hidden] { display: none; }
+.download-brand { position: absolute; top: 30px; left: 38px; }
+.download-card { background: var(--paper); color: var(--ink); width: min(560px, 100%); padding: 44px; box-shadow: 0 35px 100px rgba(0,0,0,.35); }
+.download-card h2 { font: 500 clamp(36px,5vw,54px)/1.02 var(--serif); letter-spacing: -.04em; margin: 16px 0 24px; }
+.download-message { color: #69675f; line-height: 1.7; margin-bottom: 26px; }
+.download-files { border-top: 1px solid var(--line); }
+.download-row { display: grid; grid-template-columns: 42px 1fr 30px; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.download-row strong { display: block; font-size: 12px; }
+.download-row span { font: 9px var(--mono); color: #777; }
+.download-row b { font-size: 20px; font-weight: 400; }
+.download-expiry { font: 9px var(--mono); color: #777; margin: 24px 0 0; }
+@media (max-width: 520px) {
+  .download-card { padding: 28px; }
+  .download-brand { left: 24px; }
+  .transfer-result { grid-template-columns: 34px 1fr; }
+  .transfer-result button { grid-column: 1 / -1; }
+}

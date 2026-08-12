@@ -15,7 +15,7 @@ export const HOME_TABS = [
 
 export function HomeNavIcons({ className }: { className?: string }) {
   const { t } = useLanguage();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <div className={`flex justify-center gap-2.5 ${className ?? ""}`}>

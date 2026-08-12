@@ -294,12 +294,13 @@ export default function Home() {
   }, [isGuest]);
 
   useEffect(() => {
-    if (guestTrialMs === null || guestTrialMs <= 0) return;
+    const trialRunning = guestTrialMs !== null && guestTrialMs > 0;
+    if (!trialRunning) return;
     const interval = setInterval(() => {
       setGuestTrialMs((ms) => (ms === null ? null : Math.max(0, ms - 1000)));
     }, 1000);
     return () => clearInterval(interval);
-  }, [guestTrialMs !== null && guestTrialMs > 0]);
+  }, [guestTrialMs]);
 
   const active = conversations.find((c) => c.id === activeId) || null;
   const messages = active?.messages ?? [];

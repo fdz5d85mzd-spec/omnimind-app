@@ -15,7 +15,7 @@ function CardContent() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const sessionId = searchParams?.get("session_id");
 
   const [hydrating, setHydrating] = useState(false);
   const [notFoundYet, setNotFoundYet] = useState(false);

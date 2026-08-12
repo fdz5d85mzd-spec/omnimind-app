@@ -43,7 +43,7 @@ async function sumSucceededByPeriod(stripe: Stripe, sinceUnixSeconds: number): P
   if (sinceUnixSeconds > 0) params.created = { gte: sinceUnixSeconds };
   for await (const pi of stripe.paymentIntents.list(params)) {
     if (pi.status !== "succeeded") continue;
-    const bucket = pi.metadata?.source === "omnimind" ? other : helen;
+    const bucket = pi.metadata?.source === "helen" || !pi.metadata?.source ? helen : other;
     bucket.grossCents += pi.amount_received;
     bucket.count += 1;
   }

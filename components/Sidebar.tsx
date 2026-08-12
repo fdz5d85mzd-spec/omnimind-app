@@ -52,6 +52,14 @@ function ClapperIcon() {
   );
 }
 
+function TransferIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 7h11m0 0-3-3m3 3-3 3M17 17H6m0 0 3 3m-3-3 3-3" />
+    </svg>
+  );
+}
+
 function BookIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -164,6 +172,13 @@ export default function Sidebar({
         >
           <ClapperIcon />
           VoxStudio
+        </Link>
+        <Link
+          href="/orpheus"
+          className="mt-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted hover:text-white hover:bg-white/[0.04] transition-colors"
+        >
+          <TransferIcon />
+          Orpheus
         </Link>
         <Link
           href="/guide"
