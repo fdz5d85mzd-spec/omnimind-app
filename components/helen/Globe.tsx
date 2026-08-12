@@ -8,16 +8,15 @@ export function Globe() {
       <span className="helen-orbit-node helen-node-one" />
       <span className="helen-orbit-node helen-node-two" />
       <div className="helen-globe-aura" />
-      <div className="helen-globe-core relative overflow-hidden rounded-[38%]">
+      <div className="helen-globe-core relative">
         <Image
-          src="/helen/globe-hero.png"
-          alt="HELEN world"
-          width={380}
-          height={380}
+          src="/helen/mascot/helen-v1.png"
+          alt="Helen, the friendly AI robot"
+          width={1254}
+          height={1254}
           priority
-          className="h-full w-full scale-110 object-cover"
+          className="h-full w-full object-contain drop-shadow-[0_24px_30px_rgba(28,145,255,.28)]"
         />
-        <div className="helen-globe-scan" />
       </div>
     </div>
   );

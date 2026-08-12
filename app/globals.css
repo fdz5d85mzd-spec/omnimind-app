@@ -410,9 +410,9 @@ body {
   align-items: center;
 }
 .helen-globe-core {
-  width: 72%;
-  height: 72%;
-  box-shadow: 0 0 70px rgba(72, 165, 255, 0.24);
+  width: 94%;
+  height: 94%;
+  filter: drop-shadow(0 0 26px rgba(72, 165, 255, 0.2));
   animation: helen-globe-float 5s ease-in-out infinite;
 }
 .helen-globe-aura {
