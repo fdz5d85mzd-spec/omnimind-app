@@ -211,7 +211,7 @@ export default function MascotPulse() {
                   sizes="80px"
                   className={`omni-character object-contain transition ${reaction === 1 ? "scale-110 -rotate-6" : reaction === 2 ? "rotate-6" : ""}`}
                 />
-                <span className="omni-eye-blink absolute left-1/2 top-[35%] h-5 w-8 rounded-full bg-[#101a3b]" />
+                <span className="omni-eye-blink absolute left-1/2 top-[34.3%] h-[20%] w-[22%] rounded-full bg-[#101a3b]" />
               </button>
               <div>
                 <p className="text-[10px] font-bold tracking-[.16em] text-cyan">
@@ -282,7 +282,7 @@ export default function MascotPulse() {
             sizes="56px"
             className="omni-character object-contain"
           />
-          <span className="omni-eye-blink absolute left-1/2 top-[35%] h-3 w-5 rounded-full bg-[#101a3b]" />
+          <span className="omni-eye-blink absolute left-1/2 top-[34.3%] h-[20%] w-[22%] rounded-full bg-[#101a3b]" />
         </span>
       </button>
     </div>

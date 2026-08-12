@@ -23,16 +23,18 @@ export default function CheckoutPage() {
   // Already signed into OmniMind, but not yet a Helen member: skip Helen's
   // own sign-in entirely and offer to join directly against that session
   // (card or credits) instead of a second, separate signup.
-  const bridged = Boolean(omniSession?.user) && configured && authReady && !user;
+  const bridged = Boolean(omniSession?.user) && !user;
   // Admin/master accounts get in free (server already skips the charge for
   // the credits method -- see /helen/api/join) -- show that plainly instead
   // of two paid-looking buttons an admin could accidentally click into a
   // real card charge.
-  const isPrivileged = Boolean(omniSession?.user?.isMaster || omniSession?.user?.isAdmin);
+  const isPrivileged = Boolean(
+    omniSession?.user?.isMaster || omniSession?.user?.isAdmin,
+  );
 
   useEffect(() => {
-    if (configured && authReady && !user && omniStatus !== "loading" && !omniSession?.user) {
-      router.replace("/helen/signin?next=/helen/checkout");
+    if (authReady && !user && omniStatus !== "loading" && !omniSession?.user) {
+      router.replace("/login?callbackUrl=/helen/checkout");
     }
   }, [configured, authReady, user, omniStatus, omniSession, router]);
 
@@ -99,7 +101,11 @@ export default function CheckoutPage() {
       const res = await fetch("/helen/api/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method, username: trimmedUsername, refCode: getReferralCode() }),
+        body: JSON.stringify({
+          method,
+          username: trimmedUsername,
+          refCode: getReferralCode(),
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.url) {
@@ -120,9 +126,13 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <h1 className="mt-6 mb-5 text-[20px] font-helen-display font-semibold">{t.checkoutTitle}</h1>
+      <h1 className="mt-6 mb-5 text-[20px] font-helen-display font-semibold">
+        {t.checkoutTitle}
+      </h1>
 
-      <label className="mb-1.5 block text-[13px] font-semibold text-helen-paper">{t.usernameLabel}</label>
+      <label className="mb-1.5 block text-[13px] font-semibold text-helen-paper">
+        {t.usernameLabel}
+      </label>
       <input
         value={username}
         onChange={(e) => setUsername(e.target.value)}
@@ -131,7 +141,9 @@ export default function CheckoutPage() {
         autoCapitalize="none"
         className="mb-1.5 w-full rounded-xl bg-helen-card px-4 py-3 text-[14px] text-helen-paper outline-none placeholder:text-helen-dim"
       />
-      <p className="mb-4.5 text-[11px] text-helen-dim">{t.usernameRequiredNote}</p>
+      <p className="mb-4.5 text-[11px] text-helen-dim">
+        {t.usernameRequiredNote}
+      </p>
 
       <div className="mb-4.5 rounded-xl bg-helen-card p-4">
         <div className="mb-1.5 flex justify-between text-[13px]">
@@ -148,7 +160,11 @@ export default function CheckoutPage() {
 
       {bridged && isPrivileged ? (
         <div className="space-y-2.5">
-          {bridgeError && <p className="text-center text-[11px] text-helen-coral">{bridgeError}</p>}
+          {bridgeError && (
+            <p className="text-center text-[11px] text-helen-coral">
+              {bridgeError}
+            </p>
+          )}
           <button
             type="button"
             disabled={bridging !== null || !trimmedUsername}
@@ -167,7 +183,11 @@ export default function CheckoutPage() {
         </div>
       ) : bridged ? (
         <div className="space-y-2.5">
-          {bridgeError && <p className="text-center text-[11px] text-helen-coral">{bridgeError}</p>}
+          {bridgeError && (
+            <p className="text-center text-[11px] text-helen-coral">
+              {bridgeError}
+            </p>
+          )}
           <button
             type="button"
             disabled={bridging !== null || !trimmedUsername}
@@ -202,7 +222,9 @@ export default function CheckoutPage() {
       ) : (
         <button
           type="button"
-          disabled={processing || !trimmedUsername || (configured && !authReady)}
+          disabled={
+            processing || !trimmedUsername || (configured && !authReady)
+          }
           onClick={handlePay}
           className="flex w-full items-center justify-center rounded-xl bg-helen-coral py-[15px] text-[14.5px] font-bold text-helen-ink disabled:opacity-70"
         >
@@ -219,7 +241,10 @@ export default function CheckoutPage() {
 
       <p className="mt-2.5 text-center text-[11px] text-helen-dim">
         {t.legalFooterNote}{" "}
-        <a href="/helen/terms" className="font-semibold text-helen-gold underline">
+        <a
+          href="/helen/terms"
+          className="font-semibold text-helen-gold underline"
+        >
           {t.viewTermsLink}
         </a>
       </p>

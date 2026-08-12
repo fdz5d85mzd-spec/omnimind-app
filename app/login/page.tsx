@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getProviders, signIn, useSession } from "next-auth/react";
 import type { ClientSafeProvider } from "next-auth/react";
 import Link from "next/link";
@@ -16,8 +16,14 @@ function GitHubIcon() {
   );
 }
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedCallback = searchParams?.get("callbackUrl") || "/chat";
+  const callbackUrl =
+    requestedCallback.startsWith("/") && !requestedCallback.startsWith("//")
+      ? requestedCallback
+      : "/chat";
   const { status } = useSession();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
@@ -25,11 +31,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
+  const [providers, setProviders] = useState<Record<
+    string,
+    ClientSafeProvider
+  > | null>(null);
 
   useEffect(() => {
-    if (status === "authenticated") router.push("/chat");
-  }, [status, router]);
+    if (status === "authenticated") router.push(callbackUrl);
+  }, [status, router, callbackUrl]);
 
   useEffect(() => {
     getProviders().then(setProviders);
@@ -39,12 +48,16 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const result = await signIn("credentials", { email, password, redirect: false });
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
     if (result?.error) {
       setError("Wrong email or password.");
       setLoading(false);
     } else {
-      router.push("/chat");
+      router.push(callbackUrl);
     }
   }
 
@@ -66,13 +79,17 @@ export default function LoginPage() {
       return;
     }
 
-    const result = await signIn("credentials", { email, password, redirect: false });
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
     if (result?.error) {
       setError("Account created — sign in below.");
       setMode("signin");
       setLoading(false);
     } else {
-      router.push("/chat");
+      router.push(callbackUrl);
     }
   }
 
@@ -80,12 +97,16 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-6 py-12 relative overflow-hidden">
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-25 blur-3xl pointer-events-none"
-        style={{ background: "radial-gradient(circle, #5B6EF5 0%, transparent 70%)" }}
+        style={{
+          background: "radial-gradient(circle, #5B6EF5 0%, transparent 70%)",
+        }}
       />
       <div className="relative w-full max-w-sm">
         <Link href="/" className="flex items-center justify-center gap-2 mb-8">
           <LogoMark size={28} />
-          <span className="font-head font-semibold text-lg text-white">OmniMind</span>
+          <span className="font-head font-semibold text-lg text-white">
+            OmniMind
+          </span>
         </Link>
 
         <div className="glass rounded-2xl p-7 shadow-panel">
@@ -93,7 +114,7 @@ export default function LoginPage() {
             <>
               <button
                 type="button"
-                onClick={() => signIn("github", { callbackUrl: "/chat" })}
+                onClick={() => signIn("github", { callbackUrl })}
                 className="w-full flex items-center justify-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-white text-sm font-semibold py-2.5 rounded-xl transition-colors mb-4"
               >
                 <GitHubIcon />
@@ -114,7 +135,9 @@ export default function LoginPage() {
                 setError("");
               }}
               className={`flex-1 text-sm font-semibold py-2 rounded-lg transition-colors ${
-                mode === "signin" ? "bg-accent text-white" : "text-muted hover:text-white"
+                mode === "signin"
+                  ? "bg-accent text-white"
+                  : "text-muted hover:text-white"
               }`}
             >
               Sign in
@@ -126,17 +149,24 @@ export default function LoginPage() {
                 setError("");
               }}
               className={`flex-1 text-sm font-semibold py-2 rounded-lg transition-colors ${
-                mode === "signup" ? "bg-accent text-white" : "text-muted hover:text-white"
+                mode === "signup"
+                  ? "bg-accent text-white"
+                  : "text-muted hover:text-white"
               }`}
             >
               Sign up
             </button>
           </div>
 
-          <form onSubmit={mode === "signin" ? handleSignIn : handleSignUp} className="space-y-3.5">
+          <form
+            onSubmit={mode === "signin" ? handleSignIn : handleSignUp}
+            className="space-y-3.5"
+          >
             {mode === "signup" && (
               <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">Name</label>
+                <label className="block text-xs font-semibold text-muted mb-1.5">
+                  Name
+                </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -147,7 +177,9 @@ export default function LoginPage() {
               </div>
             )}
             <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Email</label>
+              <label className="block text-xs font-semibold text-muted mb-1.5">
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
@@ -159,9 +191,14 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-muted">Password</label>
+                <label className="block text-xs font-semibold text-muted">
+                  Password
+                </label>
                 {mode === "signin" && (
-                  <Link href="/forgot-password" className="text-xs text-cyan hover:underline">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-cyan hover:underline"
+                  >
                     Forgot password?
                   </Link>
                 )}
@@ -171,8 +208,12 @@ export default function LoginPage() {
                 onChange={setPassword}
                 required
                 minLength={mode === "signup" ? 8 : undefined}
-                placeholder={mode === "signup" ? "At least 8 characters" : "••••••••"}
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                placeholder={
+                  mode === "signup" ? "At least 8 characters" : "••••••••"
+                }
+                autoComplete={
+                  mode === "signup" ? "new-password" : "current-password"
+                }
               />
             </div>
 
@@ -183,7 +224,11 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-gradient-to-br from-accent to-accent/80 hover:opacity-90 disabled:opacity-50 text-white text-sm font-bold py-2.5 rounded-xl transition-opacity mt-1"
             >
-              {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+              {loading
+                ? "Please wait…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
             </button>
           </form>
         </div>
@@ -201,5 +246,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bg" />}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -23,7 +23,7 @@ export default function JoinPage() {
     // Already signed into OmniMind -- /helen/checkout offers a direct
     // card/credits join for that session instead of a separate signup.
     if (configured && !user && !omniSession?.user) {
-      router.push("/helen/signin?next=/helen/checkout");
+      router.push("/login?callbackUrl=/helen/checkout");
     } else {
       router.push("/helen/checkout");
     }
@@ -37,11 +37,17 @@ export default function JoinPage() {
         <br />
         {t.heroLine2}
       </h1>
-      <p className="mx-auto mb-7 max-w-md text-center text-[14px] leading-relaxed text-helen-dim">{t.heroSub}</p>
+      <p className="mx-auto mb-7 max-w-md text-center text-[14px] leading-relaxed text-helen-dim">
+        {t.heroSub}
+      </p>
 
       <div className="helen-glass-card mb-2 rounded-2xl px-5 py-4.5">
-        <div className="mb-1.5 font-helen-display text-[15px] font-semibold text-helen-gold">{t.purposeTitle}</div>
-        <p className="text-[13px] leading-[1.65] text-helen-dim">{t.purposeBody}</p>
+        <div className="mb-1.5 font-helen-display text-[15px] font-semibold text-helen-gold">
+          {t.purposeTitle}
+        </div>
+        <p className="text-[13px] leading-[1.65] text-helen-dim">
+          {t.purposeBody}
+        </p>
       </div>
 
       <div className="flex-1" />
@@ -56,7 +62,9 @@ export default function JoinPage() {
       >
         {t.joinBtn}
       </button>
-      <p className="mt-2.5 text-center text-[11px] text-helen-dim">{t.charityNote}</p>
+      <p className="mt-2.5 text-center text-[11px] text-helen-dim">
+        {t.charityNote}
+      </p>
     </>
   );
 }

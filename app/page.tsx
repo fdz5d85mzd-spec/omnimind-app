@@ -211,7 +211,7 @@ export default function Landing() {
                 instead of floating over blank helmet. */}
             <span
               className="pointer-events-none absolute rounded-full bg-[#1f2e4d] animate-omni-blink"
-              style={{ left: "50%", top: "35.8%", width: "22%", height: "22%" }}
+              style={{ left: "50%", top: "34.3%", width: "22%", height: "20%" }}
               aria-hidden
             />
           </div>

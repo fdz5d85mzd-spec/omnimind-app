@@ -1,7 +1,9 @@
-import Link from 'next/link';
-import { ArrowRight, Sparkles, Clock, Globe } from 'lucide-react';
-import { timeAgo } from '@/lib/ogn/utils';
-import { getCategoryStyle } from './ArticleCard';
+"use client";
+
+import Link from "next/link";
+import { ArrowRight, Sparkles, Clock, Globe } from "lucide-react";
+import { timeAgo } from "@/lib/ogn/utils";
+import { getCategoryStyle } from "./ArticleCard";
 
 export interface HeroStoryProps {
   article: {
@@ -18,10 +20,20 @@ export interface HeroStoryProps {
 }
 
 export default function HeroStory({ article }: HeroStoryProps) {
-  const { title, slug, summary, imageUrl, categorySlug, sourceName, publishedAt } = article;
+  const {
+    title,
+    slug,
+    summary,
+    imageUrl,
+    categorySlug,
+    sourceName,
+    publishedAt,
+  } = article;
   const category = getCategoryStyle(categorySlug);
-  const formattedTime = publishedAt ? timeAgo(publishedAt) : '';
-  const displayImage = imageUrl || `https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1200&q=80`;
+  const formattedTime = publishedAt ? timeAgo(publishedAt) : "";
+  const displayImage =
+    imageUrl ||
+    `https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1200&q=80`;
 
   return (
     <section className="relative w-full overflow-hidden my-6">
@@ -32,6 +44,10 @@ export default function HeroStory({ article }: HeroStoryProps) {
             <img
               src={displayImage}
               alt={title}
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = "/ogn-fallback.svg";
+              }}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             {/* Gradient Overlay for Text Readability */}
@@ -51,7 +67,9 @@ export default function HeroStory({ article }: HeroStoryProps) {
             <div className="glass-strong rounded-2xl p-6 sm:p-8 max-w-3xl backdrop-blur-2xl border border-white/30 dark:border-white/10 bg-white/40 dark:bg-slate-900/60 shadow-xl">
               {/* Category & Source Metadata */}
               <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md ${category.bg}`}>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md ${category.bg}`}
+                >
                   {category.label}
                 </span>
                 <span className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
