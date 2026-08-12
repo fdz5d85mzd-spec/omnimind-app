@@ -7,6 +7,21 @@ body {
   background-color: #06071a;
 }
 
+@keyframes hourglass-turn {
+  0%, 42% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.12); }
+  92%, 100% { transform: rotate(180deg) scale(1); }
+}
+.animate-hourglass { animation: hourglass-turn 2.8s ease-in-out infinite; }
+
+@keyframes mascot-float { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
+@keyframes mascot-talk { 0%,100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(34,211,238,.25)); } 50% { transform: scale(1.12); filter: drop-shadow(0 0 11px rgba(34,211,238,.8)); } }
+.omni-mascot { animation: mascot-float 3.2s ease-in-out infinite; }
+.omni-mascot.is-speaking { animation: mascot-talk .48s ease-in-out infinite; }
+.omni-mascot-eye { position:absolute; top:9px; width:2px; height:2px; border-radius:999px; background:#dffaff; box-shadow:0 0 4px #22d3ee; }
+.omni-mascot-eye-left { left:10px; }
+.omni-mascot-eye-right { right:10px; }
+
 ::selection {
   background: rgba(91, 110, 245, 0.35);
   color: #fff;

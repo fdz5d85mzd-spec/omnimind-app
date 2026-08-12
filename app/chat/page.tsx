@@ -108,11 +108,16 @@ export default function Home() {
   // Drives whether the reply gets spoken back, for a real back-and-forth
   // voice conversation instead of a one-off dictation.
   const voiceTurnRef = useRef(false);
+  const sendRef = useRef<(text?: string) => Promise<void>>(async () => {});
 
   const handleVoiceText = useCallback((text: string) => {
-    setInput((prev) => (prev ? `${prev} ${text}` : text));
+    setInput(text);
     voiceTurnRef.current = true;
-    requestAnimationFrame(() => textareaRef.current?.focus());
+    // Voice mode is a conversation, not dictation: once Android/iOS gives
+    // us the final transcript, send it immediately and speak the answer.
+    // Previously it only filled the textarea, which made the microphone
+    // appear to work while OmniMind never actually replied.
+    window.setTimeout(() => void sendRef.current(text), 0);
   }, []);
   const speech = useSpeechRecognition(handleVoiceText, SPEECH_LOCALE[lang]);
 
@@ -203,6 +208,9 @@ export default function Home() {
       window.setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = SPEECH_LOCALE[lang];
+        const voices = synth.getVoices();
+        utterance.voice = voices.find((voice) => voice.lang.toLowerCase().startsWith(lang.toLowerCase())) ?? null;
+        utterance.rate = 0.98;
         utterance.onstart = () => {
           window.clearTimeout(watchdog);
           setSpeakingId(assistantId);
@@ -229,7 +237,7 @@ export default function Home() {
       const res = await fetch("/api/chat/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, lang: SPEECH_LOCALE[lang] }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.audio || !audioRef.current) {
@@ -411,6 +419,7 @@ export default function Home() {
 
     setIsStreaming(false);
   }
+  sendRef.current = send;
 
   function stop() {
     abortRef.current?.abort();
@@ -598,8 +607,10 @@ function MessageRow({
 
   return (
     <div className="flex gap-3 items-start animate-fadeIn">
-      <div className={`shrink-0 mt-0.5 relative ${speaking ? "animate-pulse" : ""}`}>
-        <LogoMark size={26} />
+      <div className={`omni-mascot shrink-0 mt-0.5 relative ${speaking ? "is-speaking" : ""}`}>
+        <LogoMark size={30} />
+        <span className="omni-mascot-eye omni-mascot-eye-left" />
+        <span className="omni-mascot-eye omni-mascot-eye-right" />
         {speaking && (
           <span
             className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full bg-cyan shadow-[0_0_0_3px_rgba(6,7,26,1)]"

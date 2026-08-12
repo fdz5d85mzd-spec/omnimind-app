@@ -26,3 +26,4 @@
   .transfer-result { grid-template-columns: 34px 1fr; }
   .transfer-result button { grid-column: 1 / -1; }
 }
+.transfer-history{max-width:1120px;margin:0 auto;padding:72px 28px;color:#171713}.transfer-history h2{font-family:"Playfair Display",serif;font-size:clamp(30px,4vw,52px);margin:0 0 24px}.history-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 20px;margin:10px 0;border:1px solid rgba(23,23,19,.14);border-radius:14px;color:inherit;text-decoration:none;background:rgba(255,255,255,.42);transition:transform .2s ease,background .2s ease}.history-row:hover{transform:translateY(-2px);background:rgba(255,255,255,.75)}.history-row span{opacity:.62;font-size:13px}@media(max-width:600px){.transfer-history{padding:48px 18px}.history-row{align-items:flex-start;flex-direction:column;gap:5px}}

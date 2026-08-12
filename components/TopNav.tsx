@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { LogoMark } from "@/components/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { LANGUAGES } from "@/lib/i18n/languages";
+import CreditsBadge from "@/components/CreditsBadge";
 
 // Shared across every top-level page (not just the homepage) -- this used
 // to be defined only inside app/page.tsx, so the language switcher,
@@ -17,6 +19,8 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
   const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  const pathname = usePathname();
 
   // Tapping anywhere outside the open mobile menu (not just its own links
   // or the X button) closes it -- it had no way to dismiss itself otherwise.
@@ -53,32 +57,32 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
           : "sticky top-0 z-20 px-6 sm:px-10 py-4 bg-bg/80 backdrop-blur-xl border-b border-white/[0.06]"
       }
     >
-      <div className="flex items-center justify-between">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2">
           <LogoMark size={22} />
           <span className="font-head font-semibold text-[15px] tracking-tight text-white">OmniMind</span>
         </Link>
 
-        <nav className="hidden sm:flex items-center gap-2">
+        <nav
+          ref={railRef}
+          onWheel={(event) => {
+            if (Math.abs(event.deltaY) > Math.abs(event.deltaX) && railRef.current) railRef.current.scrollLeft += event.deltaY;
+          }}
+          className="hidden sm:flex min-w-0 flex-1 items-center gap-1 overflow-x-auto scroll-smooth px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          aria-label="Main navigation"
+        >
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
+              className={`relative shrink-0 text-sm px-3 py-2 rounded-xl transition-all ${pathname === l.href ? "bg-white/[0.09] text-white shadow-[inset_0_-2px_0_#22d3ee]" : "text-muted hover:text-white hover:bg-white/[0.05]"}`}
             >
               {l.label}
             </Link>
           ))}
-          {session?.user && (
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="text-sm text-muted hover:text-white px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-colors"
-            >
-              {t.settingsSignOut}
-            </button>
-          )}
-          <LanguageSwitcher />
+          <span className="ml-auto" />
+          <CreditsBadge />
+          <LanguageSwitcher compact />
           <Link
             href="/chat"
             className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
@@ -87,7 +91,8 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
           </Link>
         </nav>
 
-        <div className="flex sm:hidden items-center gap-2">
+        <div className="flex sm:hidden items-center gap-1.5">
+          <CreditsBadge className="max-w-[132px]" />
           <Link
             href="/chat"
             className="text-sm font-semibold text-white glass rounded-xl px-4 py-2 hover:bg-white/[0.08] transition-colors"
@@ -139,7 +144,7 @@ export default function TopNav({ overlay = false }: { overlay?: boolean }) {
   );
 }
 
-export function LanguageSwitcher({ full = false }: { full?: boolean }) {
+export function LanguageSwitcher({ full = false, compact = false }: { full?: boolean; compact?: boolean }) {
   const { lang, setLang } = useLanguage();
   return (
     <select
@@ -152,7 +157,7 @@ export function LanguageSwitcher({ full = false }: { full?: boolean }) {
     >
       {LANGUAGES.map((l) => (
         <option key={l.code} value={l.code} className="bg-card2 text-white">
-          {l.label}
+          {compact ? l.code.toUpperCase() : l.label}
         </option>
       ))}
     </select>

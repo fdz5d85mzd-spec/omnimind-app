@@ -11,6 +11,6 @@ export async function POST(request: Request) {
   if (!text || !text.trim()) {
     return NextResponse.json({ error: "Missing text" }, { status: 400 });
   }
-  const audio = await synthesizeVoice(text, VOICE_OMNIMIND);
+  const audio = await synthesizeVoice(text.trim().slice(0, 2200), VOICE_OMNIMIND);
   return NextResponse.json({ audio });
 }

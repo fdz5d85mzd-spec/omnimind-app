@@ -3,6 +3,10 @@
     {
       "path": "/api/orpheus/cleanup",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/credits/refill",
+      "schedule": "15 3 * * *"
     }
   ]
 }

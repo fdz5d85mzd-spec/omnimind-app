@@ -7,6 +7,8 @@ export type CreditState = {
   creditBalance: number;
   plan: string;
   cooldownUntil: string | null;
+  creditsRenewAt: string | null;
+  allowance: number;
 } | null;
 
 const REFRESH_EVENT = "omnimind:credits-refresh";

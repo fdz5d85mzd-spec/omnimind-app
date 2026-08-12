@@ -28,7 +28,8 @@ export default function CreditsBadge({ className = "" }: { className?: string })
   const privileged = Boolean(session?.user?.isMaster || session?.user?.isAdmin);
   const [now, setNow] = useState(() => Date.now());
 
-  const cooldownUntil = credits?.cooldownUntil ? new Date(credits.cooldownUntil).getTime() : null;
+  const renewalAt = credits?.creditsRenewAt || credits?.cooldownUntil;
+  const cooldownUntil = renewalAt ? new Date(renewalAt).getTime() : null;
   const inCooldown = Boolean(cooldownUntil && cooldownUntil > now);
 
   useEffect(() => {
@@ -40,7 +41,8 @@ export default function CreditsBadge({ className = "" }: { className?: string })
   if (!session?.user) return null;
 
   const balance = credits?.creditBalance ?? 0;
-  const pct = privileged ? 100 : Math.max(0, Math.min(100, (balance / FREE_STARTING_CREDITS) * 100));
+  const allowance = credits?.allowance || FREE_STARTING_CREDITS;
+  const pct = privileged ? 100 : Math.max(0, Math.min(100, (balance / allowance) * 100));
   const radius = 8;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - pct / 100);
@@ -48,10 +50,11 @@ export default function CreditsBadge({ className = "" }: { className?: string })
   return (
     <Link
       href="/settings"
-      className={`flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.06] hover:border-accent/30 px-2.5 py-1.5 transition-colors ${className}`}
+      className={`group flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] hover:border-cyan/35 px-2.5 py-2 transition-all ${className}`}
       title={t.settingsPlanTitle}
     >
-      <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0 -rotate-90">
+      <span className="relative grid h-7 w-7 shrink-0 place-items-center" aria-hidden>
+      <svg width="26" height="26" viewBox="0 0 20 20" className="-rotate-90 drop-shadow-[0_0_6px_rgba(34,211,238,.35)]">
         <circle cx="10" cy="10" r={radius} fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/10" />
         <circle
           cx="10"
@@ -66,6 +69,10 @@ export default function CreditsBadge({ className = "" }: { className?: string })
           strokeDashoffset={offset}
         />
       </svg>
+      <span className={`absolute text-[12px] leading-none ${inCooldown ? "animate-hourglass" : "group-hover:scale-110 transition-transform"}`}>
+        {inCooldown ? "⌛" : "✦"}
+      </span>
+      </span>
       <span className="flex flex-col leading-tight min-w-0">
         <span className="text-xs font-semibold text-white tabular-nums whitespace-nowrap">
           {privileged ? t.creditsUnlimited : `${balance} ${t.settingsCreditsLabel}`}
@@ -75,6 +82,7 @@ export default function CreditsBadge({ className = "" }: { className?: string })
             {t.creditsRefillsIn.replace("{time}", formatCountdown(cooldownUntil - now))}
           </span>
         )}
+        {!inCooldown && !privileged && <span className="text-[10px] text-mutedDark">{credits?.plan ?? "free"}</span>}
       </span>
     </Link>
   );

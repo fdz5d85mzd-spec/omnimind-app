@@ -176,11 +176,18 @@ export default function SettingsClient({
               <span className="text-[11px] text-cyan uppercase">Admin</span>
             </div>
           ) : credits ? (
-            <div className="flex items-center justify-between rounded-lg bg-white/[0.03] border border-white/[0.06] px-3.5 py-3 mb-4">
-              <span className="text-sm text-amber font-semibold">
-                {credits.creditBalance} {t.settingsCreditsLabel}
-              </span>
-              <span className="text-[11px] text-mutedDark uppercase">{credits.plan}</span>
+            <div className="rounded-2xl bg-gradient-to-br from-accent/15 to-cyan/5 border border-cyan/15 p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-lg text-amber font-bold tabular-nums">{credits.creditBalance} {t.settingsCreditsLabel}</span>
+                <span className="text-[11px] text-cyan uppercase tracking-wider">{credits.plan}</span>
+              </div>
+              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-black/25">
+                <div className="h-full rounded-full bg-gradient-to-r from-accent via-cyan to-amber transition-[width] duration-700" style={{ width: `${Math.min(100, (credits.creditBalance / Math.max(1, credits.allowance)) * 100)}%` }} />
+              </div>
+              <div className="mt-2 flex justify-between text-[11px] text-mutedDark">
+                <span>{credits.creditBalance} / {credits.allowance}</span>
+                <span>{credits.creditsRenewAt || credits.cooldownUntil ? `Renewal ${new Date(credits.creditsRenewAt || credits.cooldownUntil!).toLocaleString()}` : "Credits remain until used"}</span>
+              </div>
             </div>
           ) : (
             <p className="text-xs text-mutedDark mb-4">—</p>

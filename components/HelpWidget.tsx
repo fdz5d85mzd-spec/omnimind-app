@@ -103,7 +103,7 @@ export default function HelpWidget() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-20 left-4 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl bg-card/95 backdrop-blur-xl border border-white/[0.08] shadow-panel flex flex-col max-h-[70vh] animate-fadeIn">
+        <div className="fixed bottom-24 sm:bottom-20 left-4 z-50 w-[calc(100vw-2rem)] max-w-sm rounded-2xl bg-card/95 backdrop-blur-xl border border-white/[0.08] shadow-panel flex flex-col max-h-[70vh] animate-fadeIn">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] shrink-0">
             <p className="text-sm font-semibold text-white">{t.helpTitle}</p>
             <button onClick={() => setOpen(false)} aria-label="Close" className="text-mutedDark hover:text-white p-1 transition-colors">
@@ -202,7 +202,7 @@ export default function HelpWidget() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={t.helpTitle}
-        className="fixed bottom-4 left-4 z-50 flex items-center justify-center gap-1.5 h-10 w-10 sm:h-auto sm:w-auto rounded-full bg-card/70 backdrop-blur-xl border border-white/[0.08] text-mutedDark hover:text-white hover:border-accent/30 sm:pl-2.5 sm:pr-3 sm:py-2 text-xs font-medium shadow-panel transition-colors"
+        className="fixed bottom-24 sm:bottom-4 left-4 z-50 flex items-center justify-center gap-1.5 h-10 w-10 sm:h-auto sm:w-auto rounded-full bg-card/70 backdrop-blur-xl border border-white/[0.08] text-mutedDark hover:text-white hover:border-accent/30 sm:pl-2.5 sm:pr-3 sm:py-2 text-xs font-medium shadow-panel transition-colors"
       >
         <HelpIcon />
         {/* Icon-only on narrow screens -- a wider text pill in this corner

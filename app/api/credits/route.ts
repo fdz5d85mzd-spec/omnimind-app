@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserWithRefill } from "@/lib/creditsServer";
+import { FREE_STARTING_CREDITS } from "@/lib/credits";
+import { PLANS } from "@/lib/billing";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -15,5 +17,7 @@ export async function GET() {
     creditBalance: user.creditBalance,
     plan: user.plan,
     cooldownUntil: user.cooldownUntil,
+    creditsRenewAt: user.creditsRenewAt,
+    allowance: PLANS.find((plan) => plan.id === user.plan)?.monthlyCredits ?? FREE_STARTING_CREDITS,
   });
 }

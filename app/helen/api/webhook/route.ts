@@ -17,6 +17,11 @@ interface CheckoutSessionPayload {
   metadata?: { type?: string; item_id?: string; username?: string; userId?: string; credits?: string; plan?: string; entitlementId?: string } | null;
 }
 
+function periodEndFromSubscription(subscription: { items?: { data?: Array<{ current_period_end?: number }> } }) {
+  const unix = subscription.items?.data?.[0]?.current_period_end;
+  return unix ? new Date(unix * 1000) : null;
+}
+
 /**
  * Stripe webhook: only after `checkout.session.completed` do we create the
  * member row / record a purchase, so nothing is granted for an unpaid
@@ -86,9 +91,24 @@ export async function POST(request: Request) {
       if (!omniUserId || !plan) {
         return NextResponse.json({ error: "Missing userId or unknown plan in metadata" }, { status: 400 });
       }
+      let creditsRenewAt: Date | null = null;
+      if (session.subscription) {
+        const subscriptionId = String(session.subscription);
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        creditsRenewAt = periodEndFromSubscription(subscription);
+      } else if (plan.interval === "lifetime") {
+        creditsRenewAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      }
       await prisma.user.update({
         where: { id: omniUserId },
-        data: { plan: plan.id, creditBalance: { increment: plan.monthlyCredits }, cooldownUntil: null },
+        data: {
+          plan: plan.id,
+          creditBalance: { increment: plan.monthlyCredits },
+          cooldownUntil: null,
+          creditsRenewAt,
+          stripeCustomerId: session.customer ? String(session.customer) : null,
+          stripeSubscriptionId: session.subscription ? String(session.subscription) : null,
+        },
       });
       console.log("omnimind plan webhook: granted", { omniUserId, plan: plan.id, credits: plan.monthlyCredits });
       return NextResponse.json({ received: true });
@@ -182,9 +202,10 @@ export async function POST(request: Request) {
       const planId = subscription.metadata?.plan;
       const plan = PLANS.find((p) => p.id === planId);
       if (omniUserId && plan) {
+        const creditsRenewAt = periodEndFromSubscription(subscription);
         await prisma.user.update({
           where: { id: omniUserId },
-          data: { creditBalance: { increment: plan.monthlyCredits }, cooldownUntil: null },
+          data: { creditBalance: { increment: plan.monthlyCredits }, cooldownUntil: null, creditsRenewAt },
         });
         console.log("omnimind plan renewal webhook: granted", { omniUserId, plan: plan.id, credits: plan.monthlyCredits });
       }

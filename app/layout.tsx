@@ -6,6 +6,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import HelpWidget from "@/components/HelpWidget";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import MobileDock from "@/components/MobileDock";
 
 export const metadata: Metadata = {
   title: "OmniMind — Ask Anything",
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthSessionProvider>
             <ImpersonationBanner />
             {children}
+            <MobileDock />
           </AuthSessionProvider>
         </LanguageProvider>
       </body>

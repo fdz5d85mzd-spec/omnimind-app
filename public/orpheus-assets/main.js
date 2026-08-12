@@ -17,6 +17,38 @@ const copyLinkButton = root.querySelector('#copy-link');
 
 let files = [];
 let mode = 'email';
+const HISTORY_KEY = 'orpheus:transfer-history:v1';
+
+function readHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]').filter((item) => new Date(item.expiresAt) > new Date()); }
+  catch { return []; }
+}
+
+function renderHistory() {
+  const history = readHistory();
+  const existing = root.querySelector('#transfer-history');
+  if (!history.length) { existing?.remove(); return; }
+  const section = existing || document.createElement('section');
+  section.id = 'transfer-history';
+  section.className = 'transfer-history';
+  section.replaceChildren();
+  const heading = document.createElement('h2');
+  heading.textContent = 'Your recent transfers';
+  section.appendChild(heading);
+  history.slice(0, 8).forEach((item) => {
+    const row = document.createElement('a');
+    row.href = item.url;
+    row.className = 'history-row';
+    const label = document.createElement('strong');
+    label.textContent = `${item.fileCount} file${item.fileCount === 1 ? '' : 's'}`;
+    const expiry = document.createElement('span');
+    expiry.textContent = `Expires ${new Date(item.expiresAt).toLocaleDateString()}`;
+    row.append(label, expiry);
+    section.appendChild(row);
+  });
+  if (!existing) root.querySelector('.how')?.before(section);
+}
+renderHistory();
 
 const formatBytes = (bytes) => {
   if (!bytes) return '0 B';
@@ -194,6 +226,9 @@ transferButton.addEventListener('click', async () => {
 
     const shareUrl = `${window.location.origin}/orpheus?t=${transfer.code}`;
     copyLinkButton.dataset.url = shareUrl;
+    const history = readHistory();
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([{ url: shareUrl, expiresAt: transfer.expiresAt, fileCount: files.length }, ...history.filter((item) => item.url !== shareUrl)].slice(0, 8)));
+    renderHistory();
     root.querySelector('#result-expiry').textContent = `Available until ${new Date(transfer.expiresAt).toLocaleDateString()}`;
     progressWrap.hidden = true;
     transferResult.hidden = false;
