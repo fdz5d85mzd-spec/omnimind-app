@@ -204,14 +204,20 @@ export default function MascotPulse() {
                 className="relative h-24 w-20 shrink-0"
                 aria-label="Interact with Omni"
               >
-                <Image
-                  src="/mascot/omni.png"
-                  alt="Omni"
-                  fill
-                  sizes="80px"
-                  className={`omni-character object-contain transition ${reaction === 1 ? "scale-110 -rotate-6" : reaction === 2 ? "rotate-6" : ""}`}
-                />
-                <span className="omni-eye-blink absolute left-1/2 top-[34.3%] h-[20%] w-[22%] rounded-full bg-[#101a3b]" />
+                <span
+                  className={`absolute inset-0 transition ${reaction === 1 ? "scale-110 -rotate-6" : reaction === 2 ? "rotate-6" : ""}`}
+                >
+                  <span className="omni-character relative block h-full w-full">
+                    <Image
+                      src="/mascot/omni.png"
+                      alt="Omni"
+                      fill
+                      sizes="80px"
+                      className="object-contain"
+                    />
+                    <span className="omni-eye-blink absolute left-1/2 top-[34.3%] h-[20%] w-[22%] rounded-full bg-[#101a3b]" />
+                  </span>
+                </span>
               </button>
               <div>
                 <p className="text-[10px] font-bold tracking-[.16em] text-cyan">
@@ -274,13 +280,13 @@ export default function MascotPulse() {
         <span className="absolute -right-1 -top-1 z-10 grid h-5 w-5 place-items-center rounded-full border-2 border-[#090d25] bg-amber text-[10px]">
           {role.icon}
         </span>
-        <span className="relative h-14 w-14">
+        <span className="omni-character relative h-14 w-14">
           <Image
             src="/mascot/omni.png"
             alt=""
             fill
             sizes="56px"
-            className="omni-character object-contain"
+            className="object-contain"
           />
           <span className="omni-eye-blink absolute left-1/2 top-[34.3%] h-[20%] w-[22%] rounded-full bg-[#101a3b]" />
         </span>

@@ -195,25 +195,32 @@ export default function Landing() {
             />
             {/* The official transparent Omni asset shares the page's light
                 and gradients instead of appearing inside a pasted-on frame. */}
-            <Image
-              className="relative h-full w-full object-contain animate-idle-bob"
-              src="/mascot/omni.png"
-              fill
-              sizes="240px"
-              alt=""
-              aria-hidden
-            />
-            {/* Aperture-shutter "blink": a dark disc that scales in over the
+            <div className="absolute inset-0 animate-idle-bob">
+              <Image
+                className="object-contain"
+                src="/mascot/omni.png"
+                fill
+                sizes="240px"
+                alt=""
+                aria-hidden
+              />
+              {/* Aperture-shutter "blink": a dark disc that scales in over the
                 eye and back out, positioned from the eye's actual measured
                 coordinates in the source image (50%, 35.8% of the square
                 frame, radius ~11% of the width) -- not a guess, sampled
                 from the real asset so it lines up with the aperture iris
                 instead of floating over blank helmet. */}
-            <span
-              className="pointer-events-none absolute rounded-full bg-[#1f2e4d] animate-omni-blink"
-              style={{ left: "50%", top: "34.3%", width: "22%", height: "20%" }}
-              aria-hidden
-            />
+              <span
+                className="pointer-events-none absolute rounded-full bg-[#1f2e4d] animate-omni-blink"
+                style={{
+                  left: "50%",
+                  top: "34.3%",
+                  width: "22%",
+                  height: "20%",
+                }}
+                aria-hidden
+              />
+            </div>
           </div>
 
           <span className="inline-flex items-center gap-2 text-cyan text-[11px] font-bold tracking-[0.22em] mb-6 px-3.5 py-1.5 rounded-full border border-cyan/25 bg-cyan/[0.06]">
