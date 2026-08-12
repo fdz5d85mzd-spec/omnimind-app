@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { synthesizeVoice, VOICE_OMNIMIND } from "@/lib/elevenlabs";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 /**
  * Turns an already-streamed assistant reply into speech, same split-phase
@@ -7,6 +9,8 @@ import { synthesizeVoice, VOICE_OMNIMIND } from "@/lib/elevenlabs";
  * the stream finishes, then this catches up a beat later with audio.
  */
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   const { text } = (await request.json().catch(() => ({}))) as { text?: string };
   if (!text || !text.trim()) {
     return NextResponse.json({ error: "Missing text" }, { status: 400 });
