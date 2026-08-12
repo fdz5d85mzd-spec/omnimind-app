@@ -9,18 +9,23 @@
 // (OGN's separate database) -- same "skip until configured" no-op.
 const { execSync } = require("child_process");
 
+// A schema-sync failure (most commonly: prisma refusing a push that would
+// drop a table/column with live data it doesn't recognize) must not take
+// the whole deploy down -- the code being deployed rarely depends on that
+// particular sync succeeding, and the DB tables in question keep their
+// data untouched either way. Failures are logged loudly so they're never
+// silently missed, but the build proceeds.
 function sync(envVar, schema) {
   if (!process.env[envVar]) {
     console.log(`[sync-db] ${envVar} not set — skipping schema sync for ${schema}.`);
     return;
   }
-  execSync(`npx prisma db push --skip-generate --schema=${schema}`, { stdio: "inherit" });
+  try {
+    execSync(`npx prisma db push --skip-generate --schema=${schema}`, { stdio: "inherit" });
+  } catch (err) {
+    console.error(`[sync-db] Schema sync failed for ${schema} -- continuing build without it. Fix by hand: npx prisma db push --schema=${schema}`);
+  }
 }
 
-try {
-  sync("DATABASE_URL", "prisma/schema.prisma");
-  sync("OGN_DATABASE_URL", "prisma/ogn-schema.prisma");
-} catch (err) {
-  console.error("[sync-db] Schema sync failed:", err.message);
-  process.exit(1);
-}
+sync("DATABASE_URL", "prisma/schema.prisma");
+sync("OGN_DATABASE_URL", "prisma/ogn-schema.prisma");
