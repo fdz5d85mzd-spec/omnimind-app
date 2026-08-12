@@ -33,7 +33,9 @@ export default function InstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", onPrompt);
   }, []);
 
-  if (!deferred || dismissed || pathname.startsWith("/helen")) return null;
+  // Keep installation discovery on the home experience; showing the same
+  // floating card inside task-focused screens covers valuable mobile UI.
+  if (!deferred || dismissed || pathname !== "/") return null;
 
   async function install() {
     if (!deferred) return;

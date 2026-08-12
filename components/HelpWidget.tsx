@@ -13,7 +13,7 @@ type Msg = { id: string; role: "user" | "assistant"; content: string; streaming?
 // a second floating widget there would just compete with the sidebar's
 // bottom-left account bar for the same corner. Everywhere else (home,
 // pricing, guide, mission-control, voxstudio, settings...) gets it.
-const HIDDEN_PREFIXES = ["/helen", "/chat"];
+const HIDDEN_PREFIXES = ["/helen", "/chat", "/contests"];
 
 // Routes real questions to the same credit-gated, server-enforced agent
 // endpoint /chat uses (see lib/api.ts's streamAgent) -- "AI first" here
