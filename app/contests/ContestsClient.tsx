@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Film, Heart, Trophy, Upload, Clock3, Sparkles } from "lucide-react";
+import { Camera, Film, Heart, Trophy, Upload, Clock3, Sparkles, Share2 } from "lucide-react";
 import { notifyCreditsChanged } from "@/lib/useCredits";
 
 type Entry = { id: string; userId: string; mediaType: string; mediaUrl: string; caption: string; createdAt: string; user: { name: string | null }; _count: { votes: number } };
-type Challenge = { id: string; title: string; prompt: string; mediaType: "photo" | "reel"; status: string; startsAt: string; endsAt: string; entryCost: number; prizeFirst: number; prizeSecond: number; prizeThird: number; entries: Entry[]; awards: Array<{ rank: number; credits: number; user: { name: string | null } }> };
+type Challenge = { id: string; title: string; prompt: string; mediaType: "photo" | "reel"; status: string; startsAt: string; endsAt: string; entryCost: number; prizeFirst: number; prizeSecond: number; prizeThird: number; entries: Entry[]; votingEntries: Entry[]; awards: Array<{ rank: number; credits: number; user: { name: string | null } }> };
 type ContestData = { authenticated: boolean; viewerId: string | null; votedEntryIds: string[]; challenges: Challenge[] };
 
 function remaining(end: string) {
@@ -71,6 +71,12 @@ export default function ContestsClient() {
   const inputRef = useRef<HTMLInputElement>(null);
   const load = useCallback(async () => { const response = await fetch("/api/contests", { cache: "no-store" }); if (response.ok) setData(await response.json()); }, []);
   useEffect(() => { void load(); const timer = setInterval(() => tick((value) => value + 1), 60000); return () => clearInterval(timer); }, [load]);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("type") === "reel") setType("reel");
+    const entryId = params.get("entry");
+    if (entryId && data) requestAnimationFrame(() => document.getElementById(`entry-${entryId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [data]);
   const challenge = useMemo(() => data?.challenges.find((item) => item.mediaType === type && item.status === "active") ?? null, [data, type]);
   const voted = useMemo(() => new Set(data?.votedEntryIds ?? []), [data]);
 
@@ -88,6 +94,17 @@ export default function ContestsClient() {
     const response = await fetch("/api/contests/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entryId: entry.id, reason: "Community safety report" }) });
     const result = await response.json();
     setMessage(response.ok ? "Thank you. The entry was sent for review." : result.error);
+  }
+
+  async function share(entry?: Entry) {
+    const url = new URL("/contests", location.origin);
+    url.searchParams.set("type", type);
+    if (entry) url.searchParams.set("entry", entry.id);
+    const payload = { title: challenge?.title || "OmniMind Creator Arena", text: entry ? `Vote for ${entry.user.name || "this creator"} in the OmniMind Creator Arena.` : "Create, vote and win credits in the OmniMind Creator Arena.", url: url.toString() };
+    try {
+      if (navigator.share) await navigator.share(payload);
+      else { await navigator.clipboard.writeText(url.toString()); setMessage("Contest link copied — share it with your community."); }
+    } catch (error) { if (error instanceof Error && error.name !== "AbortError") setMessage("Could not share this entry."); }
   }
 
   async function submit() {
@@ -112,14 +129,14 @@ export default function ContestsClient() {
 
     {challenge ? <>
       <section className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <div className="glass rounded-3xl p-6"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-cyan">Weekly challenge</p><h2 className="mt-2 font-head text-3xl font-bold">{challenge.title}</h2><p className="mt-2 max-w-2xl text-sm text-muted">{challenge.prompt}</p></div><div className="flex items-center gap-2 rounded-full bg-white/[.06] px-3 py-2 text-xs text-amber"><Clock3 size={15}/>{remaining(challenge.endsAt)}</div></div>
+        <div className="glass rounded-3xl p-6"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-cyan">Weekly challenge</p><h2 className="mt-2 font-head text-3xl font-bold">{challenge.title}</h2><p className="mt-2 max-w-2xl text-sm text-muted">{challenge.prompt}</p></div><div className="flex items-center gap-2"><button onClick={()=>share()} className="rounded-full bg-white/[.06] p-2.5 text-muted transition hover:text-white" aria-label="Share challenge"><Share2 size={15}/></button><div className="flex items-center gap-2 rounded-full bg-white/[.06] px-3 py-2 text-xs text-amber"><Clock3 size={15}/>{remaining(challenge.endsAt)}</div></div></div>
         <div className="mt-6 flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-white/[.05] px-3 py-2">Entry: {challenge.entryCost} credits</span><span className="rounded-full bg-white/[.05] px-3 py-2">1 entry per creator</span><span className="rounded-full bg-white/[.05] px-3 py-2">Community voting</span>{type === "reel" && <span className="rounded-full bg-white/[.05] px-3 py-2">Max 60 sec / 150 MB</span>}</div>
         <button onClick={() => data?.authenticated ? setSelected(challenge) : location.href = "/login?next=/contests"} className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-accent to-cyan px-6 py-3.5 text-sm font-bold text-white shadow-glow transition-transform hover:-translate-y-0.5"><Upload size={17}/> Submit your {type}</button></div>
         <aside className="glass rounded-3xl p-6"><div className="flex items-center gap-2 text-amber"><Trophy size={19}/><h3 className="font-bold">Weekly rewards</h3></div>{[challenge.prizeFirst, challenge.prizeSecond, challenge.prizeThird].map((prize,index)=><div key={prize} className="mt-3 flex items-center justify-between rounded-xl bg-white/[.04] px-4 py-3"><span className="text-sm text-muted">#{index+1}</span><strong className="text-amber">{prize} credits</strong></div>)}<p className="mt-3 text-[11px] leading-relaxed text-mutedDark">Rewards unlock with at least 3 valid creators and 10 unique community voters. Entries cost 15 credits; the maximum weekly reward liability is fixed and sustainable.</p></aside>
       </section>
 
-      <section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-cyan">Live ranking</p><h2 className="mt-1 font-head text-2xl font-bold">Community picks</h2></div><span className="text-xs text-muted">{challenge.entries.length} creators</span></div>
-      {challenge.entries.length ? <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{challenge.entries.map((entry,index)=><article key={entry.id} className="group overflow-hidden rounded-2xl border border-white/8 bg-card/70 transition-all hover:-translate-y-1 hover:border-cyan/30"><div className="relative aspect-[4/5] overflow-hidden bg-black">{entry.mediaType === "photo" ? <Image unoptimized src={entry.mediaUrl} alt={entry.caption || "Contest entry"} fill sizes="(max-width:768px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105"/> : <video src={entry.mediaUrl} controls playsInline preload="metadata" className="h-full w-full object-cover"/>}<span className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-[10px] font-bold backdrop-blur">#{index+1}</span><button onClick={()=>report(entry)} className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-1 text-[10px] text-white/70 backdrop-blur" aria-label="Report entry">•••</button></div><div className="p-3"><p className="truncate text-xs font-semibold">{entry.user.name || "Creator"}</p><p className="mt-1 line-clamp-2 min-h-8 text-[11px] text-muted">{entry.caption || "Untitled"}</p><button disabled={voted.has(entry.id) || entry.userId === data?.viewerId} onClick={() => vote(entry)} className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition-all ${voted.has(entry.id) ? "bg-crimson/15 text-crimson" : "bg-white/[.06] text-white hover:bg-crimson/20 hover:text-crimson disabled:opacity-35"}`}><Heart size={14} fill={voted.has(entry.id) ? "currentColor" : "none"}/>{entry._count.votes} votes</button></div></article>)}</div> : <div className="rounded-3xl border border-dashed border-white/10 py-16 text-center text-sm text-muted">Be the first creator in this challenge.</div>}
+      <section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-cyan">Fair discovery</p><h2 className="mt-1 font-head text-2xl font-bold">Community picks</h2><p className="mt-1 text-xs text-muted">Fresh and less-seen work appears first; rank badges remain live.</p></div><span className="text-xs text-muted">{challenge.entries.length} creators</span></div>
+      {challenge.entries.length ? <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{challenge.votingEntries.map((entry)=><article id={`entry-${entry.id}`} key={entry.id} className="group overflow-hidden rounded-2xl border border-white/8 bg-card/70 transition-all hover:-translate-y-1 hover:border-cyan/30"><div className="relative aspect-[4/5] overflow-hidden bg-black">{entry.mediaType === "photo" ? <Image unoptimized src={entry.mediaUrl} alt={entry.caption || "Contest entry"} fill sizes="(max-width:768px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105"/> : <video src={entry.mediaUrl} controls playsInline preload="metadata" className="h-full w-full object-cover"/>}<span className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-1 text-[10px] font-bold backdrop-blur">#{challenge.entries.findIndex((ranked)=>ranked.id===entry.id)+1}</span><div className="absolute right-2 top-2 flex gap-1"><button onClick={()=>share(entry)} className="rounded-full bg-black/65 p-2 text-white/75 backdrop-blur" aria-label="Share entry"><Share2 size={12}/></button><button onClick={()=>report(entry)} className="rounded-full bg-black/65 px-2 py-1 text-[10px] text-white/70 backdrop-blur" aria-label="Report entry">•••</button></div></div><div className="p-3"><p className="truncate text-xs font-semibold">{entry.user.name || "Creator"}</p><p className="mt-1 line-clamp-2 min-h-8 text-[11px] text-muted">{entry.caption || "Untitled"}</p><button disabled={voted.has(entry.id) || entry.userId === data?.viewerId} onClick={() => vote(entry)} className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition-all ${voted.has(entry.id) ? "bg-crimson/15 text-crimson" : "bg-white/[.06] text-white hover:bg-crimson/20 hover:text-crimson disabled:opacity-35"}`}><Heart size={14} fill={voted.has(entry.id) ? "currentColor" : "none"}/>{entry._count.votes} votes</button></div></article>)}</div> : <div className="rounded-3xl border border-dashed border-white/10 py-16 text-center text-sm text-muted">Be the first creator in this challenge.</div>}
       </section>
     </> : <div className="py-20 text-center text-muted">Preparing this week&apos;s challenge…</div>}
 

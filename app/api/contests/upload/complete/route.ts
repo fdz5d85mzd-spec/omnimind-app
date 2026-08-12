@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { completeR2Multipart } from "@/lib/orpheus/_r2.js";
+import { completeR2Multipart, deleteR2Objects } from "@/lib/orpheus/_r2.js";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -25,6 +25,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ entryId: entry.id });
   } catch (error) {
+    await Promise.resolve(deleteR2Objects([key])).catch(() => undefined);
     const message = error instanceof Error && error.message === "NOT_ENOUGH_CREDITS" ? "Not enough credits" : "Could not create entry";
     return NextResponse.json({ error: message }, { status: error instanceof Error && error.message === "NOT_ENOUGH_CREDITS" ? 402 : 409 });
   }

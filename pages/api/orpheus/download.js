@@ -8,7 +8,10 @@ export default async function handler(req, res) {
   try {
     await ensureSchema();
     const code = String(req.query.code || '');
-    const fileId = String(req.query.file || '');
+    const fileId = String(req.query.file || req.query.fileId || '');
+    if (!/^[A-Za-z0-9_-]{6,32}$/.test(code) || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(fileId)) {
+      return json(res, 400, { error: 'Invalid download link.' });
+    }
     const rows = await sql`UPDATE transfer_files f SET download_count = download_count + 1
       FROM transfers t WHERE t.id = f.transfer_id AND t.code = ${code} AND f.id = ${fileId}
       AND f.uploaded_at IS NOT NULL AND f.download_count < 20 AND t.status = 'ready' AND t.expires_at > NOW()

@@ -22,10 +22,20 @@ export async function GET() {
     },
   });
   const voted = userId ? await prisma.contestVote.findMany({ where: { voterId: userId }, select: { entryId: true } }) : [];
+  const exposureKey = `${userId ?? "guest"}:${new Date().toISOString().slice(0, 10)}`;
+  const exposureScore = (id: string) => {
+    let hash = 2166136261;
+    for (const char of `${exposureKey}:${id}`) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+    return hash >>> 0;
+  };
   return NextResponse.json({
     authenticated: Boolean(userId),
     viewerId: userId,
     votedEntryIds: voted.map((vote) => vote.entryId),
-    challenges: challenges.map((challenge) => ({ ...challenge, entries: challenge.entries.map(publicEntry) })),
+    challenges: challenges.map((challenge) => {
+      const entries = challenge.entries.map(publicEntry);
+      const votingEntries = [...entries].sort((a, b) => a._count.votes - b._count.votes || exposureScore(a.id) - exposureScore(b.id));
+      return { ...challenge, entries, votingEntries };
+    }),
   });
 }
