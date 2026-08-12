@@ -14,11 +14,12 @@ import {
 
 function CardContent() {
   const { t } = useLanguage();
-  const { profile, ready, hydrateFromRemote } = useProfile();
+  const { profile, ready, hydrateFromRemote, join } = useProfile();
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams?.get("session_id");
+  const guestCheckout = searchParams?.get("guest") === "1";
 
   const [hydrating, setHydrating] = useState(false);
   const [notFoundYet, setNotFoundYet] = useState(false);
@@ -36,6 +37,33 @@ function CardContent() {
 
   useEffect(() => {
     if (!ready) return;
+
+    if (sessionId && guestCheckout && hydratedForSession !== sessionId) {
+      setHydratedForSession(sessionId);
+      setHydrating(true);
+      fetch(
+        `/helen/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`,
+      )
+        .then(async (response) => {
+          if (!response.ok) throw new Error("unverified");
+          return response.json() as Promise<{
+            paid: boolean;
+            username: string | null;
+          }>;
+        })
+        .then((result) => {
+          const pendingName = sessionStorage.getItem("helen_pending_username");
+          sessionStorage.removeItem("helen_pending_username");
+          join(result.username || pendingName || "");
+          setHydrating(false);
+          setNotFoundYet(false);
+        })
+        .catch(() => {
+          setHydrating(false);
+          setNotFoundYet(true);
+        });
+      return;
+    }
 
     // Returning from a real Stripe Checkout redirect: always verify against
     // Supabase at least once, even if a local profile already exists — a
@@ -63,10 +91,12 @@ function CardContent() {
     ready,
     profile,
     sessionId,
+    guestCheckout,
     user,
     hydrateFromRemote,
     router,
     hydratedForSession,
+    join,
   ]);
 
   useEffect(() => {
@@ -94,6 +124,10 @@ function CardContent() {
           onClick={() => {
             setNotFoundYet(false);
             setHydrating(true);
+            if (guestCheckout && sessionId) {
+              setHydratedForSession(null);
+              return;
+            }
             hydrateFromRemote(user!.id)
               .then((remote) => {
                 setHydrating(false);

@@ -5,7 +5,11 @@ import { useEffect } from "react";
 import { HomeNavIcons } from "@/components/helen/HomeNavIcons";
 import { useProfile } from "@/lib/helen/ProfileProvider";
 
-export default function HomeLayout({ children }: { children: React.ReactNode }) {
+export default function HomeLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { profile, ready } = useProfile();
   const pathname = usePathname() ?? "";
   const router = useRouter();
@@ -22,8 +26,10 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      {!isHomeRoot && <HomeNavIcons className="mb-2.5" />}
-      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+      {!isHomeRoot && <HomeNavIcons className="mb-4" />}
+      <div className="flex min-h-0 flex-1 flex-col pb-[max(.5rem,env(safe-area-inset-bottom))]">
+        {children}
+      </div>
     </>
   );
 }

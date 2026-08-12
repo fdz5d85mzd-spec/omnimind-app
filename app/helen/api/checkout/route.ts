@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { MEMBERSHIP_PRICE_EUR } from "@/lib/helen/domain";
-import { getStripeClient, isStripeConfigured, type SessionCreateParams } from "@/lib/helen/stripe/server";
-import { isSupabaseConfigured, getSupabaseServerClient } from "@/lib/helen/supabase/server";
+import {
+  getStripeClient,
+  isStripeConfigured,
+  type SessionCreateParams,
+} from "@/lib/helen/stripe/server";
+import {
+  isSupabaseConfigured,
+  getSupabaseServerClient,
+} from "@/lib/helen/supabase/server";
 import { resolveActivePartnerCode } from "@/lib/adminPartners";
 import { isAdminEmail, isMasterEmail } from "@/lib/roles";
 
@@ -19,7 +26,9 @@ import { isAdminEmail, isMasterEmail } from "@/lib/roles";
  * before this route is wired in for real.
  */
 export async function POST(request: Request) {
-  const { clientReferenceId, username, refCode } = (await request.json().catch(() => ({}))) as {
+  const { clientReferenceId, username, refCode } = (await request
+    .json()
+    .catch(() => ({}))) as {
     clientReferenceId?: string;
     username?: string;
     refCode?: string;
@@ -29,7 +38,8 @@ export async function POST(request: Request) {
   // checkout flow without spending real money -- looked up server-side by
   // Supabase user id, never trusted from the client. Everyone else pays.
   if (clientReferenceId && isSupabaseConfigured()) {
-    const { data } = await getSupabaseServerClient().auth.admin.getUserById(clientReferenceId);
+    const { data } =
+      await getSupabaseServerClient().auth.admin.getUserById(clientReferenceId);
     const email = data.user?.email;
     if (isMasterEmail(email) || isAdminEmail(email)) {
       return NextResponse.json({ bypass: true });
@@ -37,7 +47,10 @@ export async function POST(request: Request) {
   }
 
   if (!isStripeConfigured()) {
-    return NextResponse.json({ error: "Stripe is not configured" }, { status: 501 });
+    return NextResponse.json(
+      { error: "Stripe is not configured" },
+      { status: 501 },
+    );
   }
 
   const origin = request.headers.get("origin") ?? new URL(request.url).origin;
@@ -57,16 +70,24 @@ export async function POST(request: Request) {
       },
     ],
     client_reference_id: clientReferenceId,
-    metadata: username ? { username: username.trim().slice(0, 20) } : undefined,
+    metadata: {
+      type: clientReferenceId ? "membership" : "helen_guest",
+      ...(username ? { username: username.trim().slice(0, 20) } : {}),
+    },
     // Lands on the PaymentIntent (not the Session) -- that's what
     // lib/adminPartners.ts actually scans for commission attribution, since
     // Charge/PaymentIntent metadata isn't inherited from the Session. Same
     // spot lib/adminRevenue.ts reads `source` from to split Helen revenue
     // (and its 15% charity cut) out from the rest of the account.
-    payment_intent_data: { metadata: { source: "helen", ...(partnerCode ? { ref_code: partnerCode } : {}) } },
+    payment_intent_data: {
+      metadata: {
+        source: "helen",
+        ...(partnerCode ? { ref_code: partnerCode } : {}),
+      },
+    },
     managed_payments: { enabled: false },
     allow_promotion_codes: true,
-    success_url: `${origin}/helen/card?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${origin}/helen/card?session_id={CHECKOUT_SESSION_ID}${clientReferenceId ? "" : "&guest=1"}`,
     cancel_url: `${origin}/helen/checkout`,
   } satisfies SessionCreateParams);
 

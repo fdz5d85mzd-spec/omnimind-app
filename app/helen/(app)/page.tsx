@@ -2,17 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { Globe } from "@/components/helen/Globe";
-import { useAuth } from "@/lib/helen/auth/AuthProvider";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { useProfile } from "@/lib/helen/ProfileProvider";
 
 export default function JoinPage() {
   const { t } = useLanguage();
   const { profile, ready } = useProfile();
-  const { user, configured } = useAuth();
-  const { data: omniSession } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -20,28 +16,23 @@ export default function JoinPage() {
   }, [ready, profile, router]);
 
   function handleJoin() {
-    // Already signed into OmniMind -- /helen/checkout offers a direct
-    // card/credits join for that session instead of a separate signup.
-    if (configured && !user && !omniSession?.user) {
-      router.push("/login?callbackUrl=/helen/checkout");
-    } else {
-      router.push("/helen/checkout");
-    }
+    router.push("/helen/checkout");
   }
 
   return (
     <>
       <Globe />
-      <h1 className="helen-hero-title mb-3 text-center font-helen-display text-[clamp(29px,7.5vw,38px)] font-semibold leading-[1.12] tracking-[-0.025em]">
+      <div className="helen-eyebrow mx-auto mb-3">Humanity, reimagined</div>
+      <h1 className="helen-hero-title mb-3 text-center font-helen-display text-[clamp(34px,8vw,56px)] font-semibold leading-[1.02] tracking-[-0.045em]">
         {t.heroLine1}
         <br />
         {t.heroLine2}
       </h1>
-      <p className="mx-auto mb-7 max-w-md text-center text-[14px] leading-relaxed text-helen-dim">
+      <p className="mx-auto mb-6 max-w-md text-center text-[clamp(13px,3.5vw,16px)] leading-relaxed text-helen-dim">
         {t.heroSub}
       </p>
 
-      <div className="helen-glass-card mb-2 rounded-2xl px-5 py-4.5">
+      <div className="helen-glass-card mb-2 rounded-[1.6rem] px-5 py-5">
         <div className="mb-1.5 font-helen-display text-[15px] font-semibold text-helen-gold">
           {t.purposeTitle}
         </div>
@@ -51,14 +42,24 @@ export default function JoinPage() {
       </div>
 
       <div className="flex-1" />
-      <div className="mb-5 mt-4 flex justify-between border-t border-white/10 pt-3.5 font-helen-num text-xs text-helen-dim">
-        <span>{t.priceLabel}</span>
-        <b className="text-helen-sage">1,00 €</b>
+      <div className="mb-4 mt-5 grid grid-cols-3 gap-2 text-center">
+        <div className="helen-mini-stat">
+          <b>€1</b>
+          <span>one time</span>
+        </div>
+        <div className="helen-mini-stat">
+          <b>15%</b>
+          <span>to impact</span>
+        </div>
+        <div className="helen-mini-stat">
+          <b>∞</b>
+          <span>your journey</span>
+        </div>
       </div>
       <button
         type="button"
         onClick={handleJoin}
-        className="helen-primary-cta w-full rounded-2xl bg-helen-coral py-[17px] text-[15px] font-extrabold text-helen-ink transition active:scale-[0.985]"
+        className="helen-primary-cta w-full rounded-[1.3rem] py-[18px] text-[15px] font-extrabold text-white transition active:scale-[0.985]"
       >
         {t.joinBtn}
       </button>

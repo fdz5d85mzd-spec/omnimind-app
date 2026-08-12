@@ -33,14 +33,14 @@ const config: Config = {
         // Helen (/helen/*) has its own warm palette, distinct from the rest
         // of the app -- prefixed so it never collides with the tokens above
         // (e.g. "card" already means something else at the top level).
-        "helen-ink": "#181122",
-        "helen-ink-2": "#241932",
-        "helen-card": "#30203f",
-        "helen-paper": "#fff8ef",
-        "helen-dim": "#cbbbd8",
-        "helen-coral": "#ff8063",
-        "helen-sage": "#a8d88d",
-        "helen-gold": "#ffd166",
+        "helen-ink": "#070b20",
+        "helen-ink-2": "#101735",
+        "helen-card": "#151f46",
+        "helen-paper": "#f4f7ff",
+        "helen-dim": "#aeb9dc",
+        "helen-coral": "#7c5cff",
+        "helen-sage": "#4de1c1",
+        "helen-gold": "#66d9ff",
       },
       fontFamily: {
         head: [
@@ -65,7 +65,8 @@ const config: Config = {
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(91,110,245,0.5), 0 8px 30px -6px rgba(91,110,245,0.45)",
-        panel: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 60px -20px rgba(0,0,0,0.6)",
+        panel:
+          "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 60px -20px rgba(0,0,0,0.6)",
       },
       keyframes: {
         fadeIn: {

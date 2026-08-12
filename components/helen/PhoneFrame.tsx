@@ -12,7 +12,7 @@ import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 export function PhoneFrame({ children }: { children: React.ReactNode }) {
   const { lang } = useLanguage();
   return (
-    <div className="helen-phone-frame relative mx-auto flex min-h-screen w-full max-w-[560px] flex-col overflow-hidden bg-helen-ink md:min-h-[calc(100dvh-2rem)] md:rounded-[2rem] md:border md:border-white/10">
+    <div className="helen-phone-frame relative mx-auto flex min-h-[100dvh] w-full max-w-[720px] flex-col overflow-hidden bg-helen-ink md:min-h-[calc(100dvh-2rem)] md:rounded-[2.25rem] md:border md:border-white/10">
       <BackgroundMusic />
       <AmbientNature />
       {/* paddingTop adds the device safe-area inset (notch/Dynamic Island)
@@ -39,8 +39,11 @@ export function PhoneFrame({ children }: { children: React.ReactNode }) {
       </div>
       <LanguageToggle />
       <div
-        className="relative z-10 flex flex-1 flex-col px-4 pb-4 sm:px-5"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)" }}
+        className="relative z-10 flex flex-1 flex-col px-4 sm:px-7 md:px-10"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 4.25rem)",
+          paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
+        }}
       >
         {children}
       </div>
