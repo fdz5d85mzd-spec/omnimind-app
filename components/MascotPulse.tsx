@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { Bell, ChevronRight, X } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -147,7 +148,13 @@ export default function MascotPulse() {
     } | null>(null);
   const [reaction, setReaction] = useState(0);
   const [touches, setTouches] = useState(0);
+  const [creditAlert, setCreditAlert] = useState<{
+    threshold: number;
+    balance: number;
+    allowance: number;
+  } | null>(null);
   const credits = useCredits();
+  const { data: session } = useSession();
   const now = useMemo(() => new Date(), []);
   const role = getOmniRole(now);
   const mood = getMood(now);
@@ -159,6 +166,49 @@ export default function MascotPulse() {
   useEffect(() => {
     setTouches(Number(localStorage.getItem("omni-friendship") || 0));
   }, []);
+  useEffect(() => {
+    if (!credits || credits.allowance <= 0) return;
+    const percent = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round((credits.creditBalance / credits.allowance) * 100),
+      ),
+    );
+    const cycle = credits.creditsRenewAt?.slice(0, 10) || "rolling";
+    const account = session?.user?.email || "account";
+    const key = `omni-credit-progress:${account}:${credits.plan}:${cycle}`;
+    const saved = localStorage.getItem(key);
+    if (saved === null) {
+      localStorage.setItem(key, String(percent));
+      return;
+    }
+
+    const previous = Number(saved);
+    if (!Number.isFinite(previous)) {
+      localStorage.setItem(key, String(percent));
+      return;
+    }
+    if (percent > previous) {
+      // Refill, renewal or top-up: establish the new high-water mark so the
+      // next 20% crossing can be announced again.
+      localStorage.setItem(key, String(percent));
+      return;
+    }
+
+    const crossed = [80, 60, 40, 20, 0].filter(
+      (threshold) => previous > threshold && percent <= threshold,
+    );
+    localStorage.setItem(key, String(percent));
+    if (crossed.length === 0) return;
+    const threshold = crossed[crossed.length - 1];
+    setCreditAlert({
+      threshold,
+      balance: credits.creditBalance,
+      allowance: credits.allowance,
+    });
+    setOpen(true);
+  }, [credits, session?.user?.email]);
   useEffect(() => {
     if (pathname.startsWith("/chat")) return;
     fetch("/ogn/api/articles?limit=1&sort=featured")
@@ -185,7 +235,10 @@ export default function MascotPulse() {
         <aside className="mb-3 w-[min(340px,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-cyan/20 bg-[#090d25]/95 shadow-[0_22px_80px_rgba(0,0,0,.55)] backdrop-blur-2xl">
           <div className="relative bg-gradient-to-br from-accent/25 via-cyan/10 to-transparent p-4">
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setCreditAlert(null);
+              }}
               className="absolute right-3 top-3 rounded-full p-1.5 text-muted hover:bg-white/10 hover:text-white"
               aria-label={c.close}
             >
@@ -228,16 +281,26 @@ export default function MascotPulse() {
                   {touches >= 5 ? " · ✨ OMNI FRIEND" : ""}
                 </p>
                 <h2 className="mt-1 text-sm font-bold leading-snug">
-                  {reaction === 1
-                    ? `✨ ${c.hello}`
-                    : reaction === 2
-                      ? `${role.icon} Ready!`
-                      : c.hello}
+                  {creditAlert
+                    ? lang === "el"
+                      ? `Απέμεινε το ${creditAlert.threshold}% των credits σου`
+                      : `${creditAlert.threshold}% of your credits remain`
+                    : reaction === 1
+                      ? `✨ ${c.hello}`
+                      : reaction === 2
+                        ? `${role.icon} Ready!`
+                        : c.hello}
                 </h2>
               </div>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-muted">
-              {article && article.language === lang ? article.title : c.news}
+              {creditAlert
+                ? lang === "el"
+                  ? `Έχεις ${creditAlert.balance.toLocaleString()} από ${creditAlert.allowance.toLocaleString()} credits. Ο Omni θα σε ενημερώσει ξανά στο επόμενο όριο 20%.`
+                  : `You have ${creditAlert.balance.toLocaleString()} of ${creditAlert.allowance.toLocaleString()} credits. Omni will update you again at the next 20% milestone.`
+                : article && article.language === lang
+                  ? article.title
+                  : c.news}
             </p>
             {credits && (
               <div className="mt-3 flex items-center justify-between rounded-xl border border-cyan/15 bg-cyan/[.05] px-3 py-2 text-[11px]">
@@ -249,26 +312,35 @@ export default function MascotPulse() {
               </div>
             )}
             <Link
-              href={storyHref}
-              onClick={() => setOpen(false)}
+              href={creditAlert ? "/pricing" : storyHref}
+              onClick={() => {
+                setOpen(false);
+                setCreditAlert(null);
+              }}
               className="mt-3 flex items-center justify-between rounded-xl bg-white/[.06] px-3 py-2.5 text-xs font-semibold hover:bg-white/[.1]"
             >
               <span className="flex items-center gap-2">
                 <Bell size={14} className="text-amber" />
-                {c.read}
+                {creditAlert
+                  ? lang === "el"
+                    ? "Δες τα credits και τα πακέτα"
+                    : "View credits and plans"
+                  : c.read}
               </span>
               <ChevronRight size={14} />
             </Link>
-            <Link
-              href={destination.href}
-              onClick={() => setOpen(false)}
-              className="mt-2 flex items-center justify-between rounded-xl border border-cyan/15 px-3 py-2.5 text-xs text-muted hover:text-white"
-            >
-              <span>
-                {c.try}: <b>{destination.name}</b>
-              </span>
-              <ChevronRight size={14} />
-            </Link>
+            {!creditAlert && (
+              <Link
+                href={destination.href}
+                onClick={() => setOpen(false)}
+                className="mt-2 flex items-center justify-between rounded-xl border border-cyan/15 px-3 py-2.5 text-xs text-muted hover:text-white"
+              >
+                <span>
+                  {c.try}: <b>{destination.name}</b>
+                </span>
+                <ChevronRight size={14} />
+              </Link>
+            )}
           </div>
         </aside>
       )}
