@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { getReferralCode } from "@/lib/helen/referral";
+import { useTransactionConfirm } from "@/components/TransactionConfirmProvider";
 
 type PaymentMethod = "card" | "credits";
 
@@ -16,6 +17,7 @@ export default function CheckoutPage() {
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const confirmTransaction = useTransactionConfirm();
   const trimmedUsername = username.trim();
   const isPrivileged = Boolean(
     omniSession?.user?.isMaster || omniSession?.user?.isAdmin,
@@ -30,6 +32,18 @@ export default function CheckoutPage() {
       router.push("/login?callbackUrl=/helen/checkout");
       return;
     }
+
+    const confirmed = await confirmTransaction({
+      title: "Helen membership",
+      amount: method === "credits" ? "100 credits" : "€1.00",
+      method: method === "credits" ? "credits" : "stripe",
+      recurring: false,
+      description:
+        method === "credits"
+          ? "Omni is about to deduct 100 credits from your OmniMind balance."
+          : "Omni will now take you to Stripe for the one-time Helen membership payment.",
+    });
+    if (!confirmed) return;
 
     setProcessing(true);
     try {

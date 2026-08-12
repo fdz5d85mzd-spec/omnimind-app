@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/helen/i18n/LanguageProvider";
 import { useProfile } from "@/lib/helen/ProfileProvider";
 import { getReferralCode } from "@/lib/helen/referral";
 import { playBuySound } from "@/lib/helen/sound";
+import { useTransactionConfirm } from "@/components/TransactionConfirmProvider";
 
 function ShopContent() {
   const { t } = useLanguage();
@@ -17,6 +18,7 @@ function ShopContent() {
   const searchParams = useSearchParams();
   const [buyingId, setBuyingId] = useState<string | null>(null);
   const [pendingItem, setPendingItem] = useState<string | null>(null);
+  const confirmTransaction = useTransactionConfirm();
 
   useEffect(() => {
     const sessionId = searchParams?.get("session_id");
@@ -41,9 +43,8 @@ function ShopContent() {
   const myLevel = levelFor(profile.carePoints).level;
 
   /**
-   * Tries a real Stripe Checkout Session first; that route 501s until
-   * STRIPE_SECRET_KEY is set, in which case we fall back to an instant mock
-   * purchase — same pattern as app/checkout/page.tsx's handlePay.
+   * Starts a real Stripe Checkout Session. There is deliberately no mock
+   * purchase fallback: a digital item is granted only after confirmed payment.
    *
    * Requires a live Supabase session when Supabase is configured — without
    * one, the webhook has no way to attribute the purchase to a member (this
@@ -53,15 +54,32 @@ function ShopContent() {
   async function handleBuy(itemId: string) {
     if (authConfigured && !authReady) return; // ignore taps before the session check resolves
     if (authConfigured && !user) {
-      router.push(`/helen/signin?next=${encodeURIComponent("/helen/home/shop")}`);
+      router.push(
+        `/helen/signin?next=${encodeURIComponent("/helen/home/shop")}`,
+      );
       return;
     }
+    const item = SHOP_ITEMS.find((candidate) => candidate.id === itemId);
+    if (!item) return;
+    const confirmed = await confirmTransaction({
+      title: `Helen shop · ${item.id.replaceAll("-", " ")}`,
+      amount: `€${item.priceEur.toFixed(2)}`,
+      method: "stripe",
+      recurring: false,
+      description:
+        "Omni is about to open Stripe for this one-time digital item purchase.",
+    });
+    if (!confirmed) return;
     setBuyingId(itemId);
     try {
       const res = await fetch("/helen/api/shop-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, clientReferenceId: user?.id, refCode: getReferralCode() }),
+        body: JSON.stringify({
+          itemId,
+          clientReferenceId: user?.id,
+          refCode: getReferralCode(),
+        }),
       });
       if (res.ok) {
         const body = (await res.json()) as { url?: string; bypass?: boolean };
@@ -78,16 +96,17 @@ function ShopContent() {
         }
       }
     } catch {
-      // network error reaching /api/shop-checkout — fall through to the mock flow below
+      setBuyingId(null);
+      return;
     }
-    await purchaseItem(itemId);
-    playBuySound();
     setBuyingId(null);
   }
 
   return (
     <>
-      <div className="mb-1 font-helen-display text-[17px] font-semibold">{t.tabShop}</div>
+      <div className="mb-1 font-helen-display text-[17px] font-semibold">
+        {t.tabShop}
+      </div>
       <p className="mb-4 text-xs text-helen-dim">{t.shopSub}</p>
 
       <div className="grid grid-cols-2 gap-3">
@@ -97,7 +116,10 @@ function ShopContent() {
           const pending = pendingItem === item.id;
           const locked = !owned && (item.requiredLevel ?? 1) > myLevel;
           return (
-            <div key={item.id} className={`rounded-xl bg-helen-card p-3 text-center ${locked ? "opacity-60" : ""}`}>
+            <div
+              key={item.id}
+              className={`rounded-xl bg-helen-card p-3 text-center ${locked ? "opacity-60" : ""}`}
+            >
               <div className="mb-2 text-4xl">{locked ? "🔒" : item.icon}</div>
               {locked ? (
                 <button
@@ -118,7 +140,9 @@ function ShopContent() {
                         setPendingItem(ownedNow ? null : item.id);
                         if (ownedNow) playBuySound();
                       })
-                      .catch((err) => console.error("syncOwnedItems retry failed", err))
+                      .catch((err) =>
+                        console.error("syncOwnedItems retry failed", err),
+                      )
                       .finally(() => setBuyingId(null));
                   }}
                   className="w-full rounded-lg bg-white/[0.06] py-2 text-[11px] font-semibold text-helen-dim disabled:opacity-60"
@@ -131,10 +155,16 @@ function ShopContent() {
                   disabled={owned || buying || (authConfigured && !authReady)}
                   onClick={() => handleBuy(item.id)}
                   className={`w-full rounded-lg py-2 text-[12px] font-bold ${
-                    owned ? "bg-white/[0.06] text-helen-sage" : "bg-helen-coral text-helen-ink disabled:opacity-70"
+                    owned
+                      ? "bg-white/[0.06] text-helen-sage"
+                      : "bg-helen-coral text-helen-ink disabled:opacity-70"
                   }`}
                 >
-                  {owned ? `✓ ${t.ownedLabel}` : buying ? "…" : `${t.buyBtn} — ${item.priceEur.toFixed(2)} €`}
+                  {owned
+                    ? `✓ ${t.ownedLabel}`
+                    : buying
+                      ? "…"
+                      : `${t.buyBtn} — ${item.priceEur.toFixed(2)} €`}
                 </button>
               )}
             </div>

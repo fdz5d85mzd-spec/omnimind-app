@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PLANS, CREDIT_PACKS } from "@/lib/billing";
+import { useTransactionConfirm } from "@/components/TransactionConfirmProvider";
 
 export default function PricingClient() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const confirmTransaction = useTransactionConfirm();
 
   async function buy(kind: "plan" | "credits", id: string) {
     if (status === "loading" || busyId) return;
@@ -17,6 +19,28 @@ export default function PricingClient() {
       router.push("/login");
       return;
     }
+    const plan =
+      kind === "plan"
+        ? PLANS.find((candidate) => candidate.id === id)
+        : undefined;
+    const pack =
+      kind === "credits"
+        ? CREDIT_PACKS.find((candidate) => candidate.id === id)
+        : undefined;
+    if (!plan && !pack) return;
+    const confirmed = await confirmTransaction({
+      title: plan
+        ? plan.label
+        : `${pack!.credits.toLocaleString("en-US")} credits`,
+      amount: `€${(plan?.priceEur ?? pack!.priceEur).toFixed(2)}`,
+      method: "stripe",
+      recurring: Boolean(plan && plan.interval !== "lifetime"),
+      description:
+        kind === "plan"
+          ? "You are about to start a paid OmniMind plan."
+          : "You are about to buy a one-time OmniMind credit pack.",
+    });
+    if (!confirmed) return;
     setBusyId(id);
     setError(null);
     try {
@@ -41,22 +65,36 @@ export default function PricingClient() {
   return (
     <div className="space-y-14">
       <section>
-        <h2 className="text-center font-head text-xl font-semibold text-white mb-1">Pro plans</h2>
+        <h2 className="text-center font-head text-xl font-semibold text-white mb-1">
+          Pro plans
+        </h2>
         <p className="text-center text-sm text-mutedDark mb-6">
           A monthly credit allowance and no cooldown wait — cancel anytime.
         </p>
         <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
           {PLANS.map((plan) => (
             <div key={plan.id} className="glass rounded-2xl p-6 flex flex-col">
-              <h3 className="font-head text-lg font-semibold text-white">{plan.label}</h3>
-              <p className="text-xs text-mutedDark mb-4 min-h-[32px]">{plan.tagline}</p>
+              <h3 className="font-head text-lg font-semibold text-white">
+                {plan.label}
+              </h3>
+              <p className="text-xs text-mutedDark mb-4 min-h-[32px]">
+                {plan.tagline}
+              </p>
               <p className="font-head text-3xl font-semibold text-white mb-1">
-                €{plan.priceEur.toLocaleString("en-US", { minimumFractionDigits: plan.priceEur % 1 ? 2 : 0 })}
+                €
+                {plan.priceEur.toLocaleString("en-US", {
+                  minimumFractionDigits: plan.priceEur % 1 ? 2 : 0,
+                })}
                 {plan.interval !== "lifetime" && (
-                  <span className="text-sm font-normal text-mutedDark"> /{plan.interval === "month" ? "mo" : "yr"}</span>
+                  <span className="text-sm font-normal text-mutedDark">
+                    {" "}
+                    /{plan.interval === "month" ? "mo" : "yr"}
+                  </span>
                 )}
               </p>
-              <p className="text-xs text-mutedDark mb-5">{plan.monthlyCredits.toLocaleString("en-US")} credits / month</p>
+              <p className="text-xs text-mutedDark mb-5">
+                {plan.monthlyCredits.toLocaleString("en-US")} credits / month
+              </p>
               <button
                 onClick={() => buy("plan", plan.id)}
                 disabled={busyId === plan.id}
@@ -70,14 +108,25 @@ export default function PricingClient() {
       </section>
 
       <section>
-        <h2 className="text-center font-head text-xl font-semibold text-white mb-1">Add credits</h2>
-        <p className="text-center text-sm text-mutedDark mb-6">One-time top-up, no subscription — bigger packs cost less per credit.</p>
+        <h2 className="text-center font-head text-xl font-semibold text-white mb-1">
+          Add credits
+        </h2>
+        <p className="text-center text-sm text-mutedDark mb-6">
+          One-time top-up, no subscription — bigger packs cost less per credit.
+        </p>
         <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
           {CREDIT_PACKS.map((pack) => (
-            <div key={pack.id} className="glass rounded-2xl p-6 flex flex-col items-center text-center">
-              <p className="font-head text-2xl font-semibold text-white">{pack.credits.toLocaleString("en-US")}</p>
+            <div
+              key={pack.id}
+              className="glass rounded-2xl p-6 flex flex-col items-center text-center"
+            >
+              <p className="font-head text-2xl font-semibold text-white">
+                {pack.credits.toLocaleString("en-US")}
+              </p>
               <p className="text-xs text-mutedDark mb-4">credits</p>
-              <p className="text-lg font-semibold text-cyan mb-5">€{pack.priceEur.toFixed(2)}</p>
+              <p className="text-lg font-semibold text-cyan mb-5">
+                €{pack.priceEur.toFixed(2)}
+              </p>
               <button
                 onClick={() => buy("credits", pack.id)}
                 disabled={busyId === pack.id}

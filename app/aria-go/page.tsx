@@ -4,14 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import TopNav from "@/components/TopNav";
 import { IMAGE_GENERATION_CREDITS } from "@/lib/billing";
+import { useTransactionConfirm } from "@/components/TransactionConfirmProvider";
 
-function describeGenError(status: number, data: { error?: string; need?: number; have?: number }): string {
+function describeGenError(
+  status: number,
+  data: { error?: string; need?: number; have?: number },
+): string {
   if (status === 401) return "Sign in to create an avatar.";
-  if (status === 402) return `Not enough credits — needs ${data.need}, you have ${data.have}. Buy more on Pricing.`;
+  if (status === 402)
+    return `Not enough credits — needs ${data.need}, you have ${data.have}. Buy more on Pricing.`;
   return data.error || "Generation failed";
 }
 
 export default function AriaGoPage() {
+  const confirmTransaction = useTransactionConfirm();
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +25,15 @@ export default function AriaGoPage() {
 
   async function createAvatar() {
     if (!description.trim() || loading) return;
+    const confirmed = await confirmTransaction({
+      title: "Aria Go avatar generation",
+      amount: `${IMAGE_GENERATION_CREDITS} credits`,
+      method: "credits",
+      recurring: false,
+      description:
+        "Creating this avatar will deduct credits from your OmniMind balance.",
+    });
+    if (!confirmed) return;
     setLoading(true);
     setError(null);
     try {
@@ -34,7 +49,9 @@ export default function AriaGoPage() {
       }
       setAvatarUrl(data.url);
     } catch {
-      setError("Could not reach Aria Go — check your connection and try again.");
+      setError(
+        "Could not reach Aria Go — check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -46,10 +63,13 @@ export default function AriaGoPage() {
       <div className="min-h-screen px-6 py-12">
         <div className="max-w-lg mx-auto">
           <div className="text-center mb-10">
-            <h1 className="font-head text-4xl font-semibold text-gradient mb-3">Aria Go</h1>
+            <h1 className="font-head text-4xl font-semibold text-gradient mb-3">
+              Aria Go
+            </h1>
             <p className="text-muted text-sm max-w-md mx-auto leading-relaxed">
-              Make an avatar that feels like you. Describe your look, energy, wardrobe, and world —
-              Aria Go turns your idea into a distinctive profile image.
+              Make an avatar that feels like you. Describe your look, energy,
+              wardrobe, and world — Aria Go turns your idea into a distinctive
+              profile image.
             </p>
           </div>
 
@@ -57,13 +77,22 @@ export default function AriaGoPage() {
             <div className="aspect-square rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-5 overflow-hidden">
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt="Your avatar" className="w-full h-full object-cover" />
+                <img
+                  src={avatarUrl}
+                  alt="Your avatar"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <p className="text-sm text-mutedDark">Your avatar will appear here</p>
+                <p className="text-sm text-mutedDark">
+                  Your avatar will appear here
+                </p>
               )}
             </div>
 
-            <label htmlFor="description" className="block text-sm font-medium text-white mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-white mb-2"
+            >
               Your avatar direction
             </label>
             <textarea
@@ -76,13 +105,17 @@ export default function AriaGoPage() {
               className="w-full rounded-xl bg-white/[0.03] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-mutedDark focus:outline-none focus:border-accent/50 resize-none"
             />
             <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-mutedDark">{description.length}/500</span>
+              <span className="text-xs text-mutedDark">
+                {description.length}/500
+              </span>
               <button
                 onClick={createAvatar}
                 disabled={!description.trim() || loading}
                 className="bg-gradient-to-br from-accent/90 to-accent/70 hover:from-accent hover:to-accent/80 disabled:opacity-40 disabled:cursor-not-allowed shadow-glow rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all"
               >
-                {loading ? "Creating…" : `Create avatar — ${IMAGE_GENERATION_CREDITS} credits ✨`}
+                {loading
+                  ? "Creating…"
+                  : `Create avatar — ${IMAGE_GENERATION_CREDITS} credits ✨`}
               </button>
             </div>
             <p className="text-[11px] text-mutedDark mt-3">

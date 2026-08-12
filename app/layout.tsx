@@ -8,10 +8,12 @@ import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import MobileDock from "@/components/MobileDock";
 import MascotPulse from "@/components/MascotPulse";
+import { TransactionConfirmProvider } from "@/components/TransactionConfirmProvider";
 
 export const metadata: Metadata = {
   title: "OmniMind — Ask Anything",
-  description: "The autonomous AI operating system. Type a request, watch the agent work, get a real answer.",
+  description:
+    "The autonomous AI operating system. Type a request, watch the agent work, get a real answer.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -38,7 +40,11 @@ export const viewport: Viewport = {
   themeColor: "#06071a",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" className="dark">
       <body className="bg-bg text-white antialiased min-h-screen font-body">
@@ -49,10 +55,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <InstallPrompt />
           <HelpWidget />
           <AuthSessionProvider>
-            <ImpersonationBanner />
-            {children}
-            <MobileDock />
-            <MascotPulse />
+            <TransactionConfirmProvider>
+              <ImpersonationBanner />
+              {children}
+              <MobileDock />
+              <MascotPulse />
+            </TransactionConfirmProvider>
           </AuthSessionProvider>
         </LanguageProvider>
       </body>
