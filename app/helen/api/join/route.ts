@@ -14,14 +14,10 @@ import { isAdminEmail, isMasterEmail } from "@/lib/roles";
 const HELEN_MEMBERSHIP_CREDITS = 100;
 
 /**
- * Lets a user who's already signed into OmniMind join Helen without a
- * second, separate signup: bridges them to a Supabase identity under the
- * same email (via the Admin API's generateLink, which creates the
- * Supabase user if it doesn't exist yet and mints a real session for it —
- * no email round trip, since they already proved who they are via their
- * OmniMind session) and, for the credits method, charges the membership
- * to their OmniMind balance and creates the membership immediately instead
- * of going through Stripe at all.
+ * Bridges an authenticated OmniMind user into Helen. Owner/admin accounts are
+ * always treated as internal testers: they receive/create their Helen member
+ * record without Stripe or credit deductions, regardless of which payment
+ * method an older cached client happens to submit.
  */
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -54,15 +50,26 @@ export async function POST(request: Request) {
   const supabaseUserId = linkData.user.id;
   const bridgeUrl = linkData.properties.action_link;
 
-  // Already a member (e.g. re-opening the app) — just bridge the session
-  // in, no second charge.
+  // Existing members are always bridged straight back in with no new charge.
   const { data: existingMember } = await supabase
     .from("members")
     .select("id")
     .eq("user_id", supabaseUserId)
     .maybeSingle();
   if (existingMember) {
-    return NextResponse.json({ url: bridgeUrl });
+    return NextResponse.json({ url: bridgeUrl, bypass: isPrivileged });
+  }
+
+  // Owner/admin testing pass. This check deliberately happens before the card
+  // branch so even an older cached checkout UI can never send an owner to
+  // Stripe or deduct credits.
+  if (isPrivileged) {
+    const membership = await createHelenMembership(supabaseUserId, username);
+    if ("error" in membership) {
+      console.error("helen join: privileged createHelenMembership failed", membership.error);
+      return NextResponse.json({ error: "Helen isn't set up correctly yet. Please try again in a moment." }, { status: 500 });
+    }
+    return NextResponse.json({ url: bridgeUrl, bypass: true });
   }
 
   if (body.method === "card") {
@@ -81,14 +88,9 @@ export async function POST(request: Request) {
       ],
       client_reference_id: supabaseUserId,
       metadata: username ? { username } : undefined,
-      // `source: "helen"` is what lib/adminRevenue.ts reads to split Helen
-      // revenue (and its 15% charity cut) out from the rest of the account.
       payment_intent_data: { metadata: { source: "helen", ...(partnerCode ? { ref_code: partnerCode } : {}) } },
       managed_payments: { enabled: false },
       allow_promotion_codes: true,
-      // Bridges the browser's Supabase session, then lands on the existing
-      // card page -- membership itself is still created by the webhook,
-      // same as any other card payment.
       success_url: `${origin}/helen/api/join/bridge?next=${encodeURIComponent("/helen/card")}`,
       cancel_url: `${origin}/helen/checkout`,
     } satisfies SessionCreateParams);
@@ -96,21 +98,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: checkoutSession.url });
   }
 
-  // Credits method (default): admins pay nothing (same free-testing pass
-  // as everywhere else in the app); everyone else needs a real balance.
-  if (!isPrivileged) {
-    const user = await getUserWithRefill(session.user.id);
-    if (!user || user.creditBalance < HELEN_MEMBERSHIP_CREDITS) {
-      return NextResponse.json(
-        {
-          error: "blocked",
-          reason: "no_credits",
-          need: HELEN_MEMBERSHIP_CREDITS,
-          have: user?.creditBalance ?? 0,
-        },
-        { status: 402 },
-      );
-    }
+  const user = await getUserWithRefill(session.user.id);
+  if (!user || user.creditBalance < HELEN_MEMBERSHIP_CREDITS) {
+    return NextResponse.json(
+      {
+        error: "blocked",
+        reason: "no_credits",
+        need: HELEN_MEMBERSHIP_CREDITS,
+        have: user?.creditBalance ?? 0,
+      },
+      { status: 402 },
+    );
   }
 
   const membership = await createHelenMembership(supabaseUserId, username);
@@ -119,12 +117,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Helen isn't set up correctly yet. Please try again in a moment." }, { status: 500 });
   }
 
-  if (!isPrivileged) {
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { creditBalance: { decrement: HELEN_MEMBERSHIP_CREDITS } },
-    });
-  }
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { creditBalance: { decrement: HELEN_MEMBERSHIP_CREDITS } },
+  });
 
   return NextResponse.json({ url: bridgeUrl });
 }
