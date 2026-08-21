@@ -23,9 +23,42 @@ export default function CheckoutPage() {
     omniSession?.user?.isMaster || omniSession?.user?.isAdmin,
   );
 
-  async function continueToPayment() {
+  async function continueToHelen() {
     if (!trimmedUsername || processing) return;
     setError(null);
+
+    if (isPrivileged) {
+      if (!omniSession?.user) return;
+      setProcessing(true);
+      try {
+        const res = await fetch("/helen/api/join", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            method: "credits",
+            username: trimmedUsername,
+            refCode: getReferralCode(),
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          url?: string;
+          error?: string;
+        };
+        if (!res.ok || !data.url) {
+          setError(
+            data.error ||
+              (lang === "el" ? "Δεν ήταν δυνατή η είσοδος στη Helen." : "Could not enter Helen."),
+          );
+          return;
+        }
+        window.location.assign(data.url);
+      } catch {
+        setError(lang === "el" ? "Δεν ήταν δυνατή η σύνδεση." : "Could not reach Helen.");
+      } finally {
+        setProcessing(false);
+      }
+      return;
+    }
 
     if (method === "credits" && !omniSession?.user) {
       sessionStorage.setItem("helen_pending_username", trimmedUsername);
@@ -50,8 +83,7 @@ export default function CheckoutPage() {
       if (method === "card") {
         sessionStorage.setItem("helen_pending_username", trimmedUsername);
       }
-      const endpoint =
-        method === "credits" ? "/helen/api/join" : "/helen/api/checkout";
+      const endpoint = method === "credits" ? "/helen/api/join" : "/helen/api/checkout";
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,9 +123,7 @@ export default function CheckoutPage() {
       window.location.assign(data.url);
     } catch {
       setError(
-        lang === "el"
-          ? "Δεν ήταν δυνατή η σύνδεση."
-          : "Could not reach the payment service.",
+        lang === "el" ? "Δεν ήταν δυνατή η σύνδεση." : "Could not reach the payment service.",
       );
     } finally {
       setProcessing(false);
@@ -111,14 +141,20 @@ export default function CheckoutPage() {
       </button>
 
       <div className="mb-5">
-        <div className="helen-eyebrow mb-3">Secure entry · one time</div>
+        <div className="helen-eyebrow mb-3">
+          {isPrivileged ? "Owner access · testing mode" : "Secure entry · one time"}
+        </div>
         <h1 className="font-helen-display text-[clamp(32px,7vw,48px)] font-semibold leading-none tracking-[-0.04em]">
-          {t.checkoutTitle}
+          {isPrivileged ? (lang === "el" ? "Είσοδος στη Helen" : "Enter Helen") : t.checkoutTitle}
         </h1>
         <p className="mt-3 max-w-lg text-sm leading-relaxed text-helen-dim">
-          {lang === "el"
-            ? "Διάλεξε όνομα και τρόπο συμμετοχής. Δεν χρειάζεται λογαριασμός για πληρωμή με κάρτα."
-            : "Choose your name and payment method. No account is needed for card payment."}
+          {isPrivileged
+            ? lang === "el"
+              ? "Ως owner έχεις πλήρη πρόσβαση στη Helen για έλεγχο χωρίς κάρτα, credits ή χρέωση."
+              : "As an owner you have full Helen testing access with no card, credits, or charge."
+            : lang === "el"
+              ? "Διάλεξε όνομα και τρόπο συμμετοχής. Δεν χρειάζεται λογαριασμός για πληρωμή με κάρτα."
+              : "Choose your name and payment method. No account is needed for card payment."}
         </p>
       </div>
 
@@ -135,53 +171,68 @@ export default function CheckoutPage() {
         className="helen-input mb-5 w-full rounded-[1.2rem] px-4 py-4 text-[15px] text-helen-paper outline-none placeholder:text-helen-dim/60"
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => setMethod("card")}
-          className={`helen-payment-card ${method === "card" ? "is-active" : ""}`}
-          aria-pressed={method === "card"}
-        >
-          <span className="helen-payment-icon">◈</span>
-          <span>
-            <b>{lang === "el" ? "Κάρτα" : "Card"}</b>
-            <small>Visa · Mastercard · Wallet</small>
-          </span>
-          <i>{method === "card" ? "✓" : ""}</i>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMethod("credits")}
-          className={`helen-payment-card ${method === "credits" ? "is-active" : ""}`}
-          aria-pressed={method === "credits"}
-        >
-          <span className="helen-payment-icon">✦</span>
-          <span>
-            <b>OmniMind credits</b>
-            <small>
-              100 credits · {isPrivileged ? "admin pass" : "instant"}
-            </small>
-          </span>
-          <i>{method === "credits" ? "✓" : ""}</i>
-        </button>
-      </div>
+      {isPrivileged ? (
+        <section className="helen-order-panel mb-5 rounded-[1.4rem] p-4">
+          <div>
+            <span>{lang === "el" ? "Πρόσβαση owner" : "Owner access"}</span>
+            <strong>{lang === "el" ? "Ενεργή" : "Active"}</strong>
+          </div>
+          <div>
+            <span>{lang === "el" ? "Κάρτα / credits" : "Card / credits"}</span>
+            <strong>{lang === "el" ? "Δεν απαιτούνται" : "Not required"}</strong>
+          </div>
+          <div className="total">
+            <span>{lang === "el" ? "Χρέωση" : "Charge"}</span>
+            <strong>€0.00</strong>
+          </div>
+        </section>
+      ) : (
+        <>
+          <div className="mb-5 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setMethod("card")}
+              className={`helen-payment-card ${method === "card" ? "is-active" : ""}`}
+              aria-pressed={method === "card"}
+            >
+              <span className="helen-payment-icon">◈</span>
+              <span>
+                <b>{lang === "el" ? "Κάρτα" : "Card"}</b>
+                <small>Visa · Mastercard · Wallet</small>
+              </span>
+              <i>{method === "card" ? "✓" : ""}</i>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMethod("credits")}
+              className={`helen-payment-card ${method === "credits" ? "is-active" : ""}`}
+              aria-pressed={method === "credits"}
+            >
+              <span className="helen-payment-icon">✦</span>
+              <span>
+                <b>OmniMind credits</b>
+                <small>100 credits · instant</small>
+              </span>
+              <i>{method === "credits" ? "✓" : ""}</i>
+            </button>
+          </div>
 
-      <section className="helen-order-panel mb-5 rounded-[1.4rem] p-4">
-        <div>
-          <span>{lang === "el" ? "Συμμετοχή Helen" : "Helen entry"}</span>
-          <strong>€1.00</strong>
-        </div>
-        <div>
-          <span>
-            {lang === "el" ? "Επαναλαμβανόμενη χρέωση" : "Recurring charge"}
-          </span>
-          <strong>{lang === "el" ? "Καμία" : "None"}</strong>
-        </div>
-        <div className="total">
-          <span>{t.priceLabel}</span>
-          <strong>{method === "credits" ? "100 ✦" : "€1.00"}</strong>
-        </div>
-      </section>
+          <section className="helen-order-panel mb-5 rounded-[1.4rem] p-4">
+            <div>
+              <span>{lang === "el" ? "Συμμετοχή Helen" : "Helen entry"}</span>
+              <strong>€1.00</strong>
+            </div>
+            <div>
+              <span>{lang === "el" ? "Επαναλαμβανόμενη χρέωση" : "Recurring charge"}</span>
+              <strong>{lang === "el" ? "Καμία" : "None"}</strong>
+            </div>
+            <div className="total">
+              <span>{t.priceLabel}</span>
+              <strong>{method === "credits" ? "100 ✦" : "€1.00"}</strong>
+            </div>
+          </section>
+        </>
+      )}
 
       {error && (
         <div
@@ -196,7 +247,7 @@ export default function CheckoutPage() {
         <button
           type="button"
           disabled={processing || !trimmedUsername || status === "loading"}
-          onClick={continueToPayment}
+          onClick={continueToHelen}
           className="helen-primary-cta flex w-full items-center justify-center rounded-[1.3rem] py-[18px] text-[15px] font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"
         >
           {processing ? (
@@ -204,19 +255,26 @@ export default function CheckoutPage() {
           ) : null}
           {processing
             ? t.processingLabel
-            : method === "credits"
+            : isPrivileged
               ? lang === "el"
-                ? "Πληρωμή με 100 credits"
-                : "Pay with 100 credits"
-              : lang === "el"
-                ? "Συνέχεια στην ασφαλή πληρωμή"
-                : "Continue to secure payment"}
+                ? "Είσοδος ως owner"
+                : "Enter as owner"
+              : method === "credits"
+                ? lang === "el"
+                  ? "Πληρωμή με 100 credits"
+                  : "Pay with 100 credits"
+                : lang === "el"
+                  ? "Συνέχεια στην ασφαλή πληρωμή"
+                  : "Continue to secure payment"}
         </button>
         <p className="mt-3 text-center text-[11px] leading-relaxed text-helen-dim">
-          🔒{" "}
-          {lang === "el"
-            ? "Ασφαλής πληρωμή · Χωρίς συνδρομή"
-            : "Secure payment · No subscription"}
+          {isPrivileged
+            ? lang === "el"
+              ? "Owner testing pass · χωρίς χρέωση"
+              : "Owner testing pass · no charge"
+            : lang === "el"
+              ? "🔒 Ασφαλής πληρωμή · Χωρίς συνδρομή"
+              : "🔒 Secure payment · No subscription"}
         </p>
       </div>
     </main>
