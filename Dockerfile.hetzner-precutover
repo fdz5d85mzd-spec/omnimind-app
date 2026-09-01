@@ -8,7 +8,11 @@ COPY prisma ./prisma
 RUN npm ci
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1 OMNIMIND_ALLOW_DB_PUSH=false
-RUN npm run build
+RUN --mount=type=secret,id=public_env \
+    set -a \
+ && . /run/secrets/public_env \
+ && set +a \
+ && npm run build
 
 FROM node:24-bookworm-slim AS runtime
 RUN apt-get update -qq \
