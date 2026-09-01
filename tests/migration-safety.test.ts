@@ -66,3 +66,17 @@ test('runtime no longer imports or requires Vercel Blob credentials', () => {
   ].map((file) => fs.readFileSync(file, 'utf8')).join('\n');
   assert.doesNotMatch(runtimeFiles, /@vercel\/blob|BLOB_READ_WRITE_TOKEN|VERCEL_OIDC_TOKEN|BLOB_STORE_ID/);
 });
+
+test('Higgsfield routes are optional and fail closed without credentials', () => {
+  const routes = [
+    'app/aria-go/api/generate/route.ts',
+    'app/voxstudio/api/generate-image/route.ts',
+    'app/voxstudio/api/generate-video/route.ts',
+  ];
+  for (const route of routes) {
+    const source = fs.readFileSync(route, 'utf8');
+    assert.match(source, /if \(!isHiggsfieldConfigured\(\)\)/);
+    assert.match(source, /temporarily_unavailable/);
+    assert.match(source, /status: 503/);
+  }
+});

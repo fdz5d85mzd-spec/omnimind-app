@@ -10,7 +10,10 @@ export const maxDuration = 300;
 
 export async function POST(request: Request) {
   if (!isHiggsfieldConfigured()) {
-    return NextResponse.json({ error: "Avatar generation is not configured" }, { status: 501 });
+    return NextResponse.json(
+      { error: "temporarily_unavailable", message: "Avatar generation is temporarily unavailable." },
+      { status: 503 },
+    );
   }
 
   const session = await getServerSession(authOptions);
