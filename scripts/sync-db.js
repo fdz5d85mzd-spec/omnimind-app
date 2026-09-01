@@ -64,6 +64,10 @@ function sync(envVar, schema) {
     console.log(`[sync-db] ${envVar} not set — skipping schema sync for ${schema}.`);
     return;
   }
+  if (process.env.OMNIMIND_ALLOW_DB_PUSH !== "true") {
+    console.log(`[sync-db] ${envVar} present; schema mutation disabled (set OMNIMIND_ALLOW_DB_PUSH=true only in an approved migration job).`);
+    return;
+  }
   execSync(`npx prisma db push --skip-generate --schema=${schema}`, { stdio: "inherit" });
 }
 

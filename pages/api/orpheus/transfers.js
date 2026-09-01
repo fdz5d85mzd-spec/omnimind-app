@@ -3,6 +3,7 @@ import { ensureSchema, sql } from '../../../lib/orpheus/_db.js';
 import { hash, json, randomCode, randomKey, safeName, validEmail } from '../../../lib/orpheus/_security.js';
 import { getEntitlement, reserveUsage } from '../../../lib/orpheus/_entitlement.js';
 import { sendTransferEmail } from '../../../lib/orpheus/_email.js';
+import { storageProvider } from '../../../lib/orpheus/_r2.js';
 
 const MAX_FILES = 50;
 
@@ -61,7 +62,7 @@ async function createTransfer(req, res) {
       VALUES (${id}, ${code}, ${hash(uploadKey)}, ${mode}, ${recipientEmail || null}, ${senderEmail || null}, ${String(message || '').slice(0, 2000)}, ${expiresAt}, ${fingerprint})`;
     for (const file of records) {
       await tx`INSERT INTO transfer_files (id, transfer_id, name, size, content_type, pathname, storage_provider)
-        VALUES (${file.id}, ${id}, ${file.name}, ${file.size}, ${file.type}, ${file.pathname}, 'r2')`;
+        VALUES (${file.id}, ${id}, ${file.name}, ${file.size}, ${file.type}, ${file.pathname}, ${storageProvider()})`;
     }
   });
 
@@ -88,7 +89,7 @@ async function finalizeTransfer(req, res) {
   if (files.length !== expected.length) return json(res, 409, { error: 'Not all files were uploaded.' });
   for (const record of expected) {
     const completed = files.find((file) => file.id === record.id);
-    if (!completed || completed.pathname !== record.pathname || typeof completed.url !== 'string' || (!completed.url.includes('.private.blob.vercel-storage.com/') && completed.url !== `r2://${record.pathname}`)) {
+    if (!completed || completed.pathname !== record.pathname || typeof completed.url !== 'string' || (!completed.url.includes('.private.blob.vercel-storage.com/') && completed.url !== `r2://${record.pathname}` && completed.url !== `hetzner://${record.pathname}`)) {
       return json(res, 409, { error: 'Uploaded file verification failed.' });
     }
     await sql`UPDATE transfer_files SET blob_url = ${completed.url}, uploaded_at = COALESCE(uploaded_at, NOW()) WHERE id = ${record.id} AND transfer_id = ${id}`;

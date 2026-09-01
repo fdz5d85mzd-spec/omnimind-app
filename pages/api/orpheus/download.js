@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       AND f.uploaded_at IS NOT NULL AND f.download_count < 20 AND t.status = 'ready' AND t.expires_at > NOW()
       RETURNING f.pathname, f.name, f.storage_provider`;
     if (!rows[0]) return json(res, 404, { error: 'File not found or transfer expired.' });
-    if (rows[0].storage_provider === 'r2') {
+    if (rows[0].storage_provider === 'r2' || rows[0].storage_provider === 'hetzner') {
       res.statusCode = 302;
       res.setHeader('Location', await signedR2Download(rows[0].pathname, rows[0].name));
       res.setHeader('Cache-Control', 'no-store');

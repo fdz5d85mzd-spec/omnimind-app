@@ -78,7 +78,6 @@ async function callAnthropic(
   const body: any = {
     model,
     max_tokens: options?.maxTokens ?? 4000,
-    temperature: options?.temperature ?? 0.7,
     messages: chatMessages.map((m) => ({ role: m.role, content: m.content })),
   };
   if (systemMsg) body.system = systemMsg.content;

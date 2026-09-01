@@ -21,7 +21,9 @@ export async function runCollection(): Promise<CollectedArticle[]> {
 
   for (const source of sources) {
     try {
-      const feed = await parser.parseURL(source.feedUrl!);
+      const feed = source.name === 'EurekAlert'
+        ? { items: await collectEurekAlert(source.feedUrl!) }
+        : await parser.parseURL(source.feedUrl!);
       console.log(`[Collection] ${source.name}: ${feed.items.length} items`);
 
       for (const item of feed.items.slice(0, 10)) {
@@ -55,6 +57,59 @@ export async function runCollection(): Promise<CollectedArticle[]> {
 
   console.log(`[Collection] Total collected: ${allArticles.length}`);
   return allArticles;
+}
+
+export async function collectEurekAlert(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; OGN/1.0; +https://omnimindai.app)",
+      Accept: "text/html",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`EurekAlert source error (${response.status})`);
+  }
+  return parseEurekAlertHtml(await response.text());
+}
+
+export function parseEurekAlertHtml(html: string) {
+  const items: Array<{
+    title: string;
+    link: string;
+    contentSnippet: string;
+    content?: string;
+    summary?: string;
+    pubDate?: string;
+    isoDate?: string;
+  }> = [];
+  const cards = html.matchAll(/<article class="post">([\s\S]*?)<\/article>/g);
+  const clean = (value: string) =>
+    value
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&ndash;/g, "–")
+      .replace(/&amp;/g, "&")
+      .replace(/&#039;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, " ")
+      .trim();
+
+  for (const match of cards) {
+    const card = match[1];
+    const path = card.match(/href="(\/news-releases\/\d+)"/)?.[1];
+    const title = card.match(/<h2 class="post_title">([\s\S]*?)<\/h2>/)?.[1];
+    const summary = card.match(/<div class="intro">([\s\S]*?)<\/div>/)?.[1];
+    if (!path || !title) continue;
+    items.push({
+      title: clean(title),
+      link: `https://www.eurekalert.org${path}`,
+      contentSnippet: clean(summary ?? ""),
+      pubDate: card.match(/<div class="reltime">([^<]+)<\/div>/)?.[1],
+    });
+  }
+  if (!items.length) {
+    throw new Error("EurekAlert page structure returned no releases");
+  }
+  return items;
 }
 
 function slugifyItem(title: string): string {

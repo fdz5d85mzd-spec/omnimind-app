@@ -8,11 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate && prisma generate --schema=prisma/ogn-schema.prisma",
-    "db:seed:ogn": "tsx prisma/ogn-seed.ts"
+    "db:seed:ogn": "tsx prisma/ogn-seed.ts",
+    "test:safe": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
     "@auth/prisma-adapter": "^2.4.1",
+    "@aws-sdk/client-s3": "^3.1123.0",
+    "@aws-sdk/s3-request-presigner": "^3.1123.0",
     "@higgsfield/client": "^0.2.1",
     "@prisma/client": "^5.18.0",
     "@supabase/supabase-js": "^2.110.9",

@@ -33,10 +33,10 @@ export async function seedOgn(): Promise<{ adminEmail: string; adminPassword: st
     { name: "Positive News", url: "https://www.positive.news", feedUrl: "https://www.positive.news/feed/", credibilityRating: 0.82, language: "en", country: "UK" },
     { name: "Reason to be Cheerful", url: "https://reasonstobecheerful.world", feedUrl: "https://reasonstobecheerful.world/feed/", credibilityRating: 0.78, language: "en", country: "US" },
     { name: "Upworthy", url: "https://www.upworthy.com", feedUrl: "https://www.upworthy.com/feeds/feed.rss", credibilityRating: 0.72, language: "en", country: "US" },
-    { name: "The Guardian — Good News", url: "https://www.theguardian.com", feedUrl: "https://www.theguardian.com/lifeandstyle/good-news/rss", credibilityRating: 0.90, language: "en", country: "UK" },
+    { name: "The Guardian — Environment", url: "https://www.theguardian.com/environment", feedUrl: "https://www.theguardian.com/environment/rss", credibilityRating: 0.90, language: "en", country: "UK" },
     { name: "BBC News — World", url: "https://www.bbc.com", feedUrl: "https://feeds.bbci.co.uk/news/world/rss.xml", credibilityRating: 0.92, language: "en", country: "UK" },
     { name: "NASA Breaking News", url: "https://www.nasa.gov", feedUrl: "https://www.nasa.gov/rss/dyn/breaking_news.rss", credibilityRating: 0.95, language: "en", country: "US" },
-    { name: "EurekAlert", url: "https://www.eurekalert.org", feedUrl: "https://www.eurekalert.org/rss/technology_engineering.xml", credibilityRating: 0.88, language: "en", country: "US" },
+    { name: "EurekAlert", url: "https://www.eurekalert.org", feedUrl: "https://www.eurekalert.org/news-releases/browse", credibilityRating: 0.88, language: "en", country: "US" },
   ];
   for (const source of sources) {
     await prisma.source.upsert({ where: { name: source.name }, update: {}, create: source });
