@@ -1,4 +1,3 @@
-import { getDownloadUrl, issueSignedToken, presignUrl } from '@vercel/blob';
 import { ensureSchema, sql } from '../../../lib/orpheus/_db.js';
 import { json } from '../../../lib/orpheus/_security.js';
 import { signedR2Download } from '../../../lib/orpheus/_r2.js';
@@ -23,13 +22,7 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'no-store');
       return res.end();
     }
-    const validUntil = Date.now() + 5 * 60 * 1000;
-    const token = await issueSignedToken({ pathname: rows[0].pathname, operations: ['get'], validUntil });
-    const { presignedUrl } = await presignUrl(token, { access: 'private', operation: 'get', pathname: rows[0].pathname, validUntil });
-    res.statusCode = 302;
-    res.setHeader('Location', getDownloadUrl(presignedUrl));
-    res.setHeader('Cache-Control', 'no-store');
-    return res.end();
+    return json(res, 503, { error: 'This legacy object must be migrated before it can be downloaded from Hetzner.' });
   } catch (error) {
     console.error('download_error', error);
     return json(res, 500, { error: 'Download unavailable.' });

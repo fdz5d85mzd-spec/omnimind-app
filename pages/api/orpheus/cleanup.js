@@ -1,4 +1,3 @@
-import { del } from '@vercel/blob';
 import { ensureSchema, sql } from '../../../lib/orpheus/_db.js';
 import { json } from '../../../lib/orpheus/_security.js';
 import { deleteR2Objects, storageProvider } from '../../../lib/orpheus/_r2.js';
@@ -13,8 +12,9 @@ export default async function handler(req, res) {
   const r2Files = files.filter((file) => file.storage_provider === 'r2').map((file) => file.pathname);
   const hetznerFiles = files.filter((file) => file.storage_provider === 'hetzner').map((file) => file.pathname);
   let legacyBlobRetained=0;
-  if (blobFiles.length && process.env.BLOB_READ_WRITE_TOKEN) await del(blobFiles);
-  else legacyBlobRetained=blobFiles.length;
+  // Legacy Vercel Blob objects are retained until the separately approved
+  // data migration copies and verifies them in Hetzner Object Storage.
+  legacyBlobRetained=blobFiles.length;
   let legacyR2Retained=0;
   if (r2Files.length && storageProvider()==='r2') await deleteR2Objects(r2Files); else legacyR2Retained=r2Files.length;
   if (hetznerFiles.length) await deleteHetznerObjects(hetznerFiles);

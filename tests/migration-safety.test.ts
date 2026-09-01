@@ -57,3 +57,12 @@ test('new Orpheus transfers are not hard-coded to Vercel Blob',()=>{
   assert.match(source,/storageProvider\(\)/);
   assert.doesNotMatch(source,/VALUES \([^\n]+, 'blob'\)/);
 });
+
+test('runtime no longer imports or requires Vercel Blob credentials', () => {
+  const runtimeFiles = [
+    'pages/api/orpheus/upload.js',
+    'pages/api/orpheus/download.js',
+    'pages/api/orpheus/cleanup.js',
+  ].map((file) => fs.readFileSync(file, 'utf8')).join('\n');
+  assert.doesNotMatch(runtimeFiles, /@vercel\/blob|BLOB_READ_WRITE_TOKEN|VERCEL_OIDC_TOKEN|BLOB_STORE_ID/);
+});
